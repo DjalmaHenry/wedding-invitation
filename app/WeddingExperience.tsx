@@ -383,24 +383,26 @@ export function WeddingExperience() {
           className={`invitation-card${progress > 0.48 ? " is-fading" : ""}`}
           aria-label="Convite de casamento de Djalma e Victoria"
         >
-          <div
-            className="profile-avatar profile-avatar-djalma"
-            aria-hidden="true"
-          >
-            <img src="/djalma-caricature-v1.png" alt="" />
-          </div>
-          <div
-            className="profile-avatar profile-avatar-victoria"
-            aria-hidden="true"
-          >
-            <img src="/victoria-caricature-v1.png" alt="" />
-          </div>
           <p className="intro">Junto com nossas famílias</p>
-          <h1>
-            <span>Djalma</span>
-            <i>&</i>
-            <span>Victoria</span>
-          </h1>
+          <div className="invitation-title-lockup">
+            <div
+              className="profile-avatar profile-avatar-djalma"
+              aria-hidden="true"
+            >
+              <img src="/djalma-profile-medallion-v2.png" alt="" />
+            </div>
+            <h1>
+              <span>Djalma</span>
+              <i>&</i>
+              <span>Victoria</span>
+            </h1>
+            <div
+              className="profile-avatar profile-avatar-victoria"
+              aria-hidden="true"
+            >
+              <img src="/victoria-profile-medallion-v2.png" alt="" />
+            </div>
+          </div>
           <p className="invitation-message">
             convidamos você para celebrar nosso casamento.
           </p>

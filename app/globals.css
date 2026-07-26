@@ -274,47 +274,34 @@ button {
   letter-spacing: -0.075em;
 }
 
+.invitation-title-lockup {
+  position: relative;
+  width: 100%;
+}
+
 .profile-avatar {
   position: absolute;
   z-index: 3;
-  width: clamp(62px, 8vw, 78px);
+  width: clamp(40px, 5vw, 48px);
   aspect-ratio: 1;
-  overflow: hidden;
   pointer-events: none;
-  background: #eadcc1;
-  border: 2px solid rgba(120, 31, 39, 0.72);
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 3px rgba(183, 138, 73, 0.24),
-    0 9px 18px rgba(67, 42, 30, 0.16);
+  filter: drop-shadow(0 6px 8px rgba(67, 42, 30, 0.18));
 }
 
 .profile-avatar img {
-  position: absolute;
-  left: 50%;
   display: block;
-  width: 165%;
+  width: 100%;
   height: auto;
-  max-width: none;
-  transform: translateX(-50%);
 }
 
 .profile-avatar-djalma {
-  top: 20px;
-  left: 20px;
-}
-
-.profile-avatar-djalma img {
-  top: -13px;
+  top: -8px;
+  left: -18px;
 }
 
 .profile-avatar-victoria {
-  right: 20px;
-  bottom: 20px;
-}
-
-.profile-avatar-victoria img {
-  top: -7px;
+  right: -18px;
+  bottom: -12px;
 }
 
 .invitation-card h1 span:last-child {
@@ -1791,17 +1778,17 @@ button {
   }
 
   .profile-avatar {
-    width: 56px;
+    width: 34px;
   }
 
   .profile-avatar-djalma {
-    top: 14px;
-    left: 14px;
+    top: -4px;
+    left: -25px;
   }
 
   .profile-avatar-victoria {
-    right: 14px;
-    bottom: 14px;
+    right: -25px;
+    bottom: -8px;
   }
 
   .venue-section {
