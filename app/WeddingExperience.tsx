@@ -35,7 +35,7 @@ export function WeddingExperience() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const max = window.innerHeight * 3;
       setProgress(max > 0 ? Math.min(window.scrollY / max, 1) : 0);
     };
 
@@ -75,7 +75,7 @@ export function WeddingExperience() {
             <span>Victoria</span>
           </h1>
           <p className="invitation-message">
-            convidam você e sua família para celebrar o nosso casamento
+            convidamos você para celebrar nosso casamento.
           </p>
           <div className="ornament" aria-hidden="true">
             ✦
@@ -147,6 +147,59 @@ export function WeddingExperience() {
             data-testid="open-invitation"
           />
           <p className="seal-note">Toque no lacre</p>
+        </div>
+      </section>
+
+      <div className="garden-scroll-space snap-section" aria-hidden="true" />
+
+      <section className="venue-section snap-section" aria-labelledby="venue-title">
+        <div className="venue-altar" aria-hidden="true">
+          <span>O lugar do nosso sim</span>
+        </div>
+
+        <div className="venue-content">
+          <div className="venue-grid">
+            <div className="map-frame">
+              <iframe
+                title="Mapa do Villa Garden"
+                src="https://www.google.com/maps?q=R.%20Dr.%20Rodrigo%20Codes%20Sandoval%2C%2076%20-%20Mondubim%2C%20Fortaleza%20-%20CE%2C%2060711-455&output=embed"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
+            </div>
+
+            <div className="venue-details">
+              <p className="venue-eyebrow">Cerimônia & recepção</p>
+              <h2 id="venue-title">Villa Garden</h2>
+              <div className="venue-rule" />
+              <address>
+                R. Dr. Rodrigo Codes Sandoval, 76
+                <br />
+                Mondubim, Fortaleza — CE
+                <br />
+                60711-455
+              </address>
+              <div className="route-actions">
+                <a
+                  className="route-button route-primary"
+                  href="https://www.google.com/maps/dir/?api=1&destination=R.%20Dr.%20Rodrigo%20Codes%20Sandoval%2C%2076%20-%20Mondubim%2C%20Fortaleza%20-%20CE%2C%2060711-455"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Traçar rota <span aria-hidden="true">↗</span>
+                </a>
+                <a
+                  className="route-button route-secondary"
+                  href="https://www.waze.com/ul?q=R.%20Dr.%20Rodrigo%20Codes%20Sandoval%2C%2076%20-%20Mondubim%2C%20Fortaleza%20-%20CE%2C%2060711-455&navigate=yes"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Abrir no Waze
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </main>
