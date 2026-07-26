@@ -7,6 +7,9 @@ const WEDDING_DATE = new Date("2026-10-31T16:20:00-03:00").getTime();
 type ModalName = "rsvp" | "gifts" | "guide" | null;
 type FamilySide = "groom" | "bride" | null;
 
+const WEDDING_ADDRESS =
+  "R. Dr. Rodrigo Codes Sandoval, 76 - Mondubim, Fortaleza - CE, 60711-455";
+
 function getTimeLeft() {
   const distance = Math.max(0, WEDDING_DATE - Date.now());
   return {
@@ -15,6 +18,140 @@ function getTimeLeft() {
     minutes: Math.floor((distance / 60_000) % 60),
     seconds: Math.floor((distance / 1_000) % 60),
   };
+}
+
+async function createPersonalizedInvitationPdf(
+  guestName: string,
+  companions: string[],
+  familySide: Exclude<FamilySide, null>,
+) {
+  const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
+  const templateResponse = await fetch("/invitation-confirmation-template.pdf");
+  if (!templateResponse.ok) {
+    throw new Error("Não foi possível carregar o convite.");
+  }
+
+  const templateBytes = await templateResponse.arrayBuffer();
+  const outputDocument = await PDFDocument.create();
+  const [invitationTemplate, guestListTemplate] =
+    await outputDocument.embedPdf(templateBytes, [0, 1]);
+  const timesBold = await outputDocument.embedFont(StandardFonts.TimesRomanBold);
+  const timesItalic = await outputDocument.embedFont(
+    StandardFonts.TimesRomanItalic,
+  );
+
+  const pageWidth = 595.276;
+  const pageHeight = 841.89;
+  const ink = rgb(67 / 255, 42 / 255, 30 / 255);
+  const muted = rgb(117 / 255, 89 / 255, 70 / 255);
+  const names = [guestName, ...companions]
+    .map((name) => name.trim())
+    .filter(Boolean);
+  const familyLabel =
+    familySide === "groom"
+      ? "Família do noivo - Djalma"
+      : "Família da noiva - Victoria";
+
+  const addTemplatePage = (
+    embeddedPage: typeof invitationTemplate,
+  ) => {
+    const page = outputDocument.addPage([pageWidth, pageHeight]);
+    page.drawPage(embeddedPage, {
+      x: 0,
+      y: 0,
+      width: pageWidth,
+      height: pageHeight,
+    });
+    return page;
+  };
+
+  const drawCentered = (
+    page: ReturnType<typeof addTemplatePage>,
+    text: string,
+    y: number,
+    font: typeof timesBold,
+    maximumSize: number,
+    color = ink,
+    maximumWidth = pageWidth - 210,
+  ) => {
+    let size = maximumSize;
+    while (size > 8 && font.widthOfTextAtSize(text, size) > maximumWidth) {
+      size -= 0.5;
+    }
+    const width = font.widthOfTextAtSize(text, size);
+    page.drawText(text, {
+      x: (pageWidth - width) / 2,
+      y,
+      size,
+      font,
+      color,
+    });
+  };
+
+  const firstPage = addTemplatePage(invitationTemplate);
+  drawCentered(
+    firstPage,
+    familyLabel.toUpperCase(),
+    253,
+    timesItalic,
+    11,
+    muted,
+  );
+  names.slice(0, 5).forEach((name, index) => {
+    drawCentered(firstPage, name, 224 - index * 24, timesBold, 15);
+  });
+
+  let remainingNames = names.slice(5);
+  while (remainingNames.length > 0) {
+    const page = addTemplatePage(guestListTemplate);
+    drawCentered(
+      page,
+      familyLabel.toUpperCase(),
+      548,
+      timesItalic,
+      11,
+      muted,
+    );
+    remainingNames.slice(0, 18).forEach((name, index) => {
+      drawCentered(
+        page,
+        name,
+        516 - index * 22,
+        timesBold,
+        14,
+        ink,
+        pageWidth - 185,
+      );
+    });
+    remainingNames = remainingNames.slice(18);
+  }
+
+  outputDocument.setTitle("Djalma & Victoria - Confirmação de presença");
+  outputDocument.setSubject(
+    `Casamento em 31 de outubro de 2026, às 16h20, no Villa Garden. ${familyLabel}.`,
+  );
+  outputDocument.setAuthor("Djalma & Victoria");
+  outputDocument.setCreator("Convite de casamento Djalma & Victoria");
+
+  const pdfBytes = await outputDocument.save();
+  const blob = new Blob([pdfBytes.slice().buffer as ArrayBuffer], {
+    type: "application/pdf",
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  const safeName =
+    guestName
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .toLowerCase() || "convidado";
+  anchor.href = url;
+  anchor.download = `convite-djalma-victoria-${safeName}.pdf`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export function WeddingExperience() {
@@ -26,8 +163,11 @@ export function WeddingExperience() {
   >("convite");
   const [activeModal, setActiveModal] = useState<ModalName>(null);
   const [familySide, setFamilySide] = useState<FamilySide>(null);
+  const [guestName, setGuestName] = useState("");
   const [companions, setCompanions] = useState<string[]>([]);
-  const [formNotice, setFormNotice] = useState(false);
+  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState("");
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -41,6 +181,33 @@ export function WeddingExperience() {
     updateCountdown();
     const timer = window.setInterval(updateCountdown, 1000);
     return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const savedConfirmation = window.localStorage.getItem(
+      "djalma-victoria-rsvp",
+    );
+    if (!savedConfirmation) return;
+
+    try {
+      const saved = JSON.parse(savedConfirmation) as {
+        guestName?: string;
+        companions?: string[];
+        familySide?: FamilySide;
+      };
+      if (
+        saved.guestName &&
+        Array.isArray(saved.companions) &&
+        (saved.familySide === "groom" || saved.familySide === "bride")
+      ) {
+        setGuestName(saved.guestName);
+        setCompanions(saved.companions);
+        setFamilySide(saved.familySide);
+        setIsConfirmed(true);
+      }
+    } catch {
+      window.localStorage.removeItem("djalma-victoria-rsvp");
+    }
   }, []);
 
   useEffect(() => {
@@ -97,7 +264,7 @@ export function WeddingExperience() {
 
   const chooseFamily = (side: Exclude<FamilySide, null>) => {
     setFamilySide(side);
-    setFormNotice(false);
+    setDownloadError("");
     if (side === "bride") {
       setCompanions((current) => current.slice(0, 1));
     }
@@ -105,7 +272,6 @@ export function WeddingExperience() {
 
   const addCompanion = () => {
     setCompanions((current) => [...current, ""]);
-    setFormNotice(false);
   };
 
   const updateCompanion = (index: number, value: string) => {
@@ -114,19 +280,79 @@ export function WeddingExperience() {
         companionIndex === index ? value : companion,
       ),
     );
-    setFormNotice(false);
   };
 
   const removeCompanion = (index: number) => {
     setCompanions((current) =>
       current.filter((_, companionIndex) => companionIndex !== index),
     );
-    setFormNotice(false);
   };
 
   const closeModal = () => {
     setActiveModal(null);
-    setFormNotice(false);
+    setDownloadError("");
+  };
+
+  const confirmedNames = [guestName, ...companions]
+    .map((name) => name.trim())
+    .filter(Boolean);
+  const confirmedFamily =
+    familySide === "groom"
+      ? "Família do noivo - Djalma"
+      : "Família da noiva - Victoria";
+  const calendarDetails = [
+    "Casamento de Djalma & Victoria.",
+    `Convidados confirmados: ${confirmedNames.join(", ")}.`,
+    confirmedFamily,
+  ].join("\n");
+  const calendarParams = new URLSearchParams({
+    action: "TEMPLATE",
+    text: "Casamento de Djalma & Victoria",
+    dates: "20261031T192000Z/20261101T010000Z",
+    details: calendarDetails,
+    location: WEDDING_ADDRESS,
+    ctz: "America/Fortaleza",
+  });
+  const googleCalendarUrl = `https://calendar.google.com/calendar/render?${calendarParams.toString()}`;
+
+  const submitConfirmation = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!familySide || !guestName.trim()) return;
+
+    const cleanCompanions = companions
+      .map((companion) => companion.trim())
+      .filter(Boolean);
+    setGuestName(guestName.trim());
+    setCompanions(cleanCompanions);
+    setIsConfirmed(true);
+    setDownloadError("");
+    window.localStorage.setItem(
+      "djalma-victoria-rsvp",
+      JSON.stringify({
+        guestName: guestName.trim(),
+        companions: cleanCompanions,
+        familySide,
+      }),
+    );
+  };
+
+  const downloadInvitation = async () => {
+    if (!familySide) return;
+    setIsDownloading(true);
+    setDownloadError("");
+    try {
+      await createPersonalizedInvitationPdf(
+        guestName,
+        companions,
+        familySide,
+      );
+    } catch {
+      setDownloadError(
+        "Não foi possível gerar o convite agora. Tente novamente.",
+      );
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const gardenStyle = {
@@ -439,7 +665,7 @@ export function WeddingExperience() {
               ×
             </button>
 
-            {activeModal === "rsvp" && (
+            {activeModal === "rsvp" && !isConfirmed && (
               <div className="modal-content">
                 <header className="modal-heading">
                   <img
@@ -452,13 +678,7 @@ export function WeddingExperience() {
                   <span aria-hidden="true">✦</span>
                 </header>
 
-                <form
-                  className="rsvp-form"
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    setFormNotice(true);
-                  }}
-                >
+                <form className="rsvp-form" onSubmit={submitConfirmation}>
                   <label className="form-field">
                     <span>Nome completo</span>
                     <input
@@ -466,8 +686,9 @@ export function WeddingExperience() {
                       name="fullName"
                       autoComplete="name"
                       placeholder="Digite seu nome completo"
+                      value={guestName}
                       required
-                      onChange={() => setFormNotice(false)}
+                      onChange={(event) => setGuestName(event.target.value)}
                     />
                   </label>
 
@@ -568,13 +789,82 @@ export function WeddingExperience() {
                   >
                     Enviar confirmação
                   </button>
-                  {formNotice && (
-                    <p className="form-notice" role="status">
-                      Dados conferidos. O envio definitivo será conectado na
-                      próxima etapa.
-                    </p>
-                  )}
                 </form>
+              </div>
+            )}
+
+            {activeModal === "rsvp" && isConfirmed && (
+              <div className="modal-content confirmation-success">
+                <div className="confirmation-mark" aria-hidden="true">
+                  ✓
+                </div>
+                <p className="confirmation-eyebrow">Que alegria ter você conosco</p>
+                <h2 id="rsvp-modal-title">Participação confirmada!</h2>
+                <p className="confirmation-message">
+                  Sua presença tornará este dia ainda mais especial.
+                </p>
+
+                <img
+                  className="couple-caricature"
+                  src="/couple-caricature-painted-v1.png"
+                  alt="Caricatura pintada de Djalma e Victoria entre rosas"
+                />
+
+                <div className="confirmation-summary">
+                  <span>{confirmedFamily}</span>
+                  <strong>{confirmedNames.join(" • ")}</strong>
+                </div>
+
+                <div className="confirmation-actions">
+                  <button
+                    className="confirmation-action confirmation-download"
+                    type="button"
+                    onClick={downloadInvitation}
+                    disabled={isDownloading}
+                  >
+                    <span className="confirmation-action-icon" aria-hidden="true">
+                      ↓
+                    </span>
+                    <span>
+                      <b>
+                        {isDownloading ? "Preparando convite" : "Baixar convite"}
+                      </b>
+                      <small>PDF personalizado</small>
+                    </span>
+                  </button>
+
+                  <a
+                    className="confirmation-action confirmation-calendar"
+                    href={googleCalendarUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <span
+                      className="confirmation-action-icon calendar-icon"
+                      aria-hidden="true"
+                    >
+                      31
+                    </span>
+                    <span>
+                      <b>Criar lembrete</b>
+                      <small>Adicionar ao Google Agenda</small>
+                    </span>
+                  </a>
+                </div>
+
+                {downloadError && (
+                  <p className="download-error" role="alert">
+                    {downloadError}
+                  </p>
+                )}
+
+                <button
+                  className="edit-confirmation"
+                  type="button"
+                  onClick={() => setIsConfirmed(false)}
+                >
+                  Alterar os nomes confirmados
+                </button>
               </div>
             )}
 
