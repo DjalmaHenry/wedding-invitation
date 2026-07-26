@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react";
 
 const WEDDING_DATE = new Date("2026-10-31T16:20:00-03:00").getTime();
 
+type ModalName = "rsvp" | "gifts" | "guide" | null;
+type FamilySide = "groom" | "bride" | null;
+
 function getTimeLeft() {
   const distance = Math.max(0, WEDDING_DATE - Date.now());
   return {
@@ -21,6 +24,10 @@ export function WeddingExperience() {
   const [activeSection, setActiveSection] = useState<
     "convite" | "local" | "mais-detalhes"
   >("convite");
+  const [activeModal, setActiveModal] = useState<ModalName>(null);
+  const [familySide, setFamilySide] = useState<FamilySide>(null);
+  const [companions, setCompanions] = useState<string[]>([]);
+  const [formNotice, setFormNotice] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -60,12 +67,66 @@ export function WeddingExperience() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (!activeModal) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setActiveModal(null);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [activeModal]);
+
   const openInvitation = () => {
     if (hasOpened.current) return;
     hasOpened.current = true;
     window.scrollTo(0, 0);
     setOpening(true);
     window.setTimeout(() => setOpen(true), 1100);
+  };
+
+  const chooseFamily = (side: Exclude<FamilySide, null>) => {
+    setFamilySide(side);
+    setFormNotice(false);
+    if (side === "bride") {
+      setCompanions((current) => current.slice(0, 1));
+    }
+  };
+
+  const addCompanion = () => {
+    setCompanions((current) => [...current, ""]);
+    setFormNotice(false);
+  };
+
+  const updateCompanion = (index: number, value: string) => {
+    setCompanions((current) =>
+      current.map((companion, companionIndex) =>
+        companionIndex === index ? value : companion,
+      ),
+    );
+    setFormNotice(false);
+  };
+
+  const removeCompanion = (index: number) => {
+    setCompanions((current) =>
+      current.filter((_, companionIndex) => companionIndex !== index),
+    );
+    setFormNotice(false);
+  };
+
+  const closeModal = () => {
+    setActiveModal(null);
+    setFormNotice(false);
   };
 
   const gardenStyle = {
@@ -303,8 +364,12 @@ export function WeddingExperience() {
             Reunimos aqui as informações para viver este momento ao nosso lado.
           </p>
 
-          <nav className="invitation-menu" aria-label="Opções do convite">
-            <a className="menu-card" href="/confirmar-presenca">
+          <div className="invitation-menu" aria-label="Opções do convite">
+            <button
+              className="menu-card"
+              type="button"
+              onClick={() => setActiveModal("rsvp")}
+            >
               <img
                 src="/menu-rsvp-painted-v1.png"
                 alt=""
@@ -313,9 +378,13 @@ export function WeddingExperience() {
               <span>Confirmar presença</span>
               <small>Responder ao convite</small>
               <b aria-hidden="true">→</b>
-            </a>
+            </button>
 
-            <a className="menu-card" href="/lista-de-presentes">
+            <button
+              className="menu-card"
+              type="button"
+              onClick={() => setActiveModal("gifts")}
+            >
               <img
                 src="/menu-gift-painted-v1.png"
                 alt=""
@@ -324,9 +393,13 @@ export function WeddingExperience() {
               <span>Lista de presentes</span>
               <small>Escolher um carinho</small>
               <b aria-hidden="true">→</b>
-            </a>
+            </button>
 
-            <a className="menu-card" href="/manual-do-convidado">
+            <button
+              className="menu-card"
+              type="button"
+              onClick={() => setActiveModal("guide")}
+            >
               <img
                 src="/menu-guide-painted-v1.png"
                 alt=""
@@ -335,10 +408,223 @@ export function WeddingExperience() {
               <span>Manual do convidado</span>
               <small>Ver informações úteis</small>
               <b aria-hidden="true">→</b>
-            </a>
-          </nav>
+            </button>
+          </div>
         </div>
       </section>
+
+      {activeModal && (
+        <div
+          className="modal-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeModal();
+          }}
+        >
+          <section
+            className={`wedding-modal wedding-modal-${activeModal}`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`${activeModal}-modal-title`}
+          >
+            <button
+              className="modal-close"
+              type="button"
+              onClick={closeModal}
+              aria-label="Fechar"
+              autoFocus
+            >
+              ×
+            </button>
+
+            {activeModal === "rsvp" && (
+              <div className="modal-content">
+                <header className="modal-heading">
+                  <img
+                    src="/menu-rsvp-painted-v1.png"
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  <p>Esperamos você</p>
+                  <h2 id="rsvp-modal-title">Confirmar presença</h2>
+                  <span aria-hidden="true">✦</span>
+                </header>
+
+                <form
+                  className="rsvp-form"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    setFormNotice(true);
+                  }}
+                >
+                  <label className="form-field">
+                    <span>Nome completo</span>
+                    <input
+                      type="text"
+                      name="fullName"
+                      autoComplete="name"
+                      placeholder="Digite seu nome completo"
+                      required
+                      onChange={() => setFormNotice(false)}
+                    />
+                  </label>
+
+                  <fieldset className="family-fieldset">
+                    <legend>Você é da família de quem?</legend>
+                    <div className="family-options">
+                      <button
+                        className={`family-option${familySide === "groom" ? " is-selected" : ""}`}
+                        type="button"
+                        onClick={() => chooseFamily("groom")}
+                        aria-pressed={familySide === "groom"}
+                      >
+                        <img
+                          src="/family-groom-painted-v1.png"
+                          alt=""
+                          aria-hidden="true"
+                        />
+                        <span>Família do noivo</span>
+                        <small>Djalma</small>
+                      </button>
+                      <button
+                        className={`family-option${familySide === "bride" ? " is-selected" : ""}`}
+                        type="button"
+                        onClick={() => chooseFamily("bride")}
+                        aria-pressed={familySide === "bride"}
+                      >
+                        <img
+                          src="/family-bride-painted-v1.png"
+                          alt=""
+                          aria-hidden="true"
+                        />
+                        <span>Família da noiva</span>
+                        <small>Victoria</small>
+                      </button>
+                    </div>
+                  </fieldset>
+
+                  {familySide && (
+                    <div className="companion-area">
+                      <div className="companion-heading">
+                        <div>
+                          <span>Acompanhantes</span>
+                          <small>
+                            {familySide === "groom"
+                              ? "Adicione quantos acompanhantes precisar."
+                              : "É permitido adicionar um acompanhante."}
+                          </small>
+                        </div>
+                        {(familySide === "groom" ||
+                          companions.length === 0) && (
+                          <button
+                            className="add-companion"
+                            type="button"
+                            onClick={addCompanion}
+                          >
+                            <span aria-hidden="true">+</span>
+                            Adicionar acompanhante
+                          </button>
+                        )}
+                      </div>
+
+                      {companions.map((companion, index) => (
+                        <div className="companion-row" key={index}>
+                          <label className="form-field">
+                            <span>Nome completo do acompanhante</span>
+                            <input
+                              type="text"
+                              value={companion}
+                              placeholder="Digite o nome completo"
+                              required
+                              onChange={(event) =>
+                                updateCompanion(index, event.target.value)
+                              }
+                            />
+                          </label>
+                          <button
+                            className="remove-companion"
+                            type="button"
+                            onClick={() => removeCompanion(index)}
+                            aria-label={`Remover acompanhante ${index + 1}`}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <button
+                    className="modal-primary-action"
+                    type="submit"
+                    disabled={!familySide}
+                    title={
+                      familySide
+                        ? undefined
+                        : "Selecione a família do noivo ou da noiva"
+                    }
+                  >
+                    Enviar confirmação
+                  </button>
+                  {formNotice && (
+                    <p className="form-notice" role="status">
+                      Dados conferidos. O envio definitivo será conectado na
+                      próxima etapa.
+                    </p>
+                  )}
+                </form>
+              </div>
+            )}
+
+            {activeModal === "gifts" && (
+              <div className="modal-content modal-placeholder">
+                <img
+                  src="/menu-gift-painted-v1.png"
+                  alt=""
+                  aria-hidden="true"
+                />
+                <p>Um carinho para nossa nova história</p>
+                <h2 id="gifts-modal-title">Lista de presentes</h2>
+                <span aria-hidden="true">✦</span>
+                <p className="modal-placeholder-copy">
+                  Estamos preparando nossa lista com muito carinho. Em breve,
+                  você poderá escolher seu presente por aqui.
+                </p>
+                <button
+                  className="modal-secondary-action"
+                  type="button"
+                  onClick={closeModal}
+                >
+                  Voltar ao convite
+                </button>
+              </div>
+            )}
+
+            {activeModal === "guide" && (
+              <div className="modal-content modal-placeholder">
+                <img
+                  src="/menu-guide-painted-v1.png"
+                  alt=""
+                  aria-hidden="true"
+                />
+                <p>Para aproveitar cada momento</p>
+                <h2 id="guide-modal-title">Manual do convidado</h2>
+                <span aria-hidden="true">✦</span>
+                <p className="modal-placeholder-copy">
+                  Traje, horários e orientações para o grande dia serão
+                  reunidos aqui em uma próxima etapa.
+                </p>
+                <button
+                  className="modal-secondary-action"
+                  type="button"
+                  onClick={closeModal}
+                >
+                  Voltar ao convite
+                </button>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
     </main>
   );
 }
