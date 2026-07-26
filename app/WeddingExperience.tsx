@@ -215,6 +215,69 @@ export function WeddingExperience() {
           </div>
         </div>
       </section>
+
+      <section className="menu-section snap-section" aria-labelledby="menu-title">
+        <img
+          className="menu-floral menu-floral-top"
+          src="/menu-floral-corner-painted-v1.png"
+          alt=""
+          aria-hidden="true"
+        />
+        <img
+          className="menu-floral menu-floral-bottom"
+          src="/menu-floral-corner-painted-v1.png"
+          alt=""
+          aria-hidden="true"
+        />
+
+        <div className="menu-inner">
+          <p className="menu-eyebrow">Tudo para o grande dia</p>
+          <h2 id="menu-title">Celebre conosco</h2>
+          <div className="menu-ornament" aria-hidden="true">
+            <span />
+            ✦
+            <span />
+          </div>
+          <p className="menu-intro">
+            Reunimos aqui as informações para viver este momento ao nosso lado.
+          </p>
+
+          <nav className="invitation-menu" aria-label="Opções do convite">
+            <a className="menu-card" href="/confirmar-presenca">
+              <img
+                src="/menu-rsvp-painted-v1.png"
+                alt=""
+                aria-hidden="true"
+              />
+              <span>Confirmar presença</span>
+              <small>Responder ao convite</small>
+              <b aria-hidden="true">→</b>
+            </a>
+
+            <a className="menu-card" href="/lista-de-presentes">
+              <img
+                src="/menu-gift-painted-v1.png"
+                alt=""
+                aria-hidden="true"
+              />
+              <span>Lista de presentes</span>
+              <small>Escolher um carinho</small>
+              <b aria-hidden="true">→</b>
+            </a>
+
+            <a className="menu-card" href="/manual-do-convidado">
+              <img
+                src="/menu-guide-painted-v1.png"
+                alt=""
+                aria-hidden="true"
+              />
+              <span>Manual do convidado</span>
+              <small>Ver informações úteis</small>
+              <b aria-hidden="true">→</b>
+            </a>
+          </nav>
+        </div>
+      </section>
     </main>
   );
 }
