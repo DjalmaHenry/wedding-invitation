@@ -2,11 +2,36 @@
 
 import { useEffect, useRef, useState } from "react";
 
+const WEDDING_DATE = new Date("2026-10-31T16:20:00-03:00").getTime();
+
+function getTimeLeft() {
+  const distance = Math.max(0, WEDDING_DATE - Date.now());
+  return {
+    days: Math.floor(distance / 86_400_000),
+    hours: Math.floor((distance / 3_600_000) % 24),
+    minutes: Math.floor((distance / 60_000) % 60),
+    seconds: Math.floor((distance / 1_000) % 60),
+  };
+}
+
 export function WeddingExperience() {
   const [opening, setOpening] = useState(false);
   const [open, setOpen] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
   const hasOpened = useRef(false);
+
+  useEffect(() => {
+    const updateCountdown = () => setTimeLeft(getTimeLeft());
+    updateCountdown();
+    const timer = window.setInterval(updateCountdown, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,12 +47,13 @@ export function WeddingExperience() {
   const openInvitation = () => {
     if (hasOpened.current) return;
     hasOpened.current = true;
+    window.scrollTo(0, 0);
     setOpening(true);
-    window.setTimeout(() => setOpen(true), 900);
+    window.setTimeout(() => setOpen(true), 1750);
   };
 
   const gardenStyle = {
-    transform: `scale(${1.04 + progress * 0.34}) translateY(${progress * 3.5}%)`,
+    transform: `scale(${(opening ? 1.04 : 1.24) + progress * 0.34}) translateY(${progress * 3.5}%)`,
   };
 
   return (
@@ -67,7 +93,24 @@ export function WeddingExperience() {
               <small>horas</small>
             </div>
           </div>
-          <p className="venue">Villa Garden</p>
+          <div
+            className="countdown"
+            aria-label={`${timeLeft.days} dias, ${timeLeft.hours} horas, ${timeLeft.minutes} minutos e ${timeLeft.seconds} segundos para o casamento`}
+          >
+            {(
+              [
+                ["dias", timeLeft.days],
+                ["horas", timeLeft.hours],
+                ["min", timeLeft.minutes],
+                ["seg", timeLeft.seconds],
+              ] as const
+            ).map(([label, value]) => (
+              <div className="countdown-unit" key={label}>
+                <strong>{String(value).padStart(2, "0")}</strong>
+                <small>{label}</small>
+              </div>
+            ))}
+          </div>
           <p className="year">2026</p>
         </article>
 
@@ -81,8 +124,10 @@ export function WeddingExperience() {
       </section>
 
       <section className="painted-envelope" aria-label="Carta de casamento">
-        <div className="envelope-art" />
+        <div className="envelope-panel envelope-panel-top" />
+        <div className="envelope-panel envelope-panel-bottom" />
         <div className="canvas-grain" />
+        <div className="opening-beam" />
         <div className="opening-light" />
         <button
           type="button"
