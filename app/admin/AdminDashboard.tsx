@@ -144,7 +144,7 @@ export function AdminDashboard() {
       const pageWidth = 595.276;
       const pageHeight = 841.89;
       const ink = rgb(67 / 255, 42 / 255, 30 / 255);
-      const wine = rgb(120 / 255, 31 / 255, 39 / 255);
+      const olive = rgb(95 / 255, 109 / 255, 63 / 255);
       const muted = rgb(117 / 255, 89 / 255, 70 / 255);
       const divider = rgb(196 / 255, 175 / 255, 143 / 255);
       const maximumRowsPerPage = 21;
@@ -219,7 +219,7 @@ export function AdminDashboard() {
             y,
             size: 8,
             font: bold,
-            color: wine,
+            color: olive,
           });
           page.drawLine({
             start: { x: 72, y: y - 8 },

@@ -495,7 +495,7 @@ export function WeddingExperience() {
         <div className="envelope-asset-stage">
           <img
             className="envelope-object"
-            src="/envelope-cutout-v2.webp"
+            src="/envelope-cutout-olive-v1.png"
             alt=""
           />
           <button
