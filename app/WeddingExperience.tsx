@@ -26,7 +26,10 @@ async function createPersonalizedInvitationPdf(
   familySide: Exclude<FamilySide, null>,
 ) {
   const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
-  const templateResponse = await fetch("/invitation-confirmation-template.pdf");
+  const templateResponse = await fetch(
+    "/invitation-confirmation-template.pdf?v=20260726-3",
+    { cache: "no-store" },
+  );
   if (!templateResponse.ok) {
     throw new Error("Não foi possível carregar o convite.");
   }
@@ -111,7 +114,7 @@ async function createPersonalizedInvitationPdf(
       const width = timesItalic.widthOfTextAtSize(line, 14);
       page.drawText(line, {
         x: centerX - width / 2,
-        y: 360 - index * 21,
+        y: 382 - index * 21,
         size: 14,
         font: timesItalic,
         color: ink,

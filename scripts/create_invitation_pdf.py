@@ -213,7 +213,7 @@ def draw_personalization(pdf, family, names):
     line_height = 21
     paragraphs = letter_paragraphs(family, names)
     first_page_lines = build_letter_lines(paragraphs, font, size, 450)
-    draw_letter_lines(pdf, first_page_lines[:13], 305, 360, font, size, line_height)
+    draw_letter_lines(pdf, first_page_lines[:13], 305, 382, font, size, line_height)
 
     remaining = first_page_lines[13:]
     while remaining:
@@ -224,7 +224,7 @@ def draw_personalization(pdf, family, names):
             pdf,
             page_lines,
             PAGE_WIDTH / 2,
-            360,
+            382,
             font,
             size,
             line_height,
