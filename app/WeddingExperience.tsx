@@ -33,17 +33,15 @@ async function createPersonalizedInvitationPdf(
 
   const templateBytes = await templateResponse.arrayBuffer();
   const outputDocument = await PDFDocument.create();
-  const [invitationTemplate, guestListTemplate] =
+  const [invitationTemplate, continuationTemplate] =
     await outputDocument.embedPdf(templateBytes, [0, 1]);
-  const timesBold = await outputDocument.embedFont(StandardFonts.TimesRomanBold);
   const timesItalic = await outputDocument.embedFont(
     StandardFonts.TimesRomanItalic,
   );
 
-  const pageWidth = 595.276;
-  const pageHeight = 841.89;
+  const pageWidth = 841.89;
+  const pageHeight = 595.276;
   const ink = rgb(67 / 255, 42 / 255, 30 / 255);
-  const muted = rgb(117 / 255, 89 / 255, 70 / 255);
   const names = [guestName, ...companions]
     .map((name) => name.trim())
     .filter(Boolean);
@@ -51,6 +49,22 @@ async function createPersonalizedInvitationPdf(
     familySide === "groom"
       ? "Família do noivo - Djalma"
       : "Família da noiva - Victoria";
+  const familyReference =
+    familySide === "groom"
+      ? "família do noivo, Djalma"
+      : "família da noiva, Victoria";
+  const formattedNames =
+    names.length === 1
+      ? names[0]
+      : names.length === 2
+        ? `${names[0]} e ${names[1]}`
+        : `${names.slice(0, -1).join(", ")} e ${names.at(-1)}`;
+  const paragraphs = [
+    "Queridos convidados,",
+    `Com muita alegria, confirmamos a presença de ${formattedNames} em nosso casamento. É uma honra saber que viveremos este momento ao lado de pessoas tão especiais da ${familyReference}.`,
+    `Nosso encontro será no sábado, 31 de outubro de 2026, às 16h20, no Villa Garden, localizado na ${WEDDING_ADDRESS}.`,
+    "Guardem esta carta como uma pequena lembrança do convite para celebrarmos juntos o início de nossa nova história.",
+  ];
 
   const addTemplatePage = (
     embeddedPage: typeof invitationTemplate,
@@ -65,77 +79,58 @@ async function createPersonalizedInvitationPdf(
     return page;
   };
 
-  const drawCentered = (
-    page: ReturnType<typeof addTemplatePage>,
-    text: string,
-    y: number,
-    font: typeof timesBold,
-    maximumSize: number,
-    color = ink,
-    maximumWidth = pageWidth - 210,
-    centerX = pageWidth / 2,
-  ) => {
-    let size = maximumSize;
-    while (size > 8 && font.widthOfTextAtSize(text, size) > maximumWidth) {
-      size -= 0.5;
+  const wrapParagraph = (text: string, maximumWidth: number) => {
+    const lines: string[] = [];
+    let currentLine = "";
+    text.split(/\s+/).forEach((word) => {
+      const candidate = `${currentLine} ${word}`.trim();
+      if (
+        !currentLine ||
+        timesItalic.widthOfTextAtSize(candidate, 14) <= maximumWidth
+      ) {
+        currentLine = candidate;
+      } else {
+        lines.push(currentLine);
+        currentLine = word;
+      }
+    });
+    if (currentLine) {
+      lines.push(currentLine);
     }
-    const width = font.widthOfTextAtSize(text, size);
-    page.drawText(text, {
-      x: centerX - width / 2,
-      y,
-      size,
-      font,
-      color,
+    return lines;
+  };
+
+  const letterLines = paragraphs.flatMap((paragraph, index) => [
+    ...wrapParagraph(paragraph, 450),
+    ...(index < paragraphs.length - 1 ? [""] : []),
+  ]);
+
+  const drawLetterLines = (
+    page: ReturnType<typeof addTemplatePage>,
+    lines: string[],
+    centerX: number,
+  ) => {
+    lines.forEach((line, index) => {
+      if (!line) return;
+      const width = timesItalic.widthOfTextAtSize(line, 14);
+      page.drawText(line, {
+        x: centerX - width / 2,
+        y: 360 - index * 21,
+        size: 14,
+        font: timesItalic,
+        color: ink,
+      });
     });
   };
 
   const firstPage = addTemplatePage(invitationTemplate);
-  drawCentered(
-    firstPage,
-    familyLabel.toUpperCase(),
-    253,
-    timesItalic,
-    11,
-    muted,
-    232,
-    195,
-  );
-  names.slice(0, 5).forEach((name, index) => {
-    drawCentered(
-      firstPage,
-      name,
-      484 - index * 45,
-      timesBold,
-      15,
-      ink,
-      232,
-      195,
-    );
-  });
+  drawLetterLines(firstPage, letterLines.slice(0, 13), 305);
 
-  let remainingNames = names.slice(5);
-  while (remainingNames.length > 0) {
-    const page = addTemplatePage(guestListTemplate);
-    drawCentered(
-      page,
-      familyLabel.toUpperCase(),
-      548,
-      timesItalic,
-      11,
-      muted,
-    );
-    remainingNames.slice(0, 18).forEach((name, index) => {
-      drawCentered(
-        page,
-        name,
-        516 - index * 22,
-        timesBold,
-        14,
-        ink,
-        pageWidth - 185,
-      );
-    });
-    remainingNames = remainingNames.slice(18);
+  let remainingLines = letterLines.slice(13);
+  while (remainingLines.length > 0) {
+    const page = addTemplatePage(continuationTemplate);
+    drawLetterLines(page, remainingLines.slice(0, 13), pageWidth / 2);
+    remainingLines = remainingLines.slice(13);
   }
 
   outputDocument.setTitle("Djalma & Victoria - Confirmação de presença");
@@ -822,7 +817,7 @@ export function WeddingExperience() {
             {activeModal === "rsvp" && isConfirmed && (
               <div className="modal-content confirmation-success">
                 <div className="confirmation-layout">
-                  <div className="confirmation-copy">
+                  <div className="confirmation-intro">
                     <div className="confirmation-mark" aria-hidden="true">
                       ✓
                     </div>
@@ -833,7 +828,9 @@ export function WeddingExperience() {
                     <p className="confirmation-message">
                       Sua presença tornará este dia ainda mais especial.
                     </p>
+                  </div>
 
+                  <div className="confirmation-details">
                     <div className="confirmation-summary">
                       <span>{confirmedFamily}</span>
                       <strong>{confirmedNames.join(" • ")}</strong>
