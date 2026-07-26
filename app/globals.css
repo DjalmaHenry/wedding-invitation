@@ -279,6 +279,16 @@ button {
   width: 100%;
 }
 
+.title-ampersand {
+  position: relative;
+  display: grid;
+  width: clamp(108px, 20vw, 144px);
+  height: 0.32em;
+  margin: 0.1em 0 0.05em;
+  place-items: center;
+  justify-self: center;
+}
+
 .profile-avatar {
   position: absolute;
   z-index: 3;
@@ -295,23 +305,24 @@ button {
 }
 
 .profile-avatar-djalma {
-  top: -8px;
-  left: 28px;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
 }
 
 .profile-avatar-victoria {
-  right: 22px;
-  bottom: -12px;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
 }
 
-.invitation-card h1 span:last-child {
+.invitation-card h1 > span:last-child {
   margin-top: 0.14em;
 }
 
 .invitation-card h1 i {
   z-index: 1;
-  height: 0.2em;
-  margin: 0.1em 0 0.05em;
+  margin: 0;
   color: var(--wine);
   font-family: "Cormorant Garamond Variable", Georgia, serif;
   font-size: 0.72em;
@@ -1792,14 +1803,8 @@ button {
     width: 34px;
   }
 
-  .profile-avatar-djalma {
-    top: -4px;
-    left: 12px;
-  }
-
-  .profile-avatar-victoria {
-    right: 8px;
-    bottom: -8px;
+  .title-ampersand {
+    width: 104px;
   }
 
   .venue-section {

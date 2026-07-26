@@ -380,23 +380,25 @@ export function WeddingExperience() {
         >
           <p className="intro">Junto com nossas famílias</p>
           <div className="invitation-title-lockup">
-            <div
-              className="profile-avatar profile-avatar-djalma"
-              aria-hidden="true"
-            >
-              <img src="/djalma-profile-medallion-v2.png" alt="" />
-            </div>
             <h1>
               <span>Djalma</span>
-              <i>&</i>
+              <span className="title-ampersand">
+                <span
+                  className="profile-avatar profile-avatar-djalma"
+                  aria-hidden="true"
+                >
+                  <img src="/djalma-profile-medallion-v2.png" alt="" />
+                </span>
+                <i>&</i>
+                <span
+                  className="profile-avatar profile-avatar-victoria"
+                  aria-hidden="true"
+                >
+                  <img src="/victoria-profile-medallion-v2.png" alt="" />
+                </span>
+              </span>
               <span>Victoria</span>
             </h1>
-            <div
-              className="profile-avatar profile-avatar-victoria"
-              aria-hidden="true"
-            >
-              <img src="/victoria-profile-medallion-v2.png" alt="" />
-            </div>
           </div>
           <p className="invitation-message">
             convidamos você para celebrar nosso casamento.
