@@ -377,7 +377,6 @@ export function WeddingExperience() {
           className={`invitation-card${progress > 0.48 ? " is-fading" : ""}`}
           aria-label="Convite de casamento de Djalma e Victoria"
         >
-          <p className="intro">Junto com nossas famílias</p>
           <div className="invitation-title-lockup">
             <h1>
               <span>Djalma</span>
@@ -400,7 +399,7 @@ export function WeddingExperience() {
             </h1>
           </div>
           <p className="invitation-message">
-            convidamos você para celebrar nosso casamento.
+            convidam você para celebrar nosso casamento.
           </p>
           <div className="ornament" aria-hidden="true">
             ✦

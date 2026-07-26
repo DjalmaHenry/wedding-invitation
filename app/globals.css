@@ -252,15 +252,6 @@ button {
   transition-duration: 0.65s;
 }
 
-.intro {
-  margin: 0 0 14px;
-  color: #664f3e;
-  font-size: clamp(0.72rem, 1.4vw, 0.82rem);
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-}
-
 .invitation-card h1 {
   position: relative;
   z-index: 2;
