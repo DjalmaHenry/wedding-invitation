@@ -162,9 +162,10 @@ button {
   height: 0.2em;
   margin: 0.1em 0 0.05em;
   color: var(--wine);
-  font-family: "Italiana", "Bodoni Moda Variable", serif;
+  font-family: "Cormorant Garamond Variable", Georgia, serif;
   font-size: 0.72em;
-  font-weight: 400;
+  font-style: italic;
+  font-weight: 500;
   line-height: 0.25;
 }
 

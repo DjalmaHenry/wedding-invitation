@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "@fontsource-variable/bodoni-moda";
 import "@fontsource-variable/cormorant-garamond";
-import "@fontsource/italiana";
 import "./globals.css";
 
 export const metadata: Metadata = {
