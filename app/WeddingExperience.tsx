@@ -124,23 +124,30 @@ export function WeddingExperience() {
       </section>
 
       <section className="painted-envelope" aria-label="Carta de casamento">
-        <div className="envelope-panel envelope-panel-top" />
-        <div className="envelope-panel envelope-panel-bottom" />
+        <div className="envelope-background" />
         <div className="canvas-grain" />
         <div className="opening-beam" />
         <div className="opening-light" />
-        <button
-          type="button"
-          className="painted-seal"
-          onClick={openInvitation}
-          aria-label="Abrir convite de Djalma e Victoria"
-          data-testid="open-invitation"
-        >
-          <span>D</span>
-          <i>&</i>
-          <span>V</span>
-        </button>
-        <p className="seal-note">Toque no lacre</p>
+        <div className="envelope-asset-stage">
+          <img
+            className="envelope-object envelope-object-top"
+            src="/envelope-cutout-v2.webp"
+            alt=""
+          />
+          <img
+            className="envelope-object envelope-object-bottom"
+            src="/envelope-cutout-v2.webp"
+            alt=""
+          />
+          <button
+            type="button"
+            className="painted-seal"
+            onClick={openInvitation}
+            aria-label="Abrir convite de Djalma e Victoria"
+            data-testid="open-invitation"
+          />
+          <p className="seal-note">Toque no lacre</p>
+        </div>
       </section>
     </main>
   );
