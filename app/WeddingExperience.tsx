@@ -176,7 +176,10 @@ export function WeddingExperience() {
   const [familySide, setFamilySide] = useState<FamilySide>(null);
   const [guestName, setGuestName] = useState("");
   const [companions, setCompanions] = useState<string[]>([]);
+  const [submissionId, setSubmissionId] = useState("");
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmationError, setConfirmationError] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState("");
   const [timeLeft, setTimeLeft] = useState({
@@ -205,16 +208,20 @@ export function WeddingExperience() {
         guestName?: string;
         companions?: string[];
         familySide?: FamilySide;
+        submissionId?: string;
       };
       if (
         saved.guestName &&
         Array.isArray(saved.companions) &&
         (saved.familySide === "groom" || saved.familySide === "bride")
       ) {
+        // Restores an explicitly device-local confirmation receipt.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setGuestName(saved.guestName);
         setCompanions(saved.companions);
         setFamilySide(saved.familySide);
-        setIsConfirmed(true);
+        setSubmissionId(saved.submissionId ?? "");
+        setIsConfirmed(Boolean(saved.submissionId));
       }
     } catch {
       window.localStorage.removeItem("djalma-victoria-rsvp");
@@ -276,6 +283,7 @@ export function WeddingExperience() {
   const chooseFamily = (side: Exclude<FamilySide, null>) => {
     setFamilySide(side);
     setDownloadError("");
+    setConfirmationError("");
     if (side === "bride") {
       setCompanions((current) => current.slice(0, 1));
     }
@@ -302,6 +310,7 @@ export function WeddingExperience() {
   const closeModal = () => {
     setActiveModal(null);
     setDownloadError("");
+    setConfirmationError("");
   };
 
   const confirmedNames = [guestName, ...companions]
@@ -326,25 +335,53 @@ export function WeddingExperience() {
   });
   const googleCalendarUrl = `https://calendar.google.com/calendar/render?${calendarParams.toString()}`;
 
-  const submitConfirmation = (event: React.FormEvent<HTMLFormElement>) => {
+  const submitConfirmation = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
     event.preventDefault();
     if (!familySide || !guestName.trim()) return;
 
     const cleanCompanions = companions
       .map((companion) => companion.trim())
       .filter(Boolean);
-    setGuestName(guestName.trim());
-    setCompanions(cleanCompanions);
-    setIsConfirmed(true);
-    setDownloadError("");
-    window.localStorage.setItem(
-      "djalma-victoria-rsvp",
-      JSON.stringify({
-        guestName: guestName.trim(),
-        companions: cleanCompanions,
-        familySide,
-      }),
-    );
+    const cleanGuestName = guestName.trim();
+    const currentSubmissionId = submissionId || crypto.randomUUID();
+    setIsSubmitting(true);
+    setConfirmationError("");
+
+    try {
+      const response = await fetch("/api/rsvp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          submissionId: currentSubmissionId,
+          names: [cleanGuestName, ...cleanCompanions],
+          category: familySide === "groom" ? "noivo" : "noiva",
+        }),
+      });
+      if (!response.ok) throw new Error();
+
+      setGuestName(cleanGuestName);
+      setCompanions(cleanCompanions);
+      setSubmissionId(currentSubmissionId);
+      setIsConfirmed(true);
+      setDownloadError("");
+      window.localStorage.setItem(
+        "djalma-victoria-rsvp",
+        JSON.stringify({
+          guestName: cleanGuestName,
+          companions: cleanCompanions,
+          familySide,
+          submissionId: currentSubmissionId,
+        }),
+      );
+    } catch {
+      setConfirmationError(
+        "Não foi possível salvar sua confirmação agora. Tente novamente.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const downloadInvitation = async () => {
@@ -806,15 +843,22 @@ export function WeddingExperience() {
                   <button
                     className="modal-primary-action"
                     type="submit"
-                    disabled={!familySide}
+                    disabled={!familySide || isSubmitting}
                     title={
                       familySide
                         ? undefined
                         : "Selecione a família do noivo ou da noiva"
                     }
                   >
-                    Enviar confirmação
+                    {isSubmitting
+                      ? "Salvando confirmação..."
+                      : "Enviar confirmação"}
                   </button>
+                  {confirmationError && (
+                    <p className="confirmation-form-error" role="alert">
+                      {confirmationError}
+                    </p>
+                  )}
                 </form>
               </div>
             )}
