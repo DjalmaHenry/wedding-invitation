@@ -1101,6 +1101,10 @@ button {
   letter-spacing: -0.06em;
 }
 
+.wedding-modal-rsvp .modal-heading h2 {
+  font-size: clamp(2.35rem, 4.8vw, 4.3rem);
+}
+
 .modal-heading > span,
 .modal-placeholder > span {
   margin-top: 15px;
@@ -1712,6 +1716,10 @@ button {
   .modal-heading h2,
   .modal-placeholder h2 {
     font-size: clamp(2.6rem, 13vw, 4rem);
+  }
+
+  .wedding-modal-rsvp .modal-heading h2 {
+    font-size: clamp(2.15rem, 10vw, 3.2rem);
   }
 
   .rsvp-form {
