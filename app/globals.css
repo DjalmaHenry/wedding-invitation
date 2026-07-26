@@ -57,7 +57,7 @@ button {
 }
 
 .garden-art {
-  background-image: url("/garden-painted.webp");
+  background-image: url("/garden-painted-v2.webp");
   transition: transform 2s cubic-bezier(0.16, 0.8, 0.2, 1);
 }
 
