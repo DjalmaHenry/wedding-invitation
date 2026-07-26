@@ -122,7 +122,7 @@ def draw_first_page_base(pdf):
     content_center = 305
     draw_header(pdf, content_center)
     pdf.setFillColor(Color(0.98, 0.95, 0.88, alpha=0.48))
-    pdf.roundRect(56, 86, 504, 300, 7, fill=1, stroke=0)
+    pdf.roundRect(56, 108, 504, 300, 7, fill=1, stroke=0)
     pdf.setStrokeColor(Color(0.72, 0.54, 0.29, alpha=0.35))
     pdf.setLineWidth(0.6)
     pdf.line(590, 82, 590, 470)
@@ -144,7 +144,7 @@ def draw_continuation_page_base(pdf):
     center_x = PAGE_WIDTH / 2
     draw_header(pdf, center_x)
     pdf.setFillColor(Color(0.98, 0.95, 0.88, alpha=0.46))
-    pdf.roundRect(76, 86, PAGE_WIDTH - 152, 300, 7, fill=1, stroke=0)
+    pdf.roundRect(76, 108, PAGE_WIDTH - 152, 300, 7, fill=1, stroke=0)
     draw_signature(pdf, center_x)
 
 

@@ -27,7 +27,7 @@ async function createPersonalizedInvitationPdf(
 ) {
   const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
   const templateResponse = await fetch(
-    "/invitation-confirmation-template.pdf?v=20260726-3",
+    "/invitation-confirmation-template.pdf?v=20260726-4",
     { cache: "no-store" },
   );
   if (!templateResponse.ok) {
