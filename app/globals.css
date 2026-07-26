@@ -1534,7 +1534,7 @@ button {
   }
 
   .venue-content {
-    padding: 14px;
+    padding: 8px 14px max(68px, calc(env(safe-area-inset-bottom) + 58px));
   }
 
   .venue-content::before {
