@@ -49,10 +49,6 @@ async function createPersonalizedInvitationPdf(
     familySide === "groom"
       ? "Família do noivo - Djalma"
       : "Família da noiva - Victoria";
-  const familyReference =
-    familySide === "groom"
-      ? "família do noivo, Djalma"
-      : "família da noiva, Victoria";
   const formattedNames =
     names.length === 1
       ? names[0]
@@ -61,9 +57,9 @@ async function createPersonalizedInvitationPdf(
         : `${names.slice(0, -1).join(", ")} e ${names.at(-1)}`;
   const paragraphs = [
     "Queridos convidados,",
-    `Com muita alegria, confirmamos a presença de ${formattedNames} em nosso casamento. É uma honra saber que viveremos este momento ao lado de pessoas tão especiais da ${familyReference}.`,
+    `Com muita alegria, confirmamos a presença de ${formattedNames} em nosso casamento.`,
     `Nosso encontro será no sábado, 31 de outubro de 2026, às 16h20, no Villa Garden, localizado na ${WEDDING_ADDRESS}.`,
-    "Guardem esta carta como uma pequena lembrança do convite para celebrarmos juntos o início de nossa nova história.",
+    "Esperamos vocês para fazer parte dessa história nesse dia tão especial.",
   ];
 
   const addTemplatePage = (

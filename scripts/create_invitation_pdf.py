@@ -86,41 +86,14 @@ def draw_header(pdf, center_x):
         pdf,
         "CARTA DE CONFIRMAÇÃO",
         center_x,
-        PAGE_HEIGHT - 68,
+        PAGE_HEIGHT - 92,
         "Times-Italic",
-        9,
+        14,
         WINE,
-    )
-    draw_centered_at(
-        pdf,
-        "Djalma & Victoria",
-        center_x,
-        PAGE_HEIGHT - 111,
-        "Times-Bold",
-        30,
-        INK,
-    )
-    draw_centered_at(
-        pdf,
-        "convidamos você para celebrar nosso casamento",
-        center_x,
-        PAGE_HEIGHT - 138,
-        "Times-Italic",
-        12,
-        MUTED,
     )
     pdf.setStrokeColor(GOLD)
     pdf.setLineWidth(0.6)
-    pdf.line(center_x - 150, PAGE_HEIGHT - 157, center_x + 150, PAGE_HEIGHT - 157)
-    draw_centered_at(
-        pdf,
-        "sábado, 31 de outubro de 2026, às 16h20",
-        center_x,
-        PAGE_HEIGHT - 179,
-        "Times-Italic",
-        11,
-        WINE,
-    )
+    pdf.line(center_x - 118, PAGE_HEIGHT - 111, center_x + 118, PAGE_HEIGHT - 111)
 
 
 def draw_signature(pdf, center_x):
@@ -184,28 +157,19 @@ def format_names(names):
 
 
 def letter_paragraphs(family, names):
-    family_reference = (
-        "família do noivo, Djalma"
-        if "noivo" in family.lower()
-        else "família da noiva, Victoria"
-    )
     guest_names = format_names(names)
     return [
         "Queridos convidados,",
         (
             f"Com muita alegria, confirmamos a presença de {guest_names} em "
-            "nosso casamento. É uma honra saber que viveremos este momento ao "
-            f"lado de pessoas tão especiais da {family_reference}."
+            "nosso casamento."
         ),
         (
             "Nosso encontro será no sábado, 31 de outubro de 2026, às 16h20, "
             "no Villa Garden, localizado na R. Dr. Rodrigo Codes Sandoval, 76, "
             "Mondubim, Fortaleza - CE."
         ),
-        (
-            "Guardem esta carta como uma pequena lembrança do convite para "
-            "celebrarmos juntos o início de nossa nova história."
-        ),
+        "Esperamos vocês para fazer parte dessa história nesse dia tão especial.",
     ]
 
 
