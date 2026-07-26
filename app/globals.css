@@ -42,7 +42,7 @@ button {
 .garden-scroll-space {
   position: relative;
   z-index: 0;
-  height: 360vh;
+  height: 165svh;
   pointer-events: none;
 }
 
@@ -473,7 +473,7 @@ button {
   min-height: 100svh;
   grid-template-rows: 48svh 52svh;
   overflow: hidden;
-  background: #e7d8bb;
+  background: transparent;
   box-shadow: 0 -24px 80px rgba(28, 20, 10, 0.3);
 }
 
@@ -482,9 +482,7 @@ button {
   display: grid;
   place-items: end center;
   overflow: hidden;
-  background:
-    linear-gradient(180deg, rgba(21, 20, 10, 0.05), rgba(28, 20, 9, 0.38)),
-    url("/garden-painted-v2.webp") center 31% / cover no-repeat;
+  background: linear-gradient(180deg, transparent 52%, rgba(28, 20, 9, 0.38));
 }
 
 .venue-altar::after {
@@ -646,7 +644,7 @@ button {
 
 @media (max-width: 640px) {
   .garden-scroll-space {
-    height: 340vh;
+    height: 155svh;
   }
 
   .garden-art,
@@ -677,10 +675,6 @@ button {
 
   .venue-section {
     grid-template-rows: 34svh 66svh;
-  }
-
-  .venue-altar {
-    background-position: center 29%;
   }
 
   .venue-altar span {

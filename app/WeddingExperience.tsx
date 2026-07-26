@@ -35,7 +35,7 @@ export function WeddingExperience() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const max = window.innerHeight * 3;
+      const max = window.innerHeight * 1.55;
       setProgress(max > 0 ? Math.min(window.scrollY / max, 1) : 0);
     };
 
@@ -65,7 +65,7 @@ export function WeddingExperience() {
         <div className="garden-wash" />
 
         <article
-          className={`invitation-card${progress > 0.1 ? " is-fading" : ""}`}
+          className={`invitation-card${progress > 0.48 ? " is-fading" : ""}`}
           aria-label="Convite de casamento de Djalma e Victoria"
         >
           <p className="intro">Junto com nossas famílias</p>
