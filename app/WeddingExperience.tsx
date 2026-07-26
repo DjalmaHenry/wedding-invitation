@@ -49,7 +49,7 @@ export function WeddingExperience() {
     hasOpened.current = true;
     window.scrollTo(0, 0);
     setOpening(true);
-    window.setTimeout(() => setOpen(true), 650);
+    window.setTimeout(() => setOpen(true), 1100);
   };
 
   const gardenStyle = {

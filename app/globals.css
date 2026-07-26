@@ -343,7 +343,9 @@ button {
   z-index: 0;
   background: #e4d4b5 url("/envelope-floral-background-v2.webp") center / cover no-repeat;
   transform: scale(1.02);
-  transition: transform 0.65s cubic-bezier(0.16, 0.76, 0.16, 1), filter 0.55s ease;
+  transition:
+    transform 1.1s cubic-bezier(0.22, 0.78, 0.16, 1),
+    filter 0.9s ease;
 }
 
 .envelope-asset-stage {
@@ -364,7 +366,9 @@ button {
   object-fit: contain;
   backface-visibility: hidden;
   transform-origin: 50% 54.2%;
-  transition: transform 0.65s cubic-bezier(0.16, 0.78, 0.12, 1), filter 0.5s ease;
+  transition:
+    transform 1.1s cubic-bezier(0.22, 0.78, 0.16, 1),
+    filter 0.9s ease;
   will-change: transform;
 }
 
