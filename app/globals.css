@@ -274,35 +274,47 @@ button {
   letter-spacing: -0.075em;
 }
 
-.illustrated-title {
-  position: relative;
-  width: 100%;
-}
-
-.title-caricature {
+.profile-avatar {
   position: absolute;
-  z-index: 1;
-  width: clamp(78px, 13vw, 112px);
-  height: clamp(118px, 19vw, 164px);
+  z-index: 3;
+  width: clamp(62px, 8vw, 78px);
+  aspect-ratio: 1;
   overflow: hidden;
   pointer-events: none;
-  filter: drop-shadow(0 8px 8px rgba(67, 42, 30, 0.13));
+  background: #eadcc1;
+  border: 2px solid rgba(120, 31, 39, 0.72);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 3px rgba(183, 138, 73, 0.24),
+    0 9px 18px rgba(67, 42, 30, 0.16);
 }
 
-.title-caricature img {
+.profile-avatar img {
+  position: absolute;
+  left: 50%;
   display: block;
-  width: 100%;
+  width: 165%;
   height: auto;
+  max-width: none;
+  transform: translateX(-50%);
 }
 
-.title-caricature-djalma {
-  top: -18px;
-  left: clamp(-66px, -8vw, -36px);
+.profile-avatar-djalma {
+  top: 20px;
+  left: 20px;
 }
 
-.title-caricature-victoria {
-  right: clamp(-66px, -8vw, -36px);
-  bottom: -24px;
+.profile-avatar-djalma img {
+  top: -13px;
+}
+
+.profile-avatar-victoria {
+  right: 20px;
+  bottom: 20px;
+}
+
+.profile-avatar-victoria img {
+  top: -7px;
 }
 
 .invitation-card h1 span:last-child {
@@ -1762,19 +1774,18 @@ button {
     font-size: clamp(3rem, 15vw, 4.6rem);
   }
 
-  .title-caricature {
-    width: clamp(66px, 21vw, 82px);
-    height: clamp(100px, 30vw, 126px);
+  .profile-avatar {
+    width: 56px;
   }
 
-  .title-caricature-djalma {
-    top: -10px;
-    left: -30px;
+  .profile-avatar-djalma {
+    top: 14px;
+    left: 14px;
   }
 
-  .title-caricature-victoria {
-    right: -30px;
-    bottom: -18px;
+  .profile-avatar-victoria {
+    right: 14px;
+    bottom: 14px;
   }
 
   .venue-section {
