@@ -27,7 +27,7 @@ async function createPersonalizedInvitationPdf(
 ) {
   const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
   const templateResponse = await fetch(
-    "/invitation-confirmation-template.pdf?v=20260726-4",
+    "/invitation-confirmation-template.pdf?v=20260726-5",
     { cache: "no-store" },
   );
   if (!templateResponse.ok) {
@@ -123,13 +123,18 @@ async function createPersonalizedInvitationPdf(
   };
 
   const firstPage = addTemplatePage(invitationTemplate);
-  drawLetterLines(firstPage, letterLines.slice(0, 13), 305);
+  const maximumLinesPerPage = 10;
+  drawLetterLines(firstPage, letterLines.slice(0, maximumLinesPerPage), 305);
 
-  let remainingLines = letterLines.slice(13);
+  let remainingLines = letterLines.slice(maximumLinesPerPage);
   while (remainingLines.length > 0) {
     const page = addTemplatePage(continuationTemplate);
-    drawLetterLines(page, remainingLines.slice(0, 13), pageWidth / 2);
-    remainingLines = remainingLines.slice(13);
+    drawLetterLines(
+      page,
+      remainingLines.slice(0, maximumLinesPerPage),
+      pageWidth / 2,
+    );
+    remainingLines = remainingLines.slice(maximumLinesPerPage);
   }
 
   outputDocument.setTitle("Djalma & Victoria - Confirmação de presença");
