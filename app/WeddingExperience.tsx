@@ -372,11 +372,25 @@ export function WeddingExperience() {
           aria-label="Convite de casamento de Djalma e Victoria"
         >
           <p className="intro">Junto com nossas famílias</p>
-          <h1>
-            <span>Djalma</span>
-            <i>&</i>
-            <span>Victoria</span>
-          </h1>
+          <div className="illustrated-title">
+            <div
+              className="title-caricature title-caricature-djalma"
+              aria-hidden="true"
+            >
+              <img src="/djalma-caricature-v1.png" alt="" />
+            </div>
+            <h1>
+              <span>Djalma</span>
+              <i>&</i>
+              <span>Victoria</span>
+            </h1>
+            <div
+              className="title-caricature title-caricature-victoria"
+              aria-hidden="true"
+            >
+              <img src="/victoria-caricature-v1.png" alt="" />
+            </div>
+          </div>
           <p className="invitation-message">
             convidamos você para celebrar nosso casamento.
           </p>

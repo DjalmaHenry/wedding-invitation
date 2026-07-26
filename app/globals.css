@@ -262,6 +262,8 @@ button {
 }
 
 .invitation-card h1 {
+  position: relative;
+  z-index: 2;
   display: grid;
   margin: 0;
   color: #352018;
@@ -270,6 +272,37 @@ button {
   font-weight: 500;
   line-height: 0.7;
   letter-spacing: -0.075em;
+}
+
+.illustrated-title {
+  position: relative;
+  width: 100%;
+}
+
+.title-caricature {
+  position: absolute;
+  z-index: 1;
+  width: clamp(78px, 13vw, 112px);
+  height: clamp(118px, 19vw, 164px);
+  overflow: hidden;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 8px rgba(67, 42, 30, 0.13));
+}
+
+.title-caricature img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.title-caricature-djalma {
+  top: -18px;
+  left: clamp(-66px, -8vw, -36px);
+}
+
+.title-caricature-victoria {
+  right: clamp(-66px, -8vw, -36px);
+  bottom: -24px;
 }
 
 .invitation-card h1 span:last-child {
@@ -1727,6 +1760,21 @@ button {
 
   .invitation-card h1 {
     font-size: clamp(3rem, 15vw, 4.6rem);
+  }
+
+  .title-caricature {
+    width: clamp(66px, 21vw, 82px);
+    height: clamp(100px, 30vw, 126px);
+  }
+
+  .title-caricature-djalma {
+    top: -10px;
+    left: -30px;
+  }
+
+  .title-caricature-victoria {
+    right: -30px;
+    bottom: -18px;
   }
 
   .venue-section {
