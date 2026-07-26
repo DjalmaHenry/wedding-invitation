@@ -153,12 +153,20 @@ export function WeddingExperience() {
         <div className="venue-content">
           <div className="venue-grid">
             <div className="map-frame">
-              <iframe
-                title="Mapa do Villa Garden"
-                src="https://www.google.com/maps?q=R.%20Dr.%20Rodrigo%20Codes%20Sandoval%2C%2076%20-%20Mondubim%2C%20Fortaleza%20-%20CE%2C%2060711-455&output=embed"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                allowFullScreen
+              <div className="map-viewport">
+                <iframe
+                  title="Mapa do Villa Garden"
+                  src="https://www.google.com/maps?q=R.%20Dr.%20Rodrigo%20Codes%20Sandoval%2C%2076%20-%20Mondubim%2C%20Fortaleza%20-%20CE%2C%2060711-455&output=embed"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                />
+              </div>
+              <img
+                className="map-frame-art"
+                src="/map-frame-classic-v1.png"
+                alt=""
+                aria-hidden="true"
               />
             </div>
 
