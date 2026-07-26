@@ -284,7 +284,7 @@ button {
   display: grid;
   width: clamp(108px, 20vw, 144px);
   height: 0.32em;
-  margin: 0.1em 0 0.05em;
+  margin: 0.19em 0 0.05em;
   place-items: center;
   justify-self: center;
 }
@@ -307,13 +307,13 @@ button {
 .profile-avatar-djalma {
   top: 50%;
   left: 0;
-  transform: translateY(-50%);
+  transform: translate(7px, -50%);
 }
 
 .profile-avatar-victoria {
   top: 50%;
   right: 0;
-  transform: translateY(-50%);
+  transform: translate(7px, -50%);
 }
 
 .invitation-card h1 > span:last-child {
