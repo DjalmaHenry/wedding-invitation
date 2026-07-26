@@ -246,7 +246,10 @@ export function WeddingExperience() {
           href="#mais-detalhes"
           aria-current={activeSection === "mais-detalhes" ? "location" : undefined}
         >
-          <span className="section-rail-label">Mais detalhes</span>
+          <span className="section-rail-label">
+            <span className="section-label-desktop">Mais detalhes</span>
+            <span className="section-label-mobile">Mais</span>
+          </span>
           <span className="section-rail-icon">
             <img src="/menu-guide-painted-v1.png" alt="" aria-hidden="true" />
           </span>

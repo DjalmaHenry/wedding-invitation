@@ -130,6 +130,10 @@ button {
     transform 0.24s ease;
 }
 
+.section-label-mobile {
+  display: none;
+}
+
 .section-rail-item:hover .section-rail-label,
 .section-rail-item:focus-visible .section-rail-label,
 .section-rail-item.is-active .section-rail-label {
@@ -1466,13 +1470,22 @@ button {
     position: static;
     padding: 2px 0 0;
     color: #5b4030;
-    font-size: 0.48rem;
+    font-size: 0.58rem;
+    font-weight: 800;
     letter-spacing: 0.04em;
     background: transparent;
     border-radius: 0;
     box-shadow: none;
     opacity: 1;
     transform: none;
+  }
+
+  .section-label-desktop {
+    display: none;
+  }
+
+  .section-label-mobile {
+    display: inline;
   }
 
   .section-rail-item.is-active .section-rail-label {
