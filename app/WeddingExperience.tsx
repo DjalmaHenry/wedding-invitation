@@ -73,6 +73,7 @@ async function createPersonalizedInvitationPdf(
     maximumSize: number,
     color = ink,
     maximumWidth = pageWidth - 210,
+    centerX = pageWidth / 2,
   ) => {
     let size = maximumSize;
     while (size > 8 && font.widthOfTextAtSize(text, size) > maximumWidth) {
@@ -80,7 +81,7 @@ async function createPersonalizedInvitationPdf(
     }
     const width = font.widthOfTextAtSize(text, size);
     page.drawText(text, {
-      x: (pageWidth - width) / 2,
+      x: centerX - width / 2,
       y,
       size,
       font,
@@ -96,9 +97,20 @@ async function createPersonalizedInvitationPdf(
     timesItalic,
     11,
     muted,
+    232,
+    195,
   );
   names.slice(0, 5).forEach((name, index) => {
-    drawCentered(firstPage, name, 224 - index * 24, timesBold, 15);
+    drawCentered(
+      firstPage,
+      name,
+      484 - index * 45,
+      timesBold,
+      15,
+      ink,
+      232,
+      195,
+    );
   });
 
   let remainingNames = names.slice(5);
@@ -807,76 +819,89 @@ export function WeddingExperience() {
 
             {activeModal === "rsvp" && isConfirmed && (
               <div className="modal-content confirmation-success">
-                <div className="confirmation-mark" aria-hidden="true">
-                  ✓
-                </div>
-                <p className="confirmation-eyebrow">Que alegria ter você conosco</p>
-                <h2 id="rsvp-modal-title">Participação confirmada!</h2>
-                <p className="confirmation-message">
-                  Sua presença tornará este dia ainda mais especial.
-                </p>
+                <div className="confirmation-layout">
+                  <div className="confirmation-copy">
+                    <div className="confirmation-mark" aria-hidden="true">
+                      ✓
+                    </div>
+                    <p className="confirmation-eyebrow">
+                      Que alegria ter você conosco
+                    </p>
+                    <h2 id="rsvp-modal-title">Participação confirmada!</h2>
+                    <p className="confirmation-message">
+                      Sua presença tornará este dia ainda mais especial.
+                    </p>
 
-                <img
-                  className="couple-caricature"
-                  src="/couple-caricature-painted-v1.png"
-                  alt="Caricatura pintada de Djalma e Victoria entre rosas"
-                />
+                    <div className="confirmation-summary">
+                      <span>{confirmedFamily}</span>
+                      <strong>{confirmedNames.join(" • ")}</strong>
+                    </div>
 
-                <div className="confirmation-summary">
-                  <span>{confirmedFamily}</span>
-                  <strong>{confirmedNames.join(" • ")}</strong>
-                </div>
+                    <div className="confirmation-actions">
+                      <button
+                        className="confirmation-action confirmation-download"
+                        type="button"
+                        onClick={downloadInvitation}
+                        disabled={isDownloading}
+                      >
+                        <span
+                          className="confirmation-action-icon"
+                          aria-hidden="true"
+                        >
+                          ↓
+                        </span>
+                        <span>
+                          <b>
+                            {isDownloading
+                              ? "Preparando convite"
+                              : "Baixar convite"}
+                          </b>
+                          <small>PDF personalizado</small>
+                        </span>
+                      </button>
 
-                <div className="confirmation-actions">
-                  <button
-                    className="confirmation-action confirmation-download"
-                    type="button"
-                    onClick={downloadInvitation}
-                    disabled={isDownloading}
-                  >
-                    <span className="confirmation-action-icon" aria-hidden="true">
-                      ↓
-                    </span>
-                    <span>
-                      <b>
-                        {isDownloading ? "Preparando convite" : "Baixar convite"}
-                      </b>
-                      <small>PDF personalizado</small>
-                    </span>
-                  </button>
+                      <a
+                        className="confirmation-action confirmation-calendar"
+                        href={googleCalendarUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <span
+                          className="confirmation-action-icon calendar-icon"
+                          aria-hidden="true"
+                        >
+                          31
+                        </span>
+                        <span>
+                          <b>Criar lembrete</b>
+                          <small>Adicionar ao Google Agenda</small>
+                        </span>
+                      </a>
+                    </div>
 
-                  <a
-                    className="confirmation-action confirmation-calendar"
-                    href={googleCalendarUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <span
-                      className="confirmation-action-icon calendar-icon"
-                      aria-hidden="true"
+                    {downloadError && (
+                      <p className="download-error" role="alert">
+                        {downloadError}
+                      </p>
+                    )}
+
+                    <button
+                      className="edit-confirmation"
+                      type="button"
+                      onClick={() => setIsConfirmed(false)}
                     >
-                      31
-                    </span>
-                    <span>
-                      <b>Criar lembrete</b>
-                      <small>Adicionar ao Google Agenda</small>
-                    </span>
-                  </a>
+                      Alterar os nomes confirmados
+                    </button>
+                  </div>
+
+                  <div className="confirmation-art">
+                    <img
+                      className="couple-caricature"
+                      src="/couple-caricature-painted-v1.png"
+                      alt="Caricatura pintada de Djalma e Victoria entre rosas"
+                    />
+                  </div>
                 </div>
-
-                {downloadError && (
-                  <p className="download-error" role="alert">
-                    {downloadError}
-                  </p>
-                )}
-
-                <button
-                  className="edit-confirmation"
-                  type="button"
-                  onClick={() => setIsConfirmed(false)}
-                >
-                  Alterar os nomes confirmados
-                </button>
               </div>
             )}
 

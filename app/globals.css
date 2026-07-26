@@ -1425,9 +1425,18 @@ button {
 }
 
 .confirmation-success {
+  text-align: left;
+}
+
+.confirmation-layout {
   display: grid;
-  justify-items: center;
-  text-align: center;
+  grid-template-columns: minmax(0, 1.28fr) minmax(210px, 0.72fr);
+  gap: clamp(22px, 4vw, 52px);
+  align-items: center;
+}
+
+.confirmation-copy {
+  min-width: 0;
 }
 
 .confirmation-mark {
@@ -1471,10 +1480,17 @@ button {
   font-style: italic;
 }
 
+.confirmation-art {
+  display: grid;
+  min-width: 0;
+  align-self: stretch;
+  place-items: center;
+}
+
 .couple-caricature {
   display: block;
-  width: min(250px, 52vw);
-  max-height: 350px;
+  width: min(100%, 310px);
+  max-height: 520px;
   object-fit: contain;
   filter: drop-shadow(0 13px 18px rgba(68, 42, 23, 0.12));
 }
@@ -1482,8 +1498,8 @@ button {
 .confirmation-summary {
   display: grid;
   gap: 5px;
-  width: min(650px, 100%);
-  margin: 15px auto 22px;
+  width: 100%;
+  margin: 18px 0 22px;
 }
 
 .confirmation-summary span {
@@ -1505,7 +1521,7 @@ button {
 
 .confirmation-actions {
   display: grid;
-  width: min(650px, 100%);
+  width: 100%;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
@@ -2032,29 +2048,38 @@ button {
   }
 
   .confirmation-success {
-    align-content: start;
+    padding-right: 14px;
+    padding-left: 16px;
+  }
+
+  .confirmation-layout {
+    grid-template-columns: minmax(0, 1.42fr) minmax(104px, 0.58fr);
+    gap: 8px;
+    align-items: center;
   }
 
   .confirmation-success h2 {
-    max-width: 330px;
-    font-size: clamp(2.2rem, 10.5vw, 3.15rem);
+    max-width: 210px;
+    font-size: clamp(1.8rem, 8vw, 2.5rem);
   }
 
   .confirmation-message {
     margin: 10px 0 14px;
-    font-size: 0.94rem;
+    font-size: 0.84rem;
+    line-height: 1.4;
   }
 
   .couple-caricature {
-    width: min(210px, 58vw);
-    max-height: 292px;
+    width: 100%;
+    max-height: 390px;
   }
 
   .confirmation-summary {
-    margin: 12px auto 17px;
+    margin: 12px 0 16px;
   }
 
   .confirmation-actions {
+    grid-template-columns: 1fr;
     gap: 8px;
   }
 

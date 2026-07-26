@@ -127,27 +127,31 @@ def draw_first_page_base(pdf):
     draw_common_header(pdf)
     pdf.drawImage(
         COUPLE,
-        223,
-        326,
-        150,
-        300,
+        340,
+        178,
+        190,
+        380,
         preserveAspectRatio=True,
         anchor="c",
         mask="auto",
     )
     pdf.setFillColor(Color(0.98, 0.95, 0.88, alpha=0.88))
-    pdf.roundRect(75, 112, PAGE_WIDTH - 150, 190, 5, fill=1, stroke=0)
+    pdf.roundRect(60, 155, 270, 430, 5, fill=1, stroke=0)
     pdf.setStrokeColor(Color(0.47, 0.12, 0.15, alpha=0.42))
     pdf.setLineWidth(0.7)
-    pdf.roundRect(75, 112, PAGE_WIDTH - 150, 190, 5, fill=0, stroke=1)
-    draw_centered(
-        pdf,
-        "PARTICIPAÇÃO CONFIRMADA",
-        276,
+    pdf.roundRect(60, 155, 270, 430, 5, fill=0, stroke=1)
+    pdf.setStrokeColor(Color(0.72, 0.54, 0.29, alpha=0.36))
+    pdf.setLineWidth(0.6)
+    pdf.line(335, 172, 335, 566)
+    confirmation_title = "PARTICIPAÇÃO CONFIRMADA"
+    pdf.setFillColor(WINE)
+    pdf.setFont("Helvetica-Bold", 9)
+    confirmation_width = stringWidth(
+        confirmation_title,
         "Helvetica-Bold",
         9,
-        WINE,
     )
+    pdf.drawString(195 - confirmation_width / 2, 555, confirmation_title)
     draw_footer(pdf)
 
 
@@ -177,12 +181,20 @@ def fit_text(pdf, text, font, max_size, max_width, min_size=8):
 
 
 def draw_personalization(pdf, family, names):
-    draw_centered(pdf, family.upper(), 253, "Times-Italic", 11, MUTED)
+    pdf.setFillColor(MUTED)
+    pdf.setFont("Times-Italic", 11)
+    family_size = fit_text(pdf, family.upper(), "Times-Italic", 11, 232)
+    family_width = stringWidth(family.upper(), "Times-Italic", family_size)
+    pdf.setFont("Times-Italic", family_size)
+    pdf.drawString(195 - family_width / 2, 527, family.upper())
     first_page_names = names[:5]
-    start_y = 224
+    start_y = 484
     for index, name in enumerate(first_page_names):
-        size = fit_text(pdf, name, "Times-Bold", 15, PAGE_WIDTH - 210)
-        draw_centered(pdf, name, start_y - index * 24, "Times-Bold", size, INK)
+        size = fit_text(pdf, name, "Times-Bold", 15, 232)
+        width = stringWidth(name, "Times-Bold", size)
+        pdf.setFillColor(INK)
+        pdf.setFont("Times-Bold", size)
+        pdf.drawString(195 - width / 2, start_y - index * 45, name)
 
     remaining = names[5:]
     while remaining:
