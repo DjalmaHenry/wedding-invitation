@@ -18,6 +18,9 @@ export function WeddingExperience() {
   const [opening, setOpening] = useState(false);
   const [open, setOpen] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [activeSection, setActiveSection] = useState<
+    "convite" | "local" | "mais-detalhes"
+  >("convite");
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -37,6 +40,19 @@ export function WeddingExperience() {
     const handleScroll = () => {
       const max = window.innerHeight * 1.55;
       setProgress(max > 0 ? Math.min(window.scrollY / max, 1) : 0);
+
+      const marker = window.scrollY + window.innerHeight * 0.52;
+      const venueTop = document.getElementById("local")?.offsetTop ?? Infinity;
+      const detailsTop =
+        document.getElementById("mais-detalhes")?.offsetTop ?? Infinity;
+
+      if (marker >= detailsTop) {
+        setActiveSection("mais-detalhes");
+      } else if (marker >= venueTop) {
+        setActiveSection("local");
+      } else {
+        setActiveSection("convite");
+      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -143,9 +159,50 @@ export function WeddingExperience() {
         </div>
       </section>
 
-      <div className="garden-scroll-space snap-section" aria-hidden="true" />
+      <nav className="section-rail" aria-label="Navegação entre seções">
+        <a
+          className={`section-rail-item${activeSection === "convite" ? " is-active" : ""}`}
+          href="#convite"
+          aria-current={activeSection === "convite" ? "location" : undefined}
+        >
+          <span className="section-rail-label">Convite</span>
+          <span className="section-rail-icon">
+            <img src="/menu-rsvp-painted-v1.png" alt="" aria-hidden="true" />
+          </span>
+        </a>
+        <a
+          className={`section-rail-item${activeSection === "local" ? " is-active" : ""}`}
+          href="#local"
+          aria-current={activeSection === "local" ? "location" : undefined}
+        >
+          <span className="section-rail-label">Local</span>
+          <span className="section-rail-icon">
+            <img src="/google-maps-icon-painted-v1.png" alt="" aria-hidden="true" />
+          </span>
+        </a>
+        <a
+          className={`section-rail-item${activeSection === "mais-detalhes" ? " is-active" : ""}`}
+          href="#mais-detalhes"
+          aria-current={activeSection === "mais-detalhes" ? "location" : undefined}
+        >
+          <span className="section-rail-label">Mais detalhes</span>
+          <span className="section-rail-icon">
+            <img src="/menu-guide-painted-v1.png" alt="" aria-hidden="true" />
+          </span>
+        </a>
+      </nav>
 
-      <section className="venue-section snap-section" aria-labelledby="venue-title">
+      <div
+        id="convite"
+        className="garden-scroll-space snap-section"
+        aria-hidden="true"
+      />
+
+      <section
+        id="local"
+        className="venue-section snap-section"
+        aria-labelledby="venue-title"
+      >
         <div className="venue-altar" aria-hidden="true">
           <span>O lugar do nosso sim</span>
         </div>
@@ -216,7 +273,11 @@ export function WeddingExperience() {
         </div>
       </section>
 
-      <section className="menu-section snap-section" aria-labelledby="menu-title">
+      <section
+        id="mais-detalhes"
+        className="menu-section snap-section"
+        aria-labelledby="menu-title"
+      >
         <img
           className="menu-floral menu-floral-top"
           src="/menu-floral-corner-painted-v1.png"

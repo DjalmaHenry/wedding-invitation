@@ -14,7 +14,7 @@
 html {
   background: #1e2116;
   scroll-behavior: smooth;
-  scroll-snap-type: y proximity;
+  scroll-snap-type: y mandatory;
 }
 
 body {
@@ -36,7 +36,122 @@ button {
 
 .snap-section {
   scroll-snap-align: start;
-  scroll-snap-stop: normal;
+  scroll-snap-stop: always;
+}
+
+.section-rail {
+  position: fixed;
+  top: 50%;
+  right: clamp(10px, 2vw, 28px);
+  z-index: 30;
+  display: grid;
+  gap: 10px;
+  padding: 11px 9px;
+  pointer-events: none;
+  background: rgba(239, 225, 197, 0.82);
+  border: 1px solid rgba(105, 69, 37, 0.34);
+  border-radius: 999px;
+  box-shadow: 0 12px 32px rgba(43, 28, 15, 0.2);
+  opacity: 0;
+  transform: translateY(-50%) translateX(18px);
+  backdrop-filter: blur(10px);
+  transition:
+    opacity 0.5s ease,
+    transform 0.55s cubic-bezier(0.2, 0.75, 0.2, 1);
+}
+
+.section-rail::before {
+  content: "";
+  position: absolute;
+  top: 28px;
+  bottom: 28px;
+  left: 50%;
+  width: 1px;
+  background: rgba(120, 31, 39, 0.22);
+  transform: translateX(-50%);
+}
+
+.storybook.is-open .section-rail {
+  pointer-events: auto;
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+.section-rail-item {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: #4b3024;
+  text-decoration: none;
+}
+
+.section-rail-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  background: #f7ecd5;
+  border: 1px solid rgba(120, 31, 39, 0.2);
+  border-radius: 50%;
+  transition:
+    transform 0.28s ease,
+    background-color 0.28s ease,
+    box-shadow 0.28s ease;
+}
+
+.section-rail-icon img {
+  display: block;
+  width: 29px;
+  height: 29px;
+  object-fit: contain;
+}
+
+.section-rail-label {
+  position: absolute;
+  right: 52px;
+  padding: 7px 11px;
+  color: #fff8e9;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  text-transform: uppercase;
+  pointer-events: none;
+  background: var(--wine);
+  border-radius: 3px;
+  box-shadow: 0 7px 18px rgba(48, 27, 17, 0.2);
+  opacity: 0;
+  transform: translateX(7px);
+  transition:
+    opacity 0.24s ease,
+    transform 0.24s ease;
+}
+
+.section-rail-item:hover .section-rail-label,
+.section-rail-item:focus-visible .section-rail-label,
+.section-rail-item.is-active .section-rail-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.section-rail-item:hover,
+.section-rail-item:focus-visible {
+  outline: none;
+}
+
+.section-rail-item:hover .section-rail-icon,
+.section-rail-item:focus-visible .section-rail-icon,
+.section-rail-item.is-active .section-rail-icon {
+  background: #fff8e9;
+  box-shadow: 0 0 0 3px rgba(120, 31, 39, 0.15);
+  transform: scale(1.12);
+}
+
+.section-rail-item.is-active .section-rail-icon {
+  border-color: var(--wine);
 }
 
 .garden-scroll-space {
@@ -867,6 +982,34 @@ button {
 @media (max-width: 640px) {
   .garden-scroll-space {
     height: 155svh;
+  }
+
+  .section-rail {
+    right: 7px;
+    gap: 7px;
+    padding: 8px 6px;
+  }
+
+  .section-rail::before {
+    top: 23px;
+    bottom: 23px;
+  }
+
+  .section-rail-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .section-rail-icon img {
+    width: 25px;
+    height: 25px;
+  }
+
+  .section-rail-label {
+    right: 44px;
+    padding: 6px 8px;
+    font-size: 0.52rem;
+    letter-spacing: 0.06em;
   }
 
   .garden-art,
