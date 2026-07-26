@@ -49,7 +49,7 @@ export function WeddingExperience() {
     hasOpened.current = true;
     window.scrollTo(0, 0);
     setOpening(true);
-    window.setTimeout(() => setOpen(true), 1750);
+    window.setTimeout(() => setOpen(true), 650);
   };
 
   const gardenStyle = {
@@ -126,16 +126,9 @@ export function WeddingExperience() {
       <section className="painted-envelope" aria-label="Carta de casamento">
         <div className="envelope-background" />
         <div className="canvas-grain" />
-        <div className="opening-beam" />
-        <div className="opening-light" />
         <div className="envelope-asset-stage">
           <img
-            className="envelope-object envelope-object-top"
-            src="/envelope-cutout-v2.webp"
-            alt=""
-          />
-          <img
-            className="envelope-object envelope-object-bottom"
+            className="envelope-object"
             src="/envelope-cutout-v2.webp"
             alt=""
           />
