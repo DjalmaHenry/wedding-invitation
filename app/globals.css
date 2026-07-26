@@ -2312,6 +2312,18 @@ body:has(.admin-page) {
   border: 1px solid rgba(89, 43, 37, 0.35);
 }
 
+.admin-header-actions button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.admin-export-error {
+  max-width: 1180px;
+  margin: -14px auto 22px;
+  color: #8a2029;
+  font-weight: 800;
+}
+
 .admin-stats {
   display: grid;
   max-width: 1180px;
