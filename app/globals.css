@@ -631,9 +631,10 @@ button {
   justify-content: center;
   gap: 12px;
   padding: 0 19px;
-  font-size: 0.62rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.66rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.09em;
   text-decoration: none;
   text-transform: uppercase;
   transition: transform 0.25s ease, background-color 0.25s ease, color 0.25s ease;
@@ -834,18 +835,19 @@ button {
 }
 
 .menu-card > span {
-  font-family: "Cormorant Garamond Variable", Georgia, serif;
-  font-size: clamp(1.5rem, 2.5vw, 2rem);
-  font-weight: 600;
-  line-height: 1;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.18rem, 1.9vw, 1.5rem);
+  font-weight: 700;
+  line-height: 1.18;
 }
 
 .menu-card small {
   margin-top: 8px;
   color: #80644d;
-  font-size: 0.56rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.54rem;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
 }
 
@@ -1019,7 +1021,7 @@ button {
   }
 
   .menu-card > span {
-    font-size: 1.42rem;
+    font-size: 1.08rem;
   }
 
   .menu-card small {
