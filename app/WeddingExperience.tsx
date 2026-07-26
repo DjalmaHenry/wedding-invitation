@@ -188,7 +188,13 @@ export function WeddingExperience() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Traçar rota <span aria-hidden="true">↗</span>
+                  <img
+                    className="route-icon route-icon-maps"
+                    src="/google-maps-icon-painted-v1.png"
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  Traçar rota
                 </a>
                 <a
                   className="route-button route-secondary"
@@ -196,6 +202,12 @@ export function WeddingExperience() {
                   target="_blank"
                   rel="noreferrer"
                 >
+                  <img
+                    className="route-icon route-icon-waze"
+                    src="/waze-icon-painted-v1.png"
+                    alt=""
+                    aria-hidden="true"
+                  />
                   Abrir no Waze
                 </a>
               </div>

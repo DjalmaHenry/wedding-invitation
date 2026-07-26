@@ -640,6 +640,18 @@ button {
   transition: transform 0.25s ease, background-color 0.25s ease, color 0.25s ease;
 }
 
+.route-icon {
+  display: block;
+  width: 21px;
+  height: 21px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.route-icon-maps {
+  width: 19px;
+}
+
 .route-button:hover,
 .route-button:focus-visible {
   outline: none;
