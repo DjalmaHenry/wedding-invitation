@@ -136,9 +136,9 @@ button {
 .intro {
   margin: 0 0 14px;
   color: #664f3e;
-  font-size: 0.66rem;
+  font-size: clamp(0.72rem, 1.4vw, 0.82rem);
   font-weight: 700;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
 }
 
@@ -171,9 +171,9 @@ button {
 
 .invitation-message {
   width: min(92%, 390px);
-  margin: 28px auto 0;
+  margin: 24px auto 0;
   color: #5b4434;
-  font-size: clamp(0.9rem, 2vw, 1.05rem);
+  font-size: clamp(1.02rem, 2.2vw, 1.18rem);
   font-style: italic;
   line-height: 1.55;
 }
@@ -182,9 +182,9 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 18px auto;
+  margin: 16px auto;
   color: var(--wine);
-  font-size: 0.7rem;
+  font-size: 0.84rem;
 }
 
 .ornament::before,
@@ -223,9 +223,9 @@ button {
 
 .date-lockup small {
   color: #735a43;
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
@@ -233,15 +233,15 @@ button {
   margin: 2px 0;
   color: #432a1e;
   font-family: "Cormorant Garamond Variable", Georgia, serif;
-  font-size: clamp(1.6rem, 4vw, 2.25rem);
-  font-weight: 500;
+  font-size: clamp(1.8rem, 4.3vw, 2.45rem);
+  font-weight: 600;
 }
 
 .countdown {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 7px;
-  margin: 19px auto 12px;
+  margin: 16px auto 12px;
 }
 
 .countdown-unit {
@@ -268,26 +268,26 @@ button {
 .countdown-unit strong {
   color: var(--wine);
   font-family: "Cormorant Garamond Variable", Georgia, serif;
-  font-size: clamp(1.1rem, 2.8vw, 1.45rem);
-  font-weight: 500;
+  font-size: clamp(1.3rem, 3vw, 1.65rem);
+  font-weight: 600;
   line-height: 1;
 }
 
 .countdown-unit small {
   margin-top: 4px;
   color: #725642;
-  font-size: 0.48rem;
+  font-size: 0.58rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 
 .year {
   margin: 0;
   color: #6f5a45;
-  font-size: 0.64rem;
+  font-size: 0.74rem;
   font-weight: 700;
-  letter-spacing: 0.4em;
+  letter-spacing: 0.32em;
 }
 
 .scroll-note {
