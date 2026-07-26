@@ -18,12 +18,12 @@ SAMPLE_PATH = OUTPUT / "convite-confirmacao-exemplo.pdf"
 PAGE_WIDTH, PAGE_HEIGHT = landscape(A4)
 IVORY = HexColor("#F2E4C8")
 INK = HexColor("#432A1E")
-WINE = HexColor("#781F27")
+OLIVE = HexColor("#5F6D3F")
 GOLD = HexColor("#B78A49")
 MUTED = HexColor("#755946")
 
-FLORAL = ImageReader(PUBLIC / "menu-floral-corner-painted-v1.png")
-COUPLE = ImageReader(PUBLIC / "couple-caricature-painted-v1.png")
+FLORAL = ImageReader(PUBLIC / "menu-floral-corner-painted-olive-v1.png")
+COUPLE = ImageReader(PUBLIC / "couple-caricature-painted-olive-v1.png")
 
 SIGNATURE_FONT = "Times-Italic"
 signature_path = Path("/System/Library/Fonts/Supplemental/Zapfino.ttf")
@@ -89,7 +89,7 @@ def draw_header(pdf, center_x):
         PAGE_HEIGHT - 92,
         "Times-Italic",
         14,
-        WINE,
+        OLIVE,
     )
     pdf.setStrokeColor(GOLD)
     pdf.setLineWidth(0.6)
@@ -113,7 +113,7 @@ def draw_signature(pdf, center_x):
         34,
         SIGNATURE_FONT,
         18 if SIGNATURE_FONT == "WeddingSignature" else 22,
-        WINE,
+        OLIVE,
     )
 
 

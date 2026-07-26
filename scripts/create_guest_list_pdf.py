@@ -19,10 +19,10 @@ PAGE_WIDTH, PAGE_HEIGHT = A4
 IVORY = HexColor("#F2E4C8")
 PANEL = HexColor("#F8EFD9")
 INK = HexColor("#432A1E")
-WINE = HexColor("#781F27")
+OLIVE = HexColor("#5F6D3F")
 GOLD = HexColor("#B78A49")
 MUTED = HexColor("#755946")
-FLORAL = ImageReader(PUBLIC / "menu-floral-corner-painted-v1.png")
+FLORAL = ImageReader(PUBLIC / "menu-floral-corner-painted-olive-v1.png")
 
 SIGNATURE_FONT = "Times-Italic"
 signature_path = Path("/System/Library/Fonts/Supplemental/Zapfino.ttf")
@@ -87,7 +87,7 @@ def draw_template_page(pdf):
         PAGE_HEIGHT - 88,
         "Times-Italic",
         14,
-        WINE,
+        OLIVE,
     )
     draw_centered(
         pdf,
@@ -142,7 +142,7 @@ def draw_sample_page(pdf, guests, page_number, total_pages):
         pdf.setFillColor(INK)
         pdf.setFont("Times-Italic", 12.5)
         pdf.drawString(96, y, name)
-        pdf.setFillColor(WINE)
+        pdf.setFillColor(OLIVE)
         pdf.setFont("Times-Bold", 8)
         pdf.drawRightString(510, y, category.upper())
         pdf.setStrokeColor(Color(0.45, 0.28, 0.15, alpha=0.16))

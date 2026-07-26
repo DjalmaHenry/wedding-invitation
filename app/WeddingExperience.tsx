@@ -517,7 +517,7 @@ export function WeddingExperience() {
         >
           <span className="section-rail-label">Convite</span>
           <span className="section-rail-icon">
-            <img src="/menu-rsvp-painted-v1.png" alt="" aria-hidden="true" />
+            <img src="/menu-rsvp-painted-olive-v1.png" alt="" aria-hidden="true" />
           </span>
         </a>
         <a
@@ -527,7 +527,7 @@ export function WeddingExperience() {
         >
           <span className="section-rail-label">Local</span>
           <span className="section-rail-icon">
-            <img src="/google-maps-icon-painted-v1.png" alt="" aria-hidden="true" />
+            <img src="/google-maps-icon-painted-olive-v1.png" alt="" aria-hidden="true" />
           </span>
         </a>
         <a
@@ -540,7 +540,7 @@ export function WeddingExperience() {
             <span className="section-label-mobile">Mais</span>
           </span>
           <span className="section-rail-icon">
-            <img src="/menu-guide-painted-v1.png" alt="" aria-hidden="true" />
+            <img src="/menu-guide-painted-olive-v1.png" alt="" aria-hidden="true" />
           </span>
         </a>
       </nav>
@@ -574,7 +574,7 @@ export function WeddingExperience() {
               </div>
               <img
                 className="map-frame-art"
-                src="/map-frame-classic-v1.png"
+                src="/map-frame-classic-olive-v1.png"
                 alt=""
                 aria-hidden="true"
               />
@@ -600,7 +600,7 @@ export function WeddingExperience() {
                 >
                   <img
                     className="route-icon route-icon-maps"
-                    src="/google-maps-icon-painted-v1.png"
+                    src="/google-maps-icon-painted-olive-v1.png"
                     alt=""
                     aria-hidden="true"
                   />
@@ -614,7 +614,7 @@ export function WeddingExperience() {
                 >
                   <img
                     className="route-icon route-icon-waze"
-                    src="/waze-icon-painted-v1.png"
+                    src="/waze-icon-painted-olive-v1.png"
                     alt=""
                     aria-hidden="true"
                   />
@@ -633,13 +633,13 @@ export function WeddingExperience() {
       >
         <img
           className="menu-floral menu-floral-top"
-          src="/menu-floral-corner-painted-v1.png"
+          src="/menu-floral-corner-painted-olive-v1.png"
           alt=""
           aria-hidden="true"
         />
         <img
           className="menu-floral menu-floral-bottom"
-          src="/menu-floral-corner-painted-v1.png"
+          src="/menu-floral-corner-painted-olive-v1.png"
           alt=""
           aria-hidden="true"
         />
@@ -663,7 +663,7 @@ export function WeddingExperience() {
               onClick={() => setActiveModal("rsvp")}
             >
               <img
-                src="/menu-rsvp-painted-v1.png"
+                src="/menu-rsvp-painted-olive-v1.png"
                 alt=""
                 aria-hidden="true"
               />
@@ -678,7 +678,7 @@ export function WeddingExperience() {
               onClick={() => setActiveModal("gifts")}
             >
               <img
-                src="/menu-gift-painted-v1.png"
+                src="/menu-gift-painted-olive-v1.png"
                 alt=""
                 aria-hidden="true"
               />
@@ -693,7 +693,7 @@ export function WeddingExperience() {
               onClick={() => setActiveModal("guide")}
             >
               <img
-                src="/menu-guide-painted-v1.png"
+                src="/menu-guide-painted-olive-v1.png"
                 alt=""
                 aria-hidden="true"
               />
@@ -732,7 +732,7 @@ export function WeddingExperience() {
               <div className="modal-content">
                 <header className="modal-heading">
                   <img
-                    src="/menu-rsvp-painted-v1.png"
+                    src="/menu-rsvp-painted-olive-v1.png"
                     alt=""
                     aria-hidden="true"
                   />
@@ -765,7 +765,7 @@ export function WeddingExperience() {
                         aria-pressed={familySide === "groom"}
                       >
                         <img
-                          src="/family-groom-painted-v1.png"
+                          src="/family-groom-painted-olive-v1.png"
                           alt=""
                           aria-hidden="true"
                         />
@@ -779,7 +779,7 @@ export function WeddingExperience() {
                         aria-pressed={familySide === "bride"}
                       >
                         <img
-                          src="/family-bride-painted-v1.png"
+                          src="/family-bride-painted-olive-v1.png"
                           alt=""
                           aria-hidden="true"
                         />
@@ -945,7 +945,7 @@ export function WeddingExperience() {
                   <div className="confirmation-art">
                     <img
                       className="couple-caricature"
-                      src="/couple-caricature-painted-v1.png"
+                      src="/couple-caricature-painted-olive-v1.png"
                       alt="Caricatura pintada de Djalma e Victoria entre rosas"
                     />
                   </div>
@@ -956,7 +956,7 @@ export function WeddingExperience() {
             {activeModal === "gifts" && (
               <div className="modal-content modal-placeholder">
                 <img
-                  src="/menu-gift-painted-v1.png"
+                  src="/menu-gift-painted-olive-v1.png"
                   alt=""
                   aria-hidden="true"
                 />
@@ -980,7 +980,7 @@ export function WeddingExperience() {
             {activeModal === "guide" && (
               <div className="modal-content modal-placeholder">
                 <img
-                  src="/menu-guide-painted-v1.png"
+                  src="/menu-guide-painted-olive-v1.png"
                   alt=""
                   aria-hidden="true"
                 />

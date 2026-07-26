@@ -7,11 +7,6 @@
   --olive-dark: #465131;
   --olive-soft: #8d9574;
   --gold: #b78a49;
-
-  /* Paleta anterior preservada para uma possível reversão. */
-  --legacy-wine: #781f27;
-  --legacy-wine-dark: #5f151c;
-  --legacy-wine-soft: #94716d;
 }
 
 * {
