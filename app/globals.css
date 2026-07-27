@@ -656,7 +656,7 @@ button {
   z-index: 1;
   margin-bottom: 20px;
   color: rgba(255, 248, 225, 0.92);
-  font-size: 0.62rem;
+  font-size: clamp(0.7rem, 1.15vw, 0.78rem);
   font-weight: 700;
   letter-spacing: 0.3em;
   text-shadow: 0 2px 12px rgba(30, 18, 8, 0.8);
@@ -1807,7 +1807,7 @@ button {
 
   .venue-altar span {
     margin-bottom: 12px;
-    font-size: 0.52rem;
+    font-size: 0.62rem;
   }
 
   .venue-content {
