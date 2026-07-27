@@ -527,7 +527,7 @@ export function WeddingExperience() {
         >
           <span className="section-rail-label">Local</span>
           <span className="section-rail-icon">
-            <img src="/google-maps-icon-painted-olive-v1.png" alt="" aria-hidden="true" />
+            <img src="/google-maps-icon-painted-olive-v2.png" alt="" aria-hidden="true" />
           </span>
         </a>
         <a
@@ -600,7 +600,7 @@ export function WeddingExperience() {
                 >
                   <img
                     className="route-icon route-icon-maps"
-                    src="/google-maps-icon-painted-olive-v1.png"
+                    src="/google-maps-icon-painted-olive-v2.png"
                     alt=""
                     aria-hidden="true"
                   />
@@ -614,7 +614,7 @@ export function WeddingExperience() {
                 >
                   <img
                     className="route-icon route-icon-waze"
-                    src="/waze-icon-painted-olive-v1.png"
+                    src="/waze-icon-painted-olive-v2.png"
                     alt=""
                     aria-hidden="true"
                   />
