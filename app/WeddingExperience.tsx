@@ -432,7 +432,9 @@ export function WeddingExperience() {
     hasOpened.current = true;
     window.scrollTo(0, 0);
     setOpening(true);
-    window.setTimeout(() => setOpen(true), 1100);
+    // Start revealing the invitation just before the zoom settles so there is
+    // no perceptible pause between the two scenes.
+    window.setTimeout(() => setOpen(true), 820);
   };
 
   const chooseFamily = (side: Exclude<FamilySide, null>) => {
