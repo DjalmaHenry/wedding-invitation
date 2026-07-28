@@ -484,7 +484,7 @@ export function WeddingExperience() {
     setPixCopied(false);
     window.requestAnimationFrame(() => {
       document
-        .querySelector(".wedding-modal-gifts")
+        .querySelector(".gift-marketplace")
         ?.scrollTo({ top: 0, behavior: "smooth" });
     });
   };
@@ -1200,7 +1200,7 @@ export function WeddingExperience() {
                         setPixCopied(false);
                         window.requestAnimationFrame(() => {
                           document
-                            .querySelector(".wedding-modal-gifts")
+                            .querySelector(".gift-marketplace")
                             ?.scrollTo({ top: 0, behavior: "smooth" });
                         });
                       }}

@@ -1052,6 +1052,14 @@ button {
 
 .wedding-modal-gifts {
   width: min(1120px, 100%);
+  overflow: hidden;
+}
+
+.wedding-modal-gifts .gift-marketplace {
+  max-height: calc(100dvh - clamp(40px, 8vw, 108px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .wedding-modal-guide {
@@ -2644,6 +2652,7 @@ button {
 
   .gift-marketplace {
     min-height: 100dvh;
+    max-height: 100dvh;
     padding-right: 16px;
     padding-left: 16px;
   }
