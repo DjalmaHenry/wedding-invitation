@@ -1056,6 +1056,14 @@ button {
 
 .wedding-modal-guide {
   width: min(1120px, 100%);
+  overflow: hidden;
+}
+
+.wedding-modal-guide .guest-guide {
+  max-height: calc(100dvh - clamp(40px, 8vw, 108px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .wedding-modal::before,
@@ -2752,6 +2760,7 @@ button {
 
   .guest-guide {
     min-height: 100dvh;
+    max-height: 100dvh;
     padding-right: 16px;
     padding-left: 16px;
   }
