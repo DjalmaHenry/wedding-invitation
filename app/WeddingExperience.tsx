@@ -1177,10 +1177,8 @@ export function WeddingExperience() {
                         >
                           <img src={gift.image} alt="" aria-hidden="true" />
                           <span className="gift-card-copy">
-                            <small>A partir de</small>
                             <strong>{gift.title}</strong>
                             <em>{gift.description}</em>
-                            <b>{formatCurrency(gift.minimum)}</b>
                           </span>
                           <span className="gift-card-arrow" aria-hidden="true">
                             →
