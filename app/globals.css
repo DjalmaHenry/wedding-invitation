@@ -1054,6 +1054,10 @@ button {
   width: min(1120px, 100%);
 }
 
+.wedding-modal-guide {
+  width: min(1120px, 100%);
+}
+
 .wedding-modal::before,
 .wedding-modal::after {
   content: "";
@@ -2070,6 +2074,212 @@ button {
   text-transform: uppercase;
 }
 
+.guest-guide {
+  padding-right: clamp(28px, 5vw, 64px);
+  padding-left: clamp(28px, 5vw, 64px);
+}
+
+.guest-guide-heading {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.guest-guide-heading > img {
+  width: 96px;
+  height: 96px;
+  margin-bottom: -5px;
+  object-fit: contain;
+}
+
+.guest-guide-heading > p:first-of-type {
+  margin: 0 0 5px;
+  color: var(--olive);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.guest-guide-heading h2 {
+  margin: 0;
+  font-family: "Bodoni Moda Variable", "Bodoni 72", Didot, Georgia, serif;
+  font-size: clamp(2.7rem, 5.4vw, 5rem);
+  font-weight: 500;
+  line-height: 0.96;
+  letter-spacing: -0.06em;
+}
+
+.guest-guide-heading > span {
+  margin-top: 13px;
+  color: var(--olive);
+  font-size: 0.7rem;
+}
+
+.guest-guide-intro {
+  width: min(660px, 100%);
+  margin: 15px auto 34px;
+  color: #6c503b;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  font-style: italic;
+  line-height: 1.58;
+}
+
+.guest-guide-list {
+  display: grid;
+  gap: 18px;
+}
+
+.guest-guide-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.2fr);
+  min-height: 262px;
+  overflow: hidden;
+  background: rgba(255, 250, 238, 0.62);
+  border: 1px solid rgba(95, 109, 63, 0.22);
+  box-shadow: 0 15px 32px rgba(68, 45, 29, 0.08);
+}
+
+.guest-guide-card:nth-child(even) {
+  grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+}
+
+.guest-guide-card:nth-child(even) .guest-guide-art {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.guest-guide-card:nth-child(even) .guest-guide-copy {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.guest-guide-art {
+  position: relative;
+  min-height: 262px;
+}
+
+.guest-guide-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.guest-guide-art > span {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  color: #fff9eb;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: rgba(95, 109, 63, 0.92);
+  border: 1px solid rgba(255, 249, 235, 0.66);
+  border-radius: 50%;
+}
+
+.guest-guide-copy {
+  display: grid;
+  align-content: center;
+  padding: clamp(24px, 4vw, 46px);
+}
+
+.guest-guide-copy small {
+  color: var(--olive);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.61rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.guest-guide-copy h3 {
+  margin: 6px 0 12px;
+  color: #432a1e;
+  font-family: "Cormorant Garamond Variable", Georgia, serif;
+  font-size: clamp(1.8rem, 3.3vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.guest-guide-copy p {
+  margin: 0;
+  color: #684d39;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.94rem;
+  font-style: italic;
+  line-height: 1.62;
+}
+
+.guest-guide-closing {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.9fr) minmax(300px, 1.1fr);
+  align-items: center;
+  gap: clamp(24px, 5vw, 58px);
+  margin-top: 34px;
+  padding: clamp(22px, 4vw, 42px);
+  background: rgba(95, 109, 63, 0.09);
+  border: 1px solid rgba(95, 109, 63, 0.24);
+}
+
+.guest-guide-closing > img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 7px solid rgba(255, 250, 238, 0.78);
+  outline: 1px solid rgba(95, 109, 63, 0.3);
+  box-shadow: 0 18px 38px rgba(67, 42, 30, 0.14);
+}
+
+.guest-guide-closing > div {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.guest-guide-closing span {
+  color: var(--olive);
+  font-size: 0.8rem;
+}
+
+.guest-guide-closing p {
+  margin: 16px 0 20px;
+  color: #5f4534;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.guest-guide-closing small {
+  color: #785d47;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.78rem;
+  font-style: italic;
+}
+
+.guest-guide-closing strong {
+  margin-top: 3px;
+  color: var(--olive);
+  font-family: "Bodoni Moda Variable", "Bodoni 72", Didot, Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.06em;
+}
+
+.guest-guide-back {
+  display: block;
+  margin: 28px auto 0;
+}
+
 @keyframes modal-backdrop-in {
   from {
     opacity: 0;
@@ -2560,6 +2770,102 @@ button {
   .gift-qr img {
     width: 98px;
     height: 98px;
+  }
+
+  .guest-guide {
+    min-height: 100dvh;
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .guest-guide-heading {
+    padding-right: 30px;
+  }
+
+  .guest-guide-heading > img {
+    width: 78px;
+    height: 78px;
+  }
+
+  .guest-guide-heading h2 {
+    font-size: clamp(2.2rem, 11vw, 3.25rem);
+  }
+
+  .guest-guide-intro {
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+  }
+
+  .guest-guide-list {
+    gap: 12px;
+  }
+
+  .guest-guide-card,
+  .guest-guide-card:nth-child(even) {
+    grid-template-columns: 112px minmax(0, 1fr);
+    min-height: 176px;
+  }
+
+  .guest-guide-card:nth-child(even) .guest-guide-art,
+  .guest-guide-card:nth-child(even) .guest-guide-copy {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .guest-guide-art {
+    min-height: 176px;
+  }
+
+  .guest-guide-art img {
+    object-position: center;
+  }
+
+  .guest-guide-art > span {
+    right: 7px;
+    bottom: 7px;
+    width: 29px;
+    height: 29px;
+    font-size: 0.52rem;
+  }
+
+  .guest-guide-copy {
+    padding: 17px 13px;
+  }
+
+  .guest-guide-copy small {
+    font-size: 0.49rem;
+    letter-spacing: 0.1em;
+  }
+
+  .guest-guide-copy h3 {
+    margin: 5px 0 8px;
+    font-size: 1.35rem;
+  }
+
+  .guest-guide-copy p {
+    font-size: 0.72rem;
+    line-height: 1.47;
+  }
+
+  .guest-guide-closing {
+    grid-template-columns: 1fr;
+    gap: 17px;
+    margin-top: 22px;
+    padding: 17px;
+  }
+
+  .guest-guide-closing > img {
+    width: min(100%, 310px);
+    justify-self: center;
+  }
+
+  .guest-guide-closing p {
+    margin: 11px 0 14px;
+    font-size: 0.96rem;
+  }
+
+  .guest-guide-closing strong {
+    font-size: 2rem;
   }
 
   .confirmation-success {
