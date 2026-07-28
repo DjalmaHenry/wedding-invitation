@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 210" role="img" aria-labelledby="title desc">
+  <title id="title">QR code Pix provisório</title>
+  <desc id="desc">Imagem demonstrativa sem dados de pagamento reais.</desc>
+  <rect width="210" height="210" rx="10" fill="#fffaf0"/>
+  <g fill="#53613b">
+    <path d="M15 15h60v60H15zm10 10v40h40V25zm10 10h20v20H35z"/>
+    <path d="M135 15h60v60h-60zm10 10v40h40V25zm10 10h20v20h-20z"/>
+    <path d="M15 135h60v60H15zm10 10v40h40v-40zm10 10h20v20H35z"/>
+    <path d="M90 15h15v15H90zm20 0h10v30h-10zM85 40h20v10H85zm25 15h15v20h-15z"/>
+    <path d="M85 85h15v15H85zm25 0h10v10h-10zm15 0h20v15h-20zm30 0h10v10h-10zm20 0h20v15h-20z"/>
+    <path d="M15 90h15v25H15zm25-5h10v15H40zm20 0h15v10H60zm0 20h20v15H60z"/>
+    <path d="M90 110h15v20H90zm25-10h10v15h-10zm20 10h15v10h-15zm20-5h10v25h-10zm20 10h20v15h-20z"/>
+    <path d="M85 140h15v15H85zm20-10h20v10h-20zm10 20h10v25h-10zm-30 15h20v10H85zm5 20h25v10H90z"/>
+    <path d="M135 140h15v15h-15zm25-5h10v20h-10zm15 10h20v10h-20zm-40 20h25v10h-25zm35 0h10v20h-10zm15 15h10v15h-10zm-50 5h25v10h-25z"/>
+  </g>
+  <g fill="#c7a56b">
+    <rect x="101" y="101" width="8" height="8" transform="rotate(45 105 105)"/>
+    <rect x="72" y="122" width="8" height="8" transform="rotate(45 76 126)"/>
+    <rect x="122" y="72" width="8" height="8" transform="rotate(45 126 76)"/>
+  </g>
+</svg>

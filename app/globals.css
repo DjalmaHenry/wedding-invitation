@@ -750,6 +750,7 @@ button {
 
 .venue-details h2 {
   margin: 0;
+  color: var(--olive);
   font-family: "Cormorant Garamond Variable", Georgia, serif;
   font-size: clamp(2.8rem, 5vw, 5rem);
   font-weight: 600;
@@ -1047,6 +1048,10 @@ button {
   border: 1px solid rgba(108, 69, 37, 0.42);
   box-shadow: 0 32px 90px rgba(24, 14, 8, 0.42);
   animation: modal-paper-in 0.48s cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+
+.wedding-modal-gifts {
+  width: min(1120px, 100%);
 }
 
 .wedding-modal::before,
@@ -1673,6 +1678,398 @@ button {
   padding: 0 25px;
 }
 
+.gift-marketplace {
+  min-height: min(730px, calc(100dvh - 108px));
+  padding-right: clamp(32px, 5vw, 62px);
+  padding-left: clamp(32px, 5vw, 62px);
+}
+
+.gift-marketplace-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: left;
+}
+
+.gift-marketplace-heading > img {
+  width: 94px;
+  height: 94px;
+  object-fit: contain;
+}
+
+.gift-marketplace-heading > div {
+  display: grid;
+}
+
+.gift-marketplace-heading p,
+.gift-detail-copy > p:first-child {
+  margin: 0 0 4px;
+  color: var(--olive);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.gift-marketplace-heading h2,
+.gift-detail-copy h2 {
+  margin: 0;
+  font-family: "Bodoni Moda Variable", "Bodoni 72", Didot, Georgia, serif;
+  font-size: clamp(2.7rem, 5.2vw, 4.9rem);
+  font-weight: 500;
+  line-height: 0.96;
+  letter-spacing: -0.055em;
+}
+
+.gift-marketplace-heading > div > span {
+  margin-top: 8px;
+  color: var(--olive);
+  font-size: 0.68rem;
+}
+
+.gift-marketplace-intro {
+  width: min(640px, 100%);
+  margin: 18px auto 28px;
+  color: #6c503b;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.03rem;
+  font-style: italic;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.gift-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.gift-card {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  overflow: hidden;
+  color: #432a1e;
+  text-align: left;
+  cursor: pointer;
+  background: rgba(255, 250, 238, 0.72);
+  border: 1px solid rgba(95, 109, 63, 0.22);
+  box-shadow: 0 13px 30px rgba(70, 49, 31, 0.09);
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.gift-card:hover,
+.gift-card:focus-visible {
+  outline: none;
+  border-color: rgba(95, 109, 63, 0.68);
+  box-shadow: 0 18px 38px rgba(70, 49, 31, 0.16);
+  transform: translateY(-4px);
+}
+
+.gift-card > img {
+  width: 100%;
+  aspect-ratio: 1.45;
+  object-fit: cover;
+  object-position: 50% 42%;
+  border-bottom: 1px solid rgba(95, 109, 63, 0.18);
+}
+
+.gift-card-copy {
+  display: grid;
+  min-height: 178px;
+  padding: 15px 44px 16px 16px;
+}
+
+.gift-card-copy small {
+  color: var(--olive);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.59rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.gift-card-copy strong {
+  margin-top: 4px;
+  font-family: "Cormorant Garamond Variable", Georgia, serif;
+  font-size: 1.36rem;
+  line-height: 1.05;
+}
+
+.gift-card-copy em {
+  margin-top: 8px;
+  color: #745842;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.79rem;
+  font-style: italic;
+  line-height: 1.42;
+}
+
+.gift-card-copy b {
+  align-self: end;
+  margin-top: 13px;
+  color: var(--olive);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+}
+
+.gift-card-arrow {
+  position: absolute;
+  right: 14px;
+  bottom: 16px;
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  color: #fff9eb;
+  background: var(--olive);
+  border-radius: 50%;
+}
+
+.gift-detail {
+  min-height: 610px;
+}
+
+.gift-detail-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 5px 0;
+  color: var(--olive);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+.gift-detail-back:hover,
+.gift-detail-back:focus-visible {
+  color: #3e492d;
+  outline: none;
+}
+
+.gift-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.92fr) minmax(360px, 1.08fr);
+  gap: clamp(28px, 5vw, 62px);
+  align-items: start;
+}
+
+.gift-detail-art {
+  position: sticky;
+  top: 24px;
+  display: grid;
+}
+
+.gift-detail-art img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 8px solid rgba(255, 250, 238, 0.78);
+  outline: 1px solid rgba(95, 109, 63, 0.32);
+  box-shadow: 0 24px 48px rgba(63, 42, 28, 0.19);
+}
+
+.gift-detail-art span {
+  justify-self: center;
+  margin-top: 14px;
+  color: #755943;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.7rem;
+  font-style: italic;
+  letter-spacing: 0.08em;
+}
+
+.gift-detail-copy {
+  min-width: 0;
+}
+
+.gift-detail-copy h2 {
+  font-size: clamp(2.6rem, 4.6vw, 4.3rem);
+}
+
+.gift-detail-description {
+  margin: 17px 0 20px;
+  color: #674b38;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.98rem;
+  font-style: italic;
+  line-height: 1.55;
+}
+
+.gift-range {
+  display: grid;
+  gap: 7px;
+  padding: 15px 17px;
+  background: rgba(95, 109, 63, 0.09);
+  border: 1px solid rgba(95, 109, 63, 0.22);
+}
+
+.gift-range > span,
+.gift-values legend,
+.gift-pix-data > span {
+  color: #694c37;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.gift-range strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  color: var(--olive);
+  font-family: "Cormorant Garamond Variable", Georgia, serif;
+  font-size: 1.55rem;
+}
+
+.gift-range i {
+  color: #80634d;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.68rem;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.gift-values {
+  margin: 20px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.gift-values > div {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.gift-values button {
+  min-height: 42px;
+  padding: 0 8px;
+  color: var(--olive);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.77rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgba(255, 250, 238, 0.58);
+  border: 1px solid rgba(95, 109, 63, 0.36);
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.gift-values button:hover,
+.gift-values button:focus-visible,
+.gift-values button.is-selected {
+  color: #fff9eb;
+  outline: none;
+  background: var(--olive);
+}
+
+.gift-pix {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 132px;
+  gap: 16px;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(95, 109, 63, 0.22);
+}
+
+.gift-pix-data {
+  display: grid;
+  min-width: 0;
+}
+
+.gift-pix-data code {
+  margin: 8px 0 6px;
+  padding: 10px 11px;
+  overflow: hidden;
+  color: #493427;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: rgba(255, 250, 238, 0.7);
+  border: 1px solid rgba(95, 109, 63, 0.2);
+}
+
+.gift-pix-data small {
+  color: #745842;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.75rem;
+}
+
+.gift-pix-data small b {
+  color: var(--olive);
+}
+
+.gift-pix-data button {
+  min-height: 42px;
+  margin-top: 11px;
+  color: #fff9eb;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: var(--olive);
+  border: 1px solid var(--olive);
+}
+
+.gift-pix-data button:hover,
+.gift-pix-data button:focus-visible {
+  outline: none;
+  background: #465131;
+}
+
+.gift-pix-data em {
+  margin-top: 7px;
+  color: #82664f;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.66rem;
+  line-height: 1.3;
+}
+
+.gift-qr {
+  display: grid;
+  justify-items: center;
+  padding: 7px;
+  background: #fffaf0;
+  border: 1px solid rgba(95, 109, 63, 0.32);
+}
+
+.gift-qr img {
+  width: 116px;
+  height: 116px;
+}
+
+.gift-qr span {
+  margin-top: 3px;
+  color: var(--olive);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
 @keyframes modal-backdrop-in {
   from {
     opacity: 0;
@@ -2042,6 +2439,127 @@ button {
 
   .modal-placeholder {
     min-height: 100dvh;
+  }
+
+  .gift-marketplace {
+    min-height: 100dvh;
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .gift-marketplace-heading {
+    justify-content: flex-start;
+    gap: 8px;
+    padding-right: 30px;
+  }
+
+  .gift-marketplace-heading > img {
+    width: 72px;
+    height: 72px;
+  }
+
+  .gift-marketplace-heading h2 {
+    font-size: clamp(2.15rem, 10vw, 3rem);
+  }
+
+  .gift-marketplace-intro {
+    margin: 14px auto 20px;
+    font-size: 0.91rem;
+  }
+
+  .gift-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .gift-card {
+    grid-template-columns: 112px 1fr;
+  }
+
+  .gift-card > img {
+    width: 112px;
+    height: 100%;
+    aspect-ratio: auto;
+    object-position: center;
+    border-right: 1px solid rgba(95, 109, 63, 0.18);
+    border-bottom: 0;
+  }
+
+  .gift-card-copy {
+    min-height: 130px;
+    padding: 12px 38px 12px 13px;
+  }
+
+  .gift-card-copy strong {
+    font-size: 1.18rem;
+  }
+
+  .gift-card-copy em {
+    font-size: 0.7rem;
+    line-height: 1.3;
+  }
+
+  .gift-card-copy b {
+    margin-top: 7px;
+    font-size: 0.88rem;
+  }
+
+  .gift-card-arrow {
+    right: 10px;
+    bottom: 11px;
+  }
+
+  .gift-detail {
+    min-height: calc(100dvh - 100px);
+  }
+
+  .gift-detail-back {
+    margin-bottom: 13px;
+  }
+
+  .gift-detail-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .gift-detail-art {
+    position: static;
+  }
+
+  .gift-detail-art img {
+    width: min(100%, 330px);
+    justify-self: center;
+  }
+
+  .gift-detail-art span {
+    margin-top: 9px;
+  }
+
+  .gift-detail-copy h2 {
+    font-size: clamp(2.4rem, 12vw, 3.25rem);
+  }
+
+  .gift-detail-description {
+    margin: 12px 0 16px;
+    font-size: 0.9rem;
+  }
+
+  .gift-values > div {
+    gap: 6px;
+  }
+
+  .gift-values button {
+    font-size: 0.68rem;
+  }
+
+  .gift-pix {
+    grid-template-columns: 1fr 116px;
+    gap: 10px;
+  }
+
+  .gift-qr img {
+    width: 98px;
+    height: 98px;
   }
 
   .confirmation-success {

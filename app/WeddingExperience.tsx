@@ -6,9 +6,108 @@ const WEDDING_DATE = new Date("2026-10-31T16:20:00-03:00").getTime();
 
 type ModalName = "rsvp" | "gifts" | "guide" | null;
 type FamilySide = "groom" | "bride" | null;
+type GiftItem = {
+  id: string;
+  title: string;
+  description: string;
+  detail: string;
+  image: string;
+  minimum: number;
+  maximum: number;
+  suggestions: number[];
+};
 
 const WEDDING_ADDRESS =
   "R. Dr. Rodrigo Codes Sandoval, 76 - Mondubim, Fortaleza - CE, 60711-455";
+const TEMPORARY_PIX_KEY = "djalma.victoria@pix.exemplo";
+
+const GIFT_ITEMS: GiftItem[] = [
+  {
+    id: "passagens",
+    title: "Passagens da aventura",
+    description: "Um empurrãozinho para começarmos essa história.",
+    detail:
+      "Sua contribuição ajuda a transformar o primeiro trecho da nossa aventura em uma lembrança inesquecível.",
+    image: "/gift-flight-painted-v1.webp",
+    minimum: 100,
+    maximum: 800,
+    suggestions: [100, 250, 500],
+  },
+  {
+    id: "hospedagem",
+    title: "Cantinho para descansar",
+    description: "Aconchego para recarregar as energias.",
+    detail:
+      "Um carinho para as noites de descanso entre um novo cenário e outro, sempre com uma surpresa nos esperando.",
+    image: "/gift-stay-painted-v1.webp",
+    minimum: 80,
+    maximum: 600,
+    suggestions: [80, 200, 400],
+  },
+  {
+    id: "jantar",
+    title: "Jantar especial",
+    description: "Um brinde aos primeiros dias dessa nova fase.",
+    detail:
+      "Ajude-nos a celebrar com uma experiência à mesa, feita de sabores, boas conversas e momentos só nossos.",
+    image: "/gift-dinner-painted-v1.webp",
+    minimum: 50,
+    maximum: 350,
+    suggestions: [50, 150, 300],
+  },
+  {
+    id: "passeio",
+    title: "Passeio inesquecível",
+    description: "Um novo cenário para guardarmos na memória.",
+    detail:
+      "Sua contribuição vira tempo para explorar, admirar paisagens e colecionar histórias sem revelar o roteiro.",
+    image: "/gift-tour-painted-v1.webp",
+    minimum: 60,
+    maximum: 450,
+    suggestions: [60, 180, 350],
+  },
+  {
+    id: "diversao",
+    title: "Dia de diversão",
+    description: "Risadas e encantamento em uma parada especial.",
+    detail:
+      "Um presente para vivermos um dia leve, cheio de alegria e daquele friozinho bom na barriga.",
+    image: "/gift-fun-painted-v1.webp",
+    minimum: 80,
+    maximum: 500,
+    suggestions: [80, 220, 400],
+  },
+  {
+    id: "carro",
+    title: "Locação para o roteiro",
+    description: "Liberdade para nossos deslocamentos de ida e volta.",
+    detail:
+      "Este presente ajuda na locação do carro que nos acompanhará pelos trajetos de ida e volta da viagem.",
+    image: "/gift-car-painted-v1.webp",
+    minimum: 100,
+    maximum: 1000,
+    suggestions: [100, 350, 700],
+  },
+  {
+    id: "caminho",
+    title: "Caminho da viagem",
+    description: "Para seguirmos pela estrada com tranquilidade.",
+    detail:
+      "Uma contribuição para combustível, pedágios e pequenos cuidados que deixam cada caminho mais leve.",
+    image: "/gift-road-painted-v1.webp",
+    minimum: 50,
+    maximum: 400,
+    suggestions: [50, 160, 300],
+  },
+];
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
 
 function getTimeLeft() {
   const distance = Math.max(0, WEDDING_DATE - Date.now());
@@ -182,6 +281,11 @@ export function WeddingExperience() {
   const [confirmationError, setConfirmationError] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState("");
+  const [selectedGiftId, setSelectedGiftId] = useState<string | null>(null);
+  const [selectedGiftAmount, setSelectedGiftAmount] = useState<number | null>(
+    null,
+  );
+  const [pixCopied, setPixCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -309,8 +413,42 @@ export function WeddingExperience() {
 
   const closeModal = () => {
     setActiveModal(null);
+    setSelectedGiftId(null);
+    setSelectedGiftAmount(null);
+    setPixCopied(false);
     setDownloadError("");
     setConfirmationError("");
+  };
+
+  const openGiftList = () => {
+    setSelectedGiftId(null);
+    setSelectedGiftAmount(null);
+    setPixCopied(false);
+    setActiveModal("gifts");
+  };
+
+  const selectGift = (gift: GiftItem) => {
+    setSelectedGiftId(gift.id);
+    setSelectedGiftAmount(gift.suggestions[1]);
+    setPixCopied(false);
+    window.requestAnimationFrame(() => {
+      document
+        .querySelector(".wedding-modal-gifts")
+        ?.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  };
+
+  const selectedGift =
+    GIFT_ITEMS.find((gift) => gift.id === selectedGiftId) ?? null;
+
+  const copyPixKey = async () => {
+    try {
+      await navigator.clipboard.writeText(TEMPORARY_PIX_KEY);
+      setPixCopied(true);
+      window.setTimeout(() => setPixCopied(false), 2400);
+    } catch {
+      setPixCopied(false);
+    }
   };
 
   const confirmedNames = [guestName, ...companions]
@@ -441,7 +579,7 @@ export function WeddingExperience() {
             </h1>
           </div>
           <p className="invitation-message">
-            convidam você para celebrar nosso casamento.
+            convidamos você para celebrar nosso casamento.
           </p>
           <div className="ornament" aria-hidden="true">
             ✦
@@ -675,7 +813,7 @@ export function WeddingExperience() {
             <button
               className="menu-card"
               type="button"
-              onClick={() => setActiveModal("gifts")}
+              onClick={openGiftList}
             >
               <img
                 src="/menu-gift-painted-olive-v1.png"
@@ -954,26 +1092,148 @@ export function WeddingExperience() {
             )}
 
             {activeModal === "gifts" && (
-              <div className="modal-content modal-placeholder">
-                <img
-                  src="/menu-gift-painted-olive-v1.png"
-                  alt=""
-                  aria-hidden="true"
-                />
-                <p>Um carinho para nossa nova história</p>
-                <h2 id="gifts-modal-title">Lista de presentes</h2>
-                <span aria-hidden="true">✦</span>
-                <p className="modal-placeholder-copy">
-                  Estamos preparando nossa lista com muito carinho. Em breve,
-                  você poderá escolher seu presente por aqui.
-                </p>
-                <button
-                  className="modal-secondary-action"
-                  type="button"
-                  onClick={closeModal}
-                >
-                  Voltar ao convite
-                </button>
+              <div className="modal-content gift-marketplace">
+                {!selectedGift && (
+                  <>
+                    <header className="gift-marketplace-heading">
+                      <img
+                        src="/menu-gift-painted-olive-v1.png"
+                        alt=""
+                        aria-hidden="true"
+                      />
+                      <div>
+                        <p>Um carinho para nossa nova história</p>
+                        <h2 id="gifts-modal-title">Lista de presentes</h2>
+                        <span aria-hidden="true">✦</span>
+                      </div>
+                    </header>
+
+                    <p className="gift-marketplace-intro">
+                      Escolha uma experiência para fazer parte da nossa
+                      aventura. O roteiro continua sendo surpresa.
+                    </p>
+
+                    <div
+                      className="gift-grid"
+                      aria-label="Experiências disponíveis"
+                    >
+                      {GIFT_ITEMS.map((gift) => (
+                        <button
+                          className="gift-card"
+                          type="button"
+                          key={gift.id}
+                          onClick={() => selectGift(gift)}
+                        >
+                          <img src={gift.image} alt="" aria-hidden="true" />
+                          <span className="gift-card-copy">
+                            <small>A partir de</small>
+                            <strong>{gift.title}</strong>
+                            <em>{gift.description}</em>
+                            <b>{formatCurrency(gift.minimum)}</b>
+                          </span>
+                          <span className="gift-card-arrow" aria-hidden="true">
+                            →
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {selectedGift && (
+                  <div className="gift-detail">
+                    <button
+                      className="gift-detail-back"
+                      type="button"
+                      onClick={() => {
+                        setSelectedGiftId(null);
+                        setSelectedGiftAmount(null);
+                        setPixCopied(false);
+                        window.requestAnimationFrame(() => {
+                          document
+                            .querySelector(".wedding-modal-gifts")
+                            ?.scrollTo({ top: 0, behavior: "smooth" });
+                        });
+                      }}
+                    >
+                      <span aria-hidden="true">←</span> Voltar à lista
+                    </button>
+
+                    <div className="gift-detail-layout">
+                      <div className="gift-detail-art">
+                        <img
+                          src={selectedGift.image}
+                          alt={`Caricatura de Djalma e Victoria para ${selectedGift.title.toLowerCase()}`}
+                        />
+                        <span>Uma parte da nossa aventura</span>
+                      </div>
+
+                      <div className="gift-detail-copy">
+                        <p>Presente escolhido</p>
+                        <h2 id="gifts-modal-title">{selectedGift.title}</h2>
+                        <p className="gift-detail-description">
+                          {selectedGift.detail}
+                        </p>
+
+                        <div className="gift-range">
+                          <span>Faixa de contribuição</span>
+                          <strong>
+                            {formatCurrency(selectedGift.minimum)}
+                            <i>até</i>
+                            {formatCurrency(selectedGift.maximum)}
+                          </strong>
+                        </div>
+
+                        <fieldset className="gift-values">
+                          <legend>Escolha uma sugestão</legend>
+                          <div>
+                            {selectedGift.suggestions.map((amount) => (
+                              <button
+                                className={
+                                  selectedGiftAmount === amount
+                                    ? "is-selected"
+                                    : undefined
+                                }
+                                type="button"
+                                key={amount}
+                                onClick={() => setSelectedGiftAmount(amount)}
+                              >
+                                {formatCurrency(amount)}
+                              </button>
+                            ))}
+                          </div>
+                        </fieldset>
+
+                        <div className="gift-pix">
+                          <div className="gift-pix-data">
+                            <span>Chave Pix provisória</span>
+                            <code>{TEMPORARY_PIX_KEY}</code>
+                            {selectedGiftAmount && (
+                              <small>
+                                Valor escolhido:{" "}
+                                <b>{formatCurrency(selectedGiftAmount)}</b>
+                              </small>
+                            )}
+                            <button type="button" onClick={copyPixKey}>
+                              {pixCopied ? "Chave copiada!" : "Copiar chave Pix"}
+                            </button>
+                            <em aria-live="polite">
+                              Dados fictícios para demonstração.
+                            </em>
+                          </div>
+
+                          <div className="gift-qr">
+                            <img
+                              src="/pix-qr-placeholder.svg"
+                              alt="QR code Pix fictício para demonstração"
+                            />
+                            <span>QR provisório</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
