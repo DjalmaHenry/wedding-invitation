@@ -152,6 +152,31 @@ const GUIDE_TOPICS: GuideTopic[] = [
   },
 ];
 
+const MODAL_ASSET_URLS = [
+  "/couple-caricature-painted-olive-v2.webp",
+  "/menu-rsvp-painted-olive-v2.webp",
+  "/menu-gift-painted-olive-v2.webp",
+  "/menu-guide-painted-olive-v2.webp",
+  ...GIFT_ITEMS.map((gift) => gift.image),
+  ...GUIDE_TOPICS.map((topic) => topic.image),
+];
+const preloadedModalImages: HTMLImageElement[] = [];
+
+function preloadModalAssets() {
+  if (preloadedModalImages.length > 0) return;
+
+  MODAL_ASSET_URLS.forEach((src, index) => {
+    const image = new Image();
+    image.decoding = "async";
+    image.fetchPriority = index === 0 ? "high" : "low";
+    image.onload = () => {
+      void image.decode().catch(() => undefined);
+    };
+    image.src = src;
+    preloadedModalImages.push(image);
+  });
+}
+
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -351,6 +376,13 @@ export function WeddingExperience() {
     const timer = window.setInterval(updateCountdown, 1000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const preloadTimer = window.setTimeout(preloadModalAssets, 120);
+    return () => window.clearTimeout(preloadTimer);
+  }, [open]);
 
   useEffect(() => {
     const savedConfirmation = window.localStorage.getItem(
@@ -708,7 +740,7 @@ export function WeddingExperience() {
         >
           <span className="section-rail-label">Convite</span>
           <span className="section-rail-icon">
-            <img src="/menu-rsvp-painted-olive-v1.png" alt="" aria-hidden="true" />
+            <img src="/menu-rsvp-painted-olive-v2.webp" alt="" aria-hidden="true" />
           </span>
         </a>
         <a
@@ -731,7 +763,7 @@ export function WeddingExperience() {
             <span className="section-label-mobile">Mais</span>
           </span>
           <span className="section-rail-icon">
-            <img src="/menu-guide-painted-olive-v1.png" alt="" aria-hidden="true" />
+            <img src="/menu-guide-painted-olive-v2.webp" alt="" aria-hidden="true" />
           </span>
         </a>
       </nav>
@@ -854,7 +886,7 @@ export function WeddingExperience() {
               onClick={() => setActiveModal("rsvp")}
             >
               <img
-                src="/menu-rsvp-painted-olive-v1.png"
+                src="/menu-rsvp-painted-olive-v2.webp"
                 alt=""
                 aria-hidden="true"
               />
@@ -869,7 +901,7 @@ export function WeddingExperience() {
               onClick={openGiftList}
             >
               <img
-                src="/menu-gift-painted-olive-v1.png"
+                src="/menu-gift-painted-olive-v2.webp"
                 alt=""
                 aria-hidden="true"
               />
@@ -884,7 +916,7 @@ export function WeddingExperience() {
               onClick={() => setActiveModal("guide")}
             >
               <img
-                src="/menu-guide-painted-olive-v1.png"
+                src="/menu-guide-painted-olive-v2.webp"
                 alt=""
                 aria-hidden="true"
               />
@@ -923,7 +955,7 @@ export function WeddingExperience() {
               <div className="modal-content">
                 <header className="modal-heading">
                   <img
-                    src="/menu-rsvp-painted-olive-v1.png"
+                    src="/menu-rsvp-painted-olive-v2.webp"
                     alt=""
                     aria-hidden="true"
                   />
@@ -1136,7 +1168,9 @@ export function WeddingExperience() {
                   <div className="confirmation-art">
                     <img
                       className="couple-caricature"
-                      src="/couple-caricature-painted-olive-v1.png"
+                      src="/couple-caricature-painted-olive-v2.webp"
+                      decoding="async"
+                      fetchPriority="high"
                       alt="Caricatura pintada de Djalma e Victoria entre rosas"
                     />
                   </div>
@@ -1150,7 +1184,7 @@ export function WeddingExperience() {
                   <>
                     <header className="gift-marketplace-heading">
                       <img
-                        src="/menu-gift-painted-olive-v1.png"
+                        src="/menu-gift-painted-olive-v2.webp"
                         alt=""
                         aria-hidden="true"
                       />
@@ -1177,7 +1211,12 @@ export function WeddingExperience() {
                           key={gift.id}
                           onClick={() => selectGift(gift)}
                         >
-                          <img src={gift.image} alt="" aria-hidden="true" />
+                          <img
+                            src={gift.image}
+                            alt=""
+                            aria-hidden="true"
+                            decoding="async"
+                          />
                           <span className="gift-card-copy">
                             <strong>{gift.title}</strong>
                             <em>{gift.description}</em>
@@ -1215,6 +1254,7 @@ export function WeddingExperience() {
                         <img
                           src={selectedGift.image}
                           alt={`Caricatura de Djalma e Victoria para ${selectedGift.title.toLowerCase()}`}
+                          decoding="async"
                         />
                         <span>Uma parte da nossa aventura</span>
                       </div>
@@ -1292,7 +1332,7 @@ export function WeddingExperience() {
               <div className="modal-content guest-guide">
                 <header className="guest-guide-heading">
                   <img
-                    src="/menu-guide-painted-olive-v1.png"
+                    src="/menu-guide-painted-olive-v2.webp"
                     alt=""
                     aria-hidden="true"
                   />
@@ -1309,7 +1349,11 @@ export function WeddingExperience() {
                   {GUIDE_TOPICS.map((topic, index) => (
                     <article className="guest-guide-card" key={topic.title}>
                       <div className="guest-guide-art">
-                        <img src={topic.image} alt={topic.alt} />
+                        <img
+                          src={topic.image}
+                          alt={topic.alt}
+                          decoding="async"
+                        />
                         <span aria-hidden="true">
                           {String(index + 1).padStart(2, "0")}
                         </span>
@@ -1327,6 +1371,7 @@ export function WeddingExperience() {
                   <img
                     src="/guide-thanks-painted-v1.webp"
                     alt="Caricatura de Djalma e Victoria agradecendo aos convidados"
+                    decoding="async"
                   />
                   <div>
                     <span aria-hidden="true">✦</span>
