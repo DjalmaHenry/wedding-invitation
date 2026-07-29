@@ -29,3 +29,29 @@ export const guests = sqliteTable(
     ),
   ],
 );
+
+export const giftPayments = sqliteTable(
+  "gift_payments",
+  {
+    id: text("id").primaryKey(),
+    mercadoPagoPaymentId: text("mercado_pago_payment_id").notNull().unique(),
+    externalReference: text("external_reference").notNull().unique(),
+    giftId: text("gift_id").notNull(),
+    giftTitle: text("gift_title").notNull(),
+    donorName: text("donor_name").notNull(),
+    donorEmail: text("donor_email").notNull(),
+    amountCents: integer("amount_cents").notNull(),
+    status: text("status").notNull(),
+    statusDetail: text("status_detail"),
+    ticketUrl: text("ticket_url"),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+    paidAt: text("paid_at"),
+  },
+  (table) => [
+    index("gift_payments_status_idx").on(table.status),
+    index("gift_payments_created_at_idx").on(table.createdAt),
+    index("gift_payments_donor_name_idx").on(table.donorName),
+    check("gift_payments_amount_check", sql`${table.amountCents} > 0`),
+  ],
+);

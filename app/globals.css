@@ -2037,7 +2037,9 @@ img {
 
 .gift-range > span,
 .gift-values legend,
-.gift-pix-data > span {
+.gift-pix-data > span,
+.gift-pix-form label > span,
+.gift-pix-form-heading > span {
   color: #694c37;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 0.63rem;
@@ -2100,6 +2102,82 @@ img {
   background: var(--olive);
 }
 
+.gift-pix-form {
+  display: grid;
+  gap: 11px;
+  margin-top: 20px;
+  padding: 18px;
+  background: rgba(255, 250, 238, 0.56);
+  border: 1px solid rgba(95, 109, 63, 0.25);
+}
+
+.gift-pix-form-heading {
+  display: flex;
+  margin-bottom: 2px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.gift-pix-form-heading strong {
+  color: var(--olive);
+  font-family: "Cormorant Garamond Variable", Georgia, serif;
+  font-size: 1.25rem;
+}
+
+.gift-pix-form label {
+  display: grid;
+  gap: 5px;
+}
+
+.gift-pix-form input {
+  width: 100%;
+  min-height: 43px;
+  padding: 0 12px;
+  color: #493427;
+  font: 700 0.9rem Georgia, "Times New Roman", serif;
+  background: rgba(255, 253, 247, 0.9);
+  border: 1px solid rgba(95, 109, 63, 0.3);
+  border-radius: 0;
+  outline: none;
+}
+
+.gift-pix-form input:focus {
+  border-color: var(--olive);
+  box-shadow: 0 0 0 3px rgba(95, 109, 63, 0.1);
+}
+
+.gift-pix-form > small {
+  color: #745842;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.67rem;
+  line-height: 1.35;
+}
+
+.gift-pix-form > button {
+  min-height: 44px;
+  color: #fff9eb;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: var(--olive);
+  border: 1px solid var(--olive);
+}
+
+.gift-pix-form > button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.gift-pix-error {
+  margin: 0;
+  color: #7b3d31;
+  font: 700 0.72rem/1.35 Georgia, "Times New Roman", serif;
+}
+
 .gift-pix {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 132px;
@@ -2159,6 +2237,15 @@ img {
   background: #465131;
 }
 
+.gift-pix-data a {
+  margin-top: 9px;
+  color: var(--olive);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: center;
+}
+
 .gift-pix-data em {
   margin-top: 7px;
   color: #82664f;
@@ -2188,6 +2275,73 @@ img {
   font-weight: 700;
   letter-spacing: 0.11em;
   text-transform: uppercase;
+}
+
+.gift-pix-change {
+  grid-column: 1 / -1;
+  justify-self: center;
+  padding: 5px 4px;
+  color: #745842;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.67rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(116, 88, 66, 0.35);
+}
+
+.gift-pix-success {
+  display: flex;
+  grid-column: 1 / -1;
+  padding: 20px;
+  align-items: center;
+  gap: 15px;
+  background: rgba(95, 109, 63, 0.1);
+  border: 1px solid rgba(95, 109, 63, 0.28);
+}
+
+.gift-pix-success > span {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: none;
+  color: #fff9eb;
+  font-size: 1.3rem;
+  place-items: center;
+  background: var(--olive);
+  border-radius: 50%;
+}
+
+.gift-pix-success strong {
+  color: var(--olive);
+  font-family: "Cormorant Garamond Variable", Georgia, serif;
+  font-size: 1.45rem;
+}
+
+.gift-pix-success p {
+  margin: 4px 0 0;
+  color: #674b38;
+  font: italic 0.82rem/1.45 Georgia, "Times New Roman", serif;
+}
+
+.gift-pix-failed {
+  grid-column: 1 / -1;
+  padding: 18px;
+  color: #6b392f;
+  text-align: center;
+  background: rgba(123, 61, 49, 0.07);
+  border: 1px solid rgba(123, 61, 49, 0.2);
+}
+
+.gift-pix-failed strong {
+  font-family: "Cormorant Garamond Variable", Georgia, serif;
+  font-size: 1.25rem;
+}
+
+.gift-pix-failed p {
+  margin: 4px 0 0;
+  font: italic 0.78rem Georgia, "Times New Roman", serif;
 }
 
 .guest-guide {
@@ -3402,6 +3556,72 @@ body:has(.admin-page) {
   font-weight: 700;
 }
 
+.admin-gifts-section {
+  max-width: 1180px;
+  margin: 52px auto 0;
+}
+
+.admin-section-heading {
+  display: flex;
+  margin-bottom: 18px;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.admin-section-heading h2 {
+  margin: 0;
+  color: #352018;
+  font-family: "Bodoni Moda Variable", Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3.3rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.admin-section-heading > p {
+  max-width: 380px;
+  margin: 0 0 5px;
+  color: #6d5141;
+  font-size: 0.92rem;
+  text-align: right;
+}
+
+.admin-gift-stats {
+  max-width: none;
+}
+
+.admin-stats .admin-money {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+}
+
+.admin-payment-email {
+  display: block;
+  margin-top: 3px;
+  color: #806552;
+  font-size: 0.73rem;
+}
+
+.admin-payment-status {
+  display: inline-flex;
+  padding: 5px 10px;
+  color: #fff7e7;
+  font-size: 0.7rem;
+  font-weight: 800;
+  border-radius: 999px;
+  background: #8a6b55;
+}
+
+.admin-payment-status.approved {
+  background: #5f6d3f;
+}
+
+.admin-payment-status.pending,
+.admin-payment-status.in_process,
+.admin-payment-status.authorized {
+  color: #4a3528;
+  background: #d7bf91;
+}
+
 @media (max-width: 720px) {
   .admin-page {
     padding: 22px 14px 40px;
@@ -3426,6 +3646,20 @@ body:has(.admin-page) {
 
   .admin-stats article {
     min-height: 100px;
+  }
+
+  .admin-gifts-section {
+    margin-top: 38px;
+  }
+
+  .admin-section-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .admin-section-heading > p {
+    text-align: left;
   }
 
   .admin-toolbar {

@@ -1,20 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { GIFT_ITEMS, type GiftItem } from "../lib/gifts";
 
 const WEDDING_DATE = new Date("2026-10-31T16:30:00-03:00").getTime();
 
 type ModalName = "rsvp" | "gifts" | "guide" | null;
 type FamilySide = "groom" | "bride" | null;
-type GiftItem = {
-  id: string;
-  title: string;
-  description: string;
-  detail: string;
-  image: string;
-  minimum: number;
-  maximum: number;
-  suggestions: number[];
+type PixPayment = {
+  paymentId: string;
+  status: string;
+  qrCode: string;
+  qrCodeBase64: string;
+  ticketUrl: string | null;
+  expiresAt: string | null;
 };
 type GuideTopic = {
   title: string;
@@ -25,87 +24,6 @@ type GuideTopic = {
 
 const WEDDING_ADDRESS =
   "R. Dr. Rodrigo Codes Sandoval, 76 - Mondubim, Fortaleza - CE, 60711-455";
-const TEMPORARY_PIX_KEY = "djalma.victoria@pix.exemplo";
-
-const GIFT_ITEMS: GiftItem[] = [
-  {
-    id: "passagens",
-    title: "Passagens da aventura",
-    description: "Um empurrãozinho para começarmos essa história.",
-    detail:
-      "Sua contribuição ajuda a transformar o primeiro trecho da nossa aventura em uma lembrança inesquecível.",
-    image: "/gift-flight-painted-v2.webp",
-    minimum: 100,
-    maximum: 800,
-    suggestions: [100, 250, 500],
-  },
-  {
-    id: "hospedagem",
-    title: "Cantinho para descansar",
-    description: "Aconchego para recarregar as energias.",
-    detail:
-      "Um carinho para as noites de descanso entre um novo cenário e outro, sempre com uma surpresa nos esperando.",
-    image: "/gift-stay-painted-v2.webp",
-    minimum: 80,
-    maximum: 600,
-    suggestions: [80, 200, 400],
-  },
-  {
-    id: "jantar",
-    title: "Jantar especial",
-    description: "Um brinde aos primeiros dias dessa nova fase.",
-    detail:
-      "Ajude-nos a celebrar com uma experiência à mesa, feita de sabores, boas conversas e momentos só nossos.",
-    image: "/gift-dinner-painted-v2.webp",
-    minimum: 50,
-    maximum: 350,
-    suggestions: [50, 150, 300],
-  },
-  {
-    id: "passeio",
-    title: "Passeio inesquecível",
-    description: "Um novo cenário para guardarmos na memória.",
-    detail:
-      "Sua contribuição vira tempo para explorar, admirar paisagens e colecionar histórias sem revelar o roteiro.",
-    image: "/gift-tour-painted-v2.webp",
-    minimum: 60,
-    maximum: 450,
-    suggestions: [60, 180, 350],
-  },
-  {
-    id: "diversao",
-    title: "Dia de diversão",
-    description: "Risadas e encantamento em uma parada especial.",
-    detail:
-      "Um presente para vivermos um dia leve, cheio de alegria e daquele friozinho bom na barriga.",
-    image: "/gift-fun-painted-v2.webp",
-    minimum: 80,
-    maximum: 500,
-    suggestions: [80, 220, 400],
-  },
-  {
-    id: "carro",
-    title: "Locação para o roteiro",
-    description: "Liberdade para nossos deslocamentos de ida e volta.",
-    detail:
-      "Este presente ajuda na locação do carro que nos acompanhará pelos trajetos de ida e volta da viagem.",
-    image: "/gift-car-painted-v2.webp",
-    minimum: 100,
-    maximum: 1000,
-    suggestions: [100, 350, 700],
-  },
-  {
-    id: "caminho",
-    title: "Caminho da viagem",
-    description: "Para seguirmos pela estrada com tranquilidade.",
-    detail:
-      "Uma contribuição para combustível, pedágios e pequenos cuidados que deixam cada caminho mais leve.",
-    image: "/gift-road-painted-v2.webp",
-    minimum: 50,
-    maximum: 400,
-    suggestions: [50, 160, 300],
-  },
-];
 
 const GUIDE_TOPICS: GuideTopic[] = [
   {
@@ -407,6 +325,11 @@ export function WeddingExperience() {
   const [selectedGiftAmount, setSelectedGiftAmount] = useState<number | null>(
     null,
   );
+  const [giftDonorName, setGiftDonorName] = useState("");
+  const [giftDonorEmail, setGiftDonorEmail] = useState("");
+  const [pixPayment, setPixPayment] = useState<PixPayment | null>(null);
+  const [isCreatingPix, setIsCreatingPix] = useState(false);
+  const [pixError, setPixError] = useState("");
   const [pixCopied, setPixCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
@@ -445,6 +368,44 @@ export function WeddingExperience() {
     }, 300);
     return () => window.clearTimeout(preloadTimer);
   }, [open]);
+
+  useEffect(() => {
+    if (
+      activeModal !== "gifts" ||
+      !pixPayment ||
+      !["pending", "in_process", "authorized"].includes(pixPayment.status)
+    ) {
+      return;
+    }
+
+    let isCurrent = true;
+    const checkPayment = async () => {
+      try {
+        const response = await fetch(
+          `/api/gifts/pix?paymentId=${encodeURIComponent(pixPayment.paymentId)}`,
+          { cache: "no-store" },
+        );
+        if (!response.ok) return;
+        const data = (await response.json()) as { status?: string };
+        if (isCurrent && data.status) {
+          setPixPayment((current) =>
+            current && current.status !== data.status
+              ? { ...current, status: data.status as string }
+              : current,
+          );
+        }
+      } catch {
+        // A temporary polling error does not invalidate the QR code.
+      }
+    };
+
+    const timer = window.setInterval(() => void checkPayment(), 5_000);
+    void checkPayment();
+    return () => {
+      isCurrent = false;
+      window.clearInterval(timer);
+    };
+  }, [activeModal, pixPayment]);
 
   useEffect(() => {
     const savedConfirmation = window.localStorage.getItem(
@@ -581,6 +542,9 @@ export function WeddingExperience() {
     setActiveModal(null);
     setSelectedGiftId(null);
     setSelectedGiftAmount(null);
+    setPixPayment(null);
+    setPixError("");
+    setIsCreatingPix(false);
     setPixCopied(false);
     setDownloadError("");
     setConfirmationError("");
@@ -589,6 +553,8 @@ export function WeddingExperience() {
   const openGiftList = () => {
     setSelectedGiftId(null);
     setSelectedGiftAmount(null);
+    setPixPayment(null);
+    setPixError("");
     setPixCopied(false);
     openModal("gifts");
   };
@@ -596,6 +562,8 @@ export function WeddingExperience() {
   const selectGift = (gift: GiftItem) => {
     setSelectedGiftId(gift.id);
     setSelectedGiftAmount(gift.suggestions[1]);
+    setPixPayment(null);
+    setPixError("");
     setPixCopied(false);
     window.requestAnimationFrame(() => {
       document
@@ -606,14 +574,65 @@ export function WeddingExperience() {
 
   const selectedGift =
     GIFT_ITEMS.find((gift) => gift.id === selectedGiftId) ?? null;
+  const pixIsPending =
+    pixPayment &&
+    ["pending", "in_process", "authorized"].includes(pixPayment.status);
 
-  const copyPixKey = async () => {
+  const resetPixPayment = () => {
+    setPixPayment(null);
+    setPixError("");
+    setPixCopied(false);
+  };
+
+  const copyPixCode = async () => {
+    if (!pixPayment?.qrCode) return;
     try {
-      await navigator.clipboard.writeText(TEMPORARY_PIX_KEY);
+      await navigator.clipboard.writeText(pixPayment.qrCode);
       setPixCopied(true);
       window.setTimeout(() => setPixCopied(false), 2400);
     } catch {
       setPixCopied(false);
+    }
+  };
+
+  const createPixPayment = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault();
+    if (!selectedGift || !selectedGiftAmount) return;
+
+    setIsCreatingPix(true);
+    setPixError("");
+    setPixPayment(null);
+    setPixCopied(false);
+    try {
+      const response = await fetch("/api/gifts/pix", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          giftId: selectedGift.id,
+          amount: selectedGiftAmount,
+          donorName: giftDonorName.trim(),
+          donorEmail: giftDonorEmail.trim(),
+        }),
+      });
+      const data = (await response.json().catch(() => null)) as
+        | (PixPayment & { error?: string })
+        | null;
+      if (!response.ok || !data?.paymentId) {
+        throw new Error(
+          data?.error || "Não foi possível gerar o Pix agora.",
+        );
+      }
+      setPixPayment(data);
+    } catch (error) {
+      setPixError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível gerar o Pix agora.",
+      );
+    } finally {
+      setIsCreatingPix(false);
     }
   };
 
@@ -1352,9 +1371,11 @@ export function WeddingExperience() {
                       className="gift-detail-back"
                       type="button"
                       onClick={() => {
-                        setSelectedGiftId(null);
-                        setSelectedGiftAmount(null);
-                        setPixCopied(false);
+                          setSelectedGiftId(null);
+                          setSelectedGiftAmount(null);
+                          setPixPayment(null);
+                          setPixError("");
+                          setPixCopied(false);
                         window.requestAnimationFrame(() => {
                           document
                             .querySelector(".gift-marketplace")
@@ -1403,7 +1424,10 @@ export function WeddingExperience() {
                                 }
                                 type="button"
                                 key={amount}
-                                onClick={() => setSelectedGiftAmount(amount)}
+                                onClick={() => {
+                                  setSelectedGiftAmount(amount);
+                                  resetPixPayment();
+                                }}
                               >
                                 {formatCurrency(amount)}
                               </button>
@@ -1411,32 +1435,141 @@ export function WeddingExperience() {
                           </div>
                         </fieldset>
 
-                        <div className="gift-pix">
-                          <div className="gift-pix-data">
-                            <span>Chave Pix provisória</span>
-                            <code>{TEMPORARY_PIX_KEY}</code>
-                            {selectedGiftAmount && (
-                              <small>
-                                Valor escolhido:{" "}
-                                <b>{formatCurrency(selectedGiftAmount)}</b>
-                              </small>
+                        {!pixPayment && (
+                          <form
+                            className="gift-pix-form"
+                            onSubmit={createPixPayment}
+                          >
+                            <div className="gift-pix-form-heading">
+                              <span>Gerar Pix</span>
+                              <strong>
+                                {selectedGiftAmount
+                                  ? formatCurrency(selectedGiftAmount)
+                                  : ""}
+                              </strong>
+                            </div>
+                            <label>
+                              <span>Seu nome</span>
+                              <input
+                                type="text"
+                                autoComplete="name"
+                                maxLength={120}
+                                required
+                                value={giftDonorName}
+                                onChange={(event) =>
+                                  setGiftDonorName(event.target.value)
+                                }
+                                placeholder="Nome completo"
+                              />
+                            </label>
+                            <label>
+                              <span>Seu e-mail</span>
+                              <input
+                                type="email"
+                                autoComplete="email"
+                                maxLength={180}
+                                required
+                                value={giftDonorEmail}
+                                onChange={(event) =>
+                                  setGiftDonorEmail(event.target.value)
+                                }
+                                placeholder="voce@exemplo.com"
+                              />
+                            </label>
+                            <small>
+                              O e-mail é usado somente para gerar e identificar
+                              esta contribuição.
+                            </small>
+                            {pixError && (
+                              <p className="gift-pix-error" role="alert">
+                                {pixError}
+                              </p>
                             )}
-                            <button type="button" onClick={copyPixKey}>
-                              {pixCopied ? "Chave copiada!" : "Copiar chave Pix"}
+                            <button type="submit" disabled={isCreatingPix}>
+                              {isCreatingPix
+                                ? "Gerando Pix..."
+                                : "Gerar QR Code Pix"}
                             </button>
-                            <em aria-live="polite">
-                              Dados fictícios para demonstração.
-                            </em>
-                          </div>
+                          </form>
+                        )}
 
-                          <div className="gift-qr">
-                            <img
-                              src="/pix-qr-placeholder.svg"
-                              alt="QR code Pix fictício para demonstração"
-                            />
-                            <span>QR provisório</span>
+                        {pixPayment && (
+                          <div
+                            className={`gift-pix gift-pix-${pixPayment.status}`}
+                          >
+                            {pixPayment.status === "approved" ? (
+                              <div className="gift-pix-success" role="status">
+                                <span aria-hidden="true">✓</span>
+                                <div>
+                                  <strong>Presente confirmado!</strong>
+                                  <p>
+                                    Recebemos seu carinho. Muito obrigado por
+                                    fazer parte da nossa história.
+                                  </p>
+                                </div>
+                              </div>
+                            ) : pixIsPending ? (
+                              <>
+                                <div className="gift-pix-data">
+                                  <span>Pix Copia e Cola</span>
+                                  <small>
+                                    Valor:{" "}
+                                    <b>
+                                      {selectedGiftAmount
+                                        ? formatCurrency(selectedGiftAmount)
+                                        : ""}
+                                    </b>
+                                  </small>
+                                  <button type="button" onClick={copyPixCode}>
+                                    {pixCopied
+                                      ? "Código copiado!"
+                                      : "Copiar código Pix"}
+                                  </button>
+                                  {pixPayment.ticketUrl && (
+                                    <a
+                                      href={pixPayment.ticketUrl}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                    >
+                                      Abrir página de pagamento
+                                    </a>
+                                  )}
+                                  <em aria-live="polite">
+                                    Aguardando a confirmação do pagamento…
+                                  </em>
+                                </div>
+
+                                <div className="gift-qr">
+                                  <img
+                                    src={`data:image/png;base64,${pixPayment.qrCodeBase64}`}
+                                    alt={`QR Code Pix no valor de ${
+                                      selectedGiftAmount
+                                        ? formatCurrency(selectedGiftAmount)
+                                        : ""
+                                    }`}
+                                  />
+                                  <span>Escaneie para pagar</span>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="gift-pix-failed" role="alert">
+                                <strong>Este Pix não está mais disponível.</strong>
+                                <p>
+                                  Gere um novo QR Code para concluir o presente.
+                                </p>
+                              </div>
+                            )}
+                            {pixPayment.status !== "approved" && (
+                              <button
+                                className="gift-pix-change"
+                                type="button"
+                                onClick={resetPixPayment}
+                              >
+                                Alterar dados ou valor
+                              </button>
+                            )}
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
                   </div>

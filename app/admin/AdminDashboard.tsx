@@ -14,9 +14,22 @@ type GuestRecord = {
   createdAt: string;
 };
 
+type GiftPaymentRecord = {
+  id: string;
+  mercadoPagoPaymentId: string;
+  giftTitle: string;
+  donorName: string;
+  donorEmail: string;
+  amountCents: number;
+  status: string;
+  createdAt: string;
+  paidAt: string | null;
+};
+
 export function AdminDashboard() {
   const [password, setPassword] = useState("");
   const [guests, setGuests] = useState<GuestRecord[]>([]);
+  const [giftPayments, setGiftPayments] = useState<GiftPaymentRecord[]>([]);
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [loginError, setLoginError] = useState("");
@@ -28,17 +41,25 @@ export function AdminDashboard() {
 
   const loadGuests = useCallback(async () => {
     try {
-      const response = await fetch("/api/admin/guests", {
-        cache: "no-store",
-      });
-      if (response.status === 401) {
+      const [guestResponse, giftResponse] = await Promise.all([
+        fetch("/api/admin/guests", { cache: "no-store" }),
+        fetch("/api/admin/gift-payments", { cache: "no-store" }),
+      ]);
+      if (guestResponse.status === 401 || giftResponse.status === 401) {
         setAuthenticated(false);
         setGuests([]);
+        setGiftPayments([]);
         return;
       }
-      if (!response.ok) throw new Error();
-      const data = (await response.json()) as { guests?: GuestRecord[] };
-      setGuests(data.guests ?? []);
+      if (!guestResponse.ok || !giftResponse.ok) throw new Error();
+      const guestData = (await guestResponse.json()) as {
+        guests?: GuestRecord[];
+      };
+      const giftData = (await giftResponse.json()) as {
+        payments?: GiftPaymentRecord[];
+      };
+      setGuests(guestData.guests ?? []);
+      setGiftPayments(giftData.payments ?? []);
       setAuthenticated(true);
     } catch {
       setLoginError("Não foi possível carregar as confirmações.");
@@ -72,6 +93,38 @@ export function AdminDashboard() {
     [guests],
   );
 
+  const giftTotals = useMemo(() => {
+    const approved = giftPayments.filter(
+      (payment) => payment.status === "approved",
+    );
+    return {
+      approved: approved.length,
+      pending: giftPayments.filter((payment) =>
+        ["pending", "in_process", "authorized"].includes(payment.status),
+      ).length,
+      receivedCents: approved.reduce(
+        (total, payment) => total + payment.amountCents,
+        0,
+      ),
+    };
+  }, [giftPayments]);
+
+  const formatCurrency = (amountCents: number) =>
+    new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(amountCents / 100);
+
+  const paymentStatusLabel = (status: string) => {
+    if (status === "approved") return "Pago";
+    if (["pending", "in_process", "authorized"].includes(status)) {
+      return "Aguardando";
+    }
+    if (status === "refunded") return "Reembolsado";
+    if (status === "cancelled") return "Cancelado";
+    return "Não concluído";
+  };
+
   const login = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoginError("");
@@ -99,6 +152,7 @@ export function AdminDashboard() {
     await fetch("/api/admin/logout", { method: "POST" });
     setAuthenticated(false);
     setGuests([]);
+    setGiftPayments([]);
   };
 
   const removeGuest = async (guest: GuestRecord) => {
@@ -305,8 +359,8 @@ export function AdminDashboard() {
       <header className="admin-header">
         <div>
           <p className="admin-kicker">Djalma & Victoria</p>
-          <h1>Confirmações de presença</h1>
-          <p>Uma pessoa por linha, incluindo todos os acompanhantes.</p>
+          <h1>Painel do casamento</h1>
+          <p>Confirmações de presença e presentes recebidos.</p>
         </div>
         <div className="admin-header-actions">
           <button
@@ -420,6 +474,89 @@ export function AdminDashboard() {
               <p>Nenhuma confirmação encontrada.</p>
             </div>
           )}
+        </div>
+      </section>
+
+      <section className="admin-gifts-section">
+        <div className="admin-section-heading">
+          <div>
+            <p className="admin-kicker">Lista de presentes</p>
+            <h2>Contribuições via Pix</h2>
+          </div>
+          <p>
+            A confirmação é atualizada automaticamente pelo Mercado Pago.
+          </p>
+        </div>
+
+        <div className="admin-stats admin-gift-stats">
+          <article>
+            <span>Presentes pagos</span>
+            <strong>{giftTotals.approved}</strong>
+          </article>
+          <article>
+            <span>Aguardando pagamento</span>
+            <strong>{giftTotals.pending}</strong>
+          </article>
+          <article>
+            <span>Total recebido</span>
+            <strong className="admin-money">
+              {formatCurrency(giftTotals.receivedCents)}
+            </strong>
+          </article>
+        </div>
+
+        <div className="admin-list-card">
+          <div className="admin-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Convidado</th>
+                  <th>Presente</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                  <th>Data</th>
+                </tr>
+              </thead>
+              <tbody>
+                {giftPayments.map((payment) => (
+                  <tr key={payment.id}>
+                    <td data-label="Convidado">
+                      <strong>{payment.donorName}</strong>
+                      <small className="admin-payment-email">
+                        {payment.donorEmail}
+                      </small>
+                    </td>
+                    <td data-label="Presente">{payment.giftTitle}</td>
+                    <td data-label="Valor">
+                      {formatCurrency(payment.amountCents)}
+                    </td>
+                    <td data-label="Status">
+                      <span
+                        className={`admin-payment-status ${payment.status}`}
+                      >
+                        {paymentStatusLabel(payment.status)}
+                      </span>
+                    </td>
+                    <td data-label="Data">
+                      {new Date(
+                        payment.paidAt ?? payment.createdAt,
+                      ).toLocaleString("pt-BR", {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                        timeZone: "America/Fortaleza",
+                      })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {!loading && giftPayments.length === 0 && (
+              <div className="admin-empty">
+                <span aria-hidden="true">✦</span>
+                <p>Nenhuma contribuição registrada ainda.</p>
+              </div>
+            )}
+          </div>
         </div>
       </section>
     </main>
