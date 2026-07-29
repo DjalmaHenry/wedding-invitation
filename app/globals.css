@@ -801,6 +801,10 @@ img {
   margin: 0 auto;
 }
 
+.venue-grid > * {
+  min-width: 0;
+}
+
 .map-frame {
   position: relative;
   align-self: center;
@@ -817,12 +821,17 @@ img {
   overflow: hidden;
   border-radius: 11%;
   background: #d2c09e;
+  contain: layout paint;
 }
 
 .map-viewport iframe {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
+  max-width: 100%;
   height: 100%;
+  max-height: 100%;
   border: 0;
   filter: sepia(0.14) saturate(0.82) contrast(0.95);
 }
@@ -2534,12 +2543,17 @@ img {
 
   .venue-grid {
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(150px, 42%) minmax(0, 58%);
+    grid-template-rows: clamp(150px, 24svh, 210px) minmax(0, 1fr);
     gap: 10px;
+    overflow: hidden;
   }
 
   .map-frame {
-    width: min(100%, 390px);
+    width: min(100%, 36svh, 315px);
+    max-width: 100%;
+    max-height: 100%;
+    align-self: center;
+    justify-self: center;
   }
 
   .venue-details {
