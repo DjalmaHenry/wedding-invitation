@@ -111,43 +111,43 @@ const GUIDE_TOPICS: GuideTopic[] = [
   {
     title: "Confirme sua presença",
     text: "Pedimos, com muito carinho, que confirme sua presença com antecedência, para que possamos organizar cada detalhe da melhor maneira e garantir o conforto de todos durante a celebração.",
-    image: "/guide-rsvp-painted-v1.webp",
+    image: "/guide-rsvp-painted-v2.webp",
     alt: "Caricatura de Djalma e Victoria recebendo uma confirmação de presença",
   },
   {
     title: "Chegue com tranquilidade",
     text: "Nossa cerimônia terá início pontualmente às 17:00. Para que todos possam se acomodar com tranquilidade e acompanhar esse momento desde o início, pedimos a gentileza de chegar por volta das 16:30, evitando atrasos.",
-    image: "/guide-arrival-painted-v1.webp",
+    image: "/guide-arrival-painted-v2.webp",
     alt: "Caricatura dos convidados chegando com antecedência à cerimônia",
   },
   {
     title: "Traje: esporte fino",
     text: "Escolhemos um estilo elegante e confortável para que todos aproveitem esse dia tão especial. Prefira peças bem alinhadas, tecidos leves e calçados que permitam celebrar conosco com conforto.",
-    image: "/guide-attire-painted-v1.webp",
+    image: "/guide-attire-painted-v2.webp",
     alt: "Caricatura com exemplos de trajes esporte fino",
   },
   {
     title: "Cores reservadas",
     text: "Solicitamos gentilmente que não utilizem trajes nas cores branco, off-white, tons de bege e verde-oliva, pois essas cores serão reservadas para os noivos, padrinhos e madrinhas nesse dia tão especial.",
-    image: "/guide-colors-painted-v1.webp",
+    image: "/guide-colors-painted-v2.webp",
     alt: "Caricatura orientando sobre as cores reservadas para o casamento",
   },
   {
     title: "Registre e celebre",
     text: "Tirem muitas fotos, divirtam-se, celebrem conosco e aproveitem cada momento desse dia tão especial! Sua presença fará parte de uma das lembranças mais bonitas da nossa história.",
-    image: "/guide-celebrate-painted-v1.webp",
+    image: "/guide-celebrate-painted-v2.webp",
     alt: "Caricatura dos noivos e convidados fotografando e celebrando juntos",
   },
   {
     title: "Um convite especial para você",
     text: "Este convite foi preparado com muito carinho e é destinado especialmente a você. Por isso, pedimos gentilmente que não leve acompanhantes que não tenham sido informados no ato da confirmação de presença, para que possamos manter a organização e o conforto de todos.",
-    image: "/guide-invitation-painted-v1.webp",
+    image: "/guide-invitation-painted-v2.webp",
     alt: "Caricatura de uma convidada conferindo seu nome na lista da celebração",
   },
   {
     title: "Durante o nosso sim",
     text: "Para vivermos a cerimônia com toda a emoção que ela merece, pedimos que mantenha o celular no silencioso. Depois do nosso sim, as câmeras estão liberadas para registrar cada sorriso.",
-    image: "/guide-silent-painted-v1.webp",
+    image: "/guide-silent-painted-v2.webp",
     alt: "Caricatura de um convidado colocando o celular no silencioso durante a cerimônia",
   },
 ];
@@ -159,6 +159,7 @@ const MODAL_ASSET_URLS = [
   "/menu-guide-painted-olive-v2.webp",
   ...GIFT_ITEMS.map((gift) => gift.image),
   ...GUIDE_TOPICS.map((topic) => topic.image),
+  "/guide-thanks-painted-v2.webp",
 ];
 const preloadedModalImages: HTMLImageElement[] = [];
 
@@ -1369,7 +1370,7 @@ export function WeddingExperience() {
 
                 <footer className="guest-guide-closing">
                   <img
-                    src="/guide-thanks-painted-v1.webp"
+                    src="/guide-thanks-painted-v2.webp"
                     alt="Caricatura de Djalma e Victoria agradecendo aos convidados"
                     decoding="async"
                   />
