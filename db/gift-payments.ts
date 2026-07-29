@@ -13,7 +13,8 @@ export type GiftPaymentStatus =
 
 export type GiftPaymentRecord = {
   id: string;
-  mercadoPagoPaymentId: string;
+  mercadoPagoOrderId: string;
+  mercadoPagoPaymentId: string | null;
   externalReference: string;
   giftId: string;
   giftTitle: string;
@@ -41,7 +42,8 @@ function getD1(): D1Database {
 }
 
 export async function createGiftPayment(input: {
-  mercadoPagoPaymentId: string;
+  mercadoPagoOrderId: string;
+  mercadoPagoPaymentId?: string | null;
   externalReference: string;
   giftId: string;
   giftTitle: string;
@@ -58,6 +60,7 @@ export async function createGiftPayment(input: {
     .prepare(
       `INSERT INTO gift_payments (
         id,
+        mercado_pago_order_id,
         mercado_pago_payment_id,
         external_reference,
         gift_id,
@@ -71,11 +74,12 @@ export async function createGiftPayment(input: {
         created_at,
         updated_at,
         paid_at
-      ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)`,
+      ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)`,
     )
     .bind(
       crypto.randomUUID(),
-      input.mercadoPagoPaymentId,
+      input.mercadoPagoOrderId,
+      input.mercadoPagoPaymentId ?? null,
       input.externalReference,
       input.giftId,
       input.giftTitle,
@@ -92,14 +96,15 @@ export async function createGiftPayment(input: {
     .run();
 }
 
-export async function findGiftPaymentByMercadoPagoId(
-  mercadoPagoPaymentId: string,
+export async function findGiftPaymentByMercadoPagoOrderId(
+  mercadoPagoOrderId: string,
 ): Promise<GiftPaymentRecord | null> {
   return (
     (await getD1()
       .prepare(
         `SELECT
           id,
+          mercado_pago_order_id AS mercadoPagoOrderId,
           mercado_pago_payment_id AS mercadoPagoPaymentId,
           external_reference AS externalReference,
           gift_id AS giftId,
@@ -114,16 +119,16 @@ export async function findGiftPaymentByMercadoPagoId(
           updated_at AS updatedAt,
           paid_at AS paidAt
         FROM gift_payments
-        WHERE mercado_pago_payment_id = ?1
+        WHERE mercado_pago_order_id = ?1
         LIMIT 1`,
       )
-      .bind(mercadoPagoPaymentId)
+      .bind(mercadoPagoOrderId)
       .first<GiftPaymentRecord>()) ?? null
   );
 }
 
 export async function updateGiftPaymentStatus(input: {
-  mercadoPagoPaymentId: string;
+  mercadoPagoOrderId: string;
   externalReference: string;
   status: string;
   statusDetail?: string | null;
@@ -141,7 +146,7 @@ export async function updateGiftPaymentStatus(input: {
           WHEN ?1 = 'approved' THEN COALESCE(?4, paid_at, ?3)
           ELSE paid_at
         END
-      WHERE mercado_pago_payment_id = ?5
+      WHERE mercado_pago_order_id = ?5
         AND external_reference = ?6`,
     )
     .bind(
@@ -149,7 +154,7 @@ export async function updateGiftPaymentStatus(input: {
       input.statusDetail ?? null,
       updatedAt,
       input.paidAt ?? null,
-      input.mercadoPagoPaymentId,
+      input.mercadoPagoOrderId,
       input.externalReference,
     )
     .run();
@@ -162,6 +167,7 @@ export async function listGiftPayments(): Promise<GiftPaymentRecord[]> {
     .prepare(
       `SELECT
         id,
+        mercado_pago_order_id AS mercadoPagoOrderId,
         mercado_pago_payment_id AS mercadoPagoPaymentId,
         external_reference AS externalReference,
         gift_id AS giftId,

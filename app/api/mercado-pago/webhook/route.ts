@@ -1,10 +1,10 @@
 import {
-  findGiftPaymentByMercadoPagoId,
+  findGiftPaymentByMercadoPagoOrderId,
   updateGiftPaymentStatus,
 } from "../../../../db/gift-payments";
 import {
-  getMercadoPagoPayment,
-  normalizePaymentStatus,
+  getMercadoPagoOrder,
+  normalizeOrderStatus,
 } from "../../../../lib/mercado-pago";
 
 type WebhookPayload = {
@@ -15,15 +15,15 @@ type WebhookPayload = {
 
 export async function POST(request: Request) {
   const url = new URL(request.url);
-  let paymentId =
+  let orderId =
     url.searchParams.get("data.id")?.trim() ??
     url.searchParams.get("id")?.trim() ??
     "";
 
-  if (!paymentId) {
+  if (!orderId) {
     try {
       const payload = (await request.json()) as WebhookPayload;
-      paymentId =
+      orderId =
         typeof payload.data?.id === "string" ||
         typeof payload.data?.id === "number"
           ? String(payload.data.id)
@@ -33,27 +33,28 @@ export async function POST(request: Request) {
     }
   }
 
-  if (!/^\d{1,30}$/.test(paymentId)) {
+  if (!/^ORD[A-Z0-9]{20,50}$/i.test(orderId)) {
     return Response.json({ ok: true });
   }
 
   try {
-    const record = await findGiftPaymentByMercadoPagoId(paymentId);
+    const record = await findGiftPaymentByMercadoPagoOrderId(orderId);
     if (!record) return Response.json({ ok: true });
 
     // The notification is never trusted by itself: the payment is read back
     // from Mercado Pago and must match a reference already stored by this site.
-    const payment = await getMercadoPagoPayment(paymentId);
-    if (payment.external_reference !== record.externalReference) {
+    const order = await getMercadoPagoOrder(orderId);
+    if (order.external_reference !== record.externalReference) {
       return Response.json({ ok: true });
     }
 
     await updateGiftPaymentStatus({
-      mercadoPagoPaymentId: paymentId,
+      mercadoPagoOrderId: orderId,
       externalReference: record.externalReference,
-      status: normalizePaymentStatus(payment.status),
-      statusDetail: payment.status_detail ?? null,
-      paidAt: payment.date_approved ?? null,
+      status: normalizeOrderStatus(order.status),
+      statusDetail: order.status_detail ?? null,
+      paidAt:
+        order.status === "processed" ? order.last_updated_date ?? null : null,
     });
   } catch (error) {
     console.error("Falha ao processar webhook do Mercado Pago", error);

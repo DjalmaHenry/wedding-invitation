@@ -1,13 +1,13 @@
 import {
   createGiftPayment,
-  findGiftPaymentByMercadoPagoId,
+  findGiftPaymentByMercadoPagoOrderId,
   updateGiftPaymentStatus,
 } from "../../../../db/gift-payments";
 import { findGiftItem } from "../../../../lib/gifts";
 import {
-  createMercadoPagoPix,
-  getMercadoPagoPayment,
-  normalizePaymentStatus,
+  createMercadoPagoPixOrder,
+  getMercadoPagoOrder,
+  normalizeOrderStatus,
 } from "../../../../lib/mercado-pago";
 
 type CreatePixPayload = {
@@ -67,28 +67,28 @@ export async function POST(request: Request) {
   const externalReference = `gift_${crypto.randomUUID()}`;
 
   try {
-    const payment = await createMercadoPagoPix({
+    const order = await createMercadoPagoPixOrder({
       amount,
-      description: `Presente de casamento - ${gift.title}`,
-      donorName,
       donorEmail,
       externalReference,
       idempotencyKey,
     });
-    const paymentId = String(payment.id ?? "");
-    const transactionData = payment.point_of_interaction?.transaction_data;
+    const orderId = String(order.id ?? "");
+    const transaction = order.transactions?.payments?.[0];
+    const paymentMethod = transaction?.payment_method;
 
     if (
-      !/^\d{1,30}$/.test(paymentId) ||
-      !transactionData?.qr_code ||
-      !transactionData.qr_code_base64
+      !/^ORD[A-Z0-9]{20,50}$/i.test(orderId) ||
+      !paymentMethod?.qr_code ||
+      !paymentMethod.qr_code_base64
     ) {
       throw new Error("MERCADO_PAGO_INVALID_PIX_RESPONSE");
     }
 
-    const status = normalizePaymentStatus(payment.status);
+    const status = normalizeOrderStatus(order.status);
     await createGiftPayment({
-      mercadoPagoPaymentId: paymentId,
+      mercadoPagoOrderId: orderId,
+      mercadoPagoPaymentId: transaction?.id ?? null,
       externalReference,
       giftId: gift.id,
       giftTitle: gift.title,
@@ -96,18 +96,18 @@ export async function POST(request: Request) {
       donorEmail,
       amountCents: amount * 100,
       status,
-      statusDetail: payment.status_detail ?? null,
-      ticketUrl: transactionData.ticket_url ?? null,
-      createdAt: payment.date_created,
+      statusDetail: order.status_detail ?? null,
+      ticketUrl: paymentMethod.ticket_url ?? null,
+      createdAt: order.created_date,
     });
 
     return Response.json({
-      paymentId,
+      orderId,
       status,
-      qrCode: transactionData.qr_code,
-      qrCodeBase64: transactionData.qr_code_base64,
-      ticketUrl: transactionData.ticket_url ?? null,
-      expiresAt: payment.date_of_expiration ?? null,
+      qrCode: paymentMethod.qr_code,
+      qrCodeBase64: paymentMethod.qr_code_base64,
+      ticketUrl: paymentMethod.ticket_url ?? null,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
@@ -131,14 +131,14 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const paymentId =
-    new URL(request.url).searchParams.get("paymentId")?.trim() ?? "";
-  if (!/^\d{1,30}$/.test(paymentId)) {
+  const orderId =
+    new URL(request.url).searchParams.get("orderId")?.trim() ?? "";
+  if (!/^ORD[A-Z0-9]{20,50}$/i.test(orderId)) {
     return Response.json({ error: "Pagamento inválido." }, { status: 400 });
   }
 
   try {
-    const record = await findGiftPaymentByMercadoPagoId(paymentId);
+    const record = await findGiftPaymentByMercadoPagoOrderId(orderId);
     if (!record) {
       return Response.json(
         { error: "Pagamento não encontrado." },
@@ -146,24 +146,24 @@ export async function GET(request: Request) {
       );
     }
 
-    const payment = await getMercadoPagoPayment(paymentId);
-    if (payment.external_reference !== record.externalReference) {
+    const order = await getMercadoPagoOrder(orderId);
+    if (order.external_reference !== record.externalReference) {
       return Response.json(
         { error: "Não foi possível validar o pagamento." },
         { status: 409 },
       );
     }
 
-    const status = normalizePaymentStatus(payment.status);
+    const status = normalizeOrderStatus(order.status);
     await updateGiftPaymentStatus({
-      mercadoPagoPaymentId: paymentId,
+      mercadoPagoOrderId: orderId,
       externalReference: record.externalReference,
       status,
-      statusDetail: payment.status_detail ?? null,
-      paidAt: payment.date_approved ?? null,
+      statusDetail: order.status_detail ?? null,
+      paidAt: status === "approved" ? order.last_updated_date ?? null : null,
     });
 
-    return Response.json({ paymentId, status });
+    return Response.json({ orderId, status });
   } catch (error) {
     console.error("Falha ao consultar Pix no Mercado Pago", error);
     return Response.json(

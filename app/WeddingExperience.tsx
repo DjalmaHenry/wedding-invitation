@@ -8,7 +8,7 @@ const WEDDING_DATE = new Date("2026-10-31T16:30:00-03:00").getTime();
 type ModalName = "rsvp" | "gifts" | "guide" | null;
 type FamilySide = "groom" | "bride" | null;
 type PixPayment = {
-  paymentId: string;
+  orderId: string;
   status: string;
   qrCode: string;
   qrCodeBase64: string;
@@ -382,7 +382,7 @@ export function WeddingExperience() {
     const checkPayment = async () => {
       try {
         const response = await fetch(
-          `/api/gifts/pix?paymentId=${encodeURIComponent(pixPayment.paymentId)}`,
+          `/api/gifts/pix?orderId=${encodeURIComponent(pixPayment.orderId)}`,
           { cache: "no-store" },
         );
         if (!response.ok) return;
@@ -619,7 +619,7 @@ export function WeddingExperience() {
       const data = (await response.json().catch(() => null)) as
         | (PixPayment & { error?: string })
         | null;
-      if (!response.ok || !data?.paymentId) {
+      if (!response.ok || !data?.orderId) {
         throw new Error(
           data?.error || "Não foi possível gerar o Pix agora.",
         );

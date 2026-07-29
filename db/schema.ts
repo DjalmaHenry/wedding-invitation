@@ -34,7 +34,8 @@ export const giftPayments = sqliteTable(
   "gift_payments",
   {
     id: text("id").primaryKey(),
-    mercadoPagoPaymentId: text("mercado_pago_payment_id").notNull().unique(),
+    mercadoPagoOrderId: text("mercado_pago_order_id").notNull().unique(),
+    mercadoPagoPaymentId: text("mercado_pago_payment_id"),
     externalReference: text("external_reference").notNull().unique(),
     giftId: text("gift_id").notNull(),
     giftTitle: text("gift_title").notNull(),

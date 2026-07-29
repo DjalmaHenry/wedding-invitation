@@ -1,27 +1,31 @@
 import { env } from "cloudflare:workers";
 
 const MERCADO_PAGO_API_URL = "https://api.mercadopago.com";
-export const CANONICAL_SITE_URL = "https://victoriasandy.djalmahenry.com";
 
 type RuntimeEnv = {
   MP_ACCESS_TOKEN?: string;
 };
 
-export type MercadoPagoPayment = {
-  id?: number | string;
+export type MercadoPagoOrder = {
+  id?: string;
   status?: string;
   status_detail?: string;
   external_reference?: string;
-  date_created?: string;
-  date_approved?: string | null;
-  date_of_expiration?: string | null;
-  transaction_amount?: number;
-  point_of_interaction?: {
-    transaction_data?: {
-      qr_code?: string;
-      qr_code_base64?: string;
-      ticket_url?: string;
-    };
+  created_date?: string;
+  last_updated_date?: string;
+  transactions?: {
+    payments?: Array<{
+      id?: string;
+      status?: string;
+      status_detail?: string;
+      payment_method?: {
+        id?: string;
+        type?: string;
+        qr_code?: string;
+        qr_code_base64?: string;
+        ticket_url?: string;
+      };
+    }>;
   };
 };
 
@@ -60,61 +64,57 @@ async function mercadoPagoRequest<T>(
   return data;
 }
 
-export async function createMercadoPagoPix(input: {
+export async function createMercadoPagoPixOrder(input: {
   amount: number;
-  description: string;
-  donorName: string;
   donorEmail: string;
   externalReference: string;
   idempotencyKey: string;
-}): Promise<MercadoPagoPayment> {
-  const [firstName, ...lastNameParts] = input.donorName.trim().split(/\s+/);
-  const expiration = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+}): Promise<MercadoPagoOrder> {
+  const amount = input.amount.toFixed(2);
 
-  return mercadoPagoRequest<MercadoPagoPayment>("/v1/payments", {
+  return mercadoPagoRequest<MercadoPagoOrder>("/v1/orders", {
     method: "POST",
     headers: {
       "X-Idempotency-Key": input.idempotencyKey,
     },
     body: JSON.stringify({
-      transaction_amount: input.amount,
-      description: input.description,
-      payment_method_id: "pix",
+      type: "online",
+      total_amount: amount,
       external_reference: input.externalReference,
-      notification_url: `${CANONICAL_SITE_URL}/api/mercado-pago/webhook`,
-      date_of_expiration: expiration,
+      processing_mode: "automatic",
+      transactions: {
+        payments: [
+          {
+            amount,
+            payment_method: {
+              id: "pix",
+              type: "bank_transfer",
+            },
+            expiration_time: "PT24H",
+          },
+        ],
+      },
       payer: {
         email: input.donorEmail,
-        first_name: firstName,
-        last_name: lastNameParts.join(" ") || firstName,
-      },
-      metadata: {
-        gift_reference: input.externalReference,
       },
     }),
   });
 }
 
-export async function getMercadoPagoPayment(
-  paymentId: string,
-): Promise<MercadoPagoPayment> {
-  if (!/^\d{1,30}$/.test(paymentId)) {
-    throw new Error("INVALID_MERCADO_PAGO_PAYMENT_ID");
+export async function getMercadoPagoOrder(
+  orderId: string,
+): Promise<MercadoPagoOrder> {
+  if (!/^ORD[A-Z0-9]{20,50}$/i.test(orderId)) {
+    throw new Error("INVALID_MERCADO_PAGO_ORDER_ID");
   }
-  return mercadoPagoRequest<MercadoPagoPayment>(`/v1/payments/${paymentId}`);
+  return mercadoPagoRequest<MercadoPagoOrder>(`/v1/orders/${orderId}`);
 }
 
-export function normalizePaymentStatus(status?: string): string {
-  const knownStatuses = new Set([
-    "pending",
-    "approved",
-    "authorized",
-    "in_process",
-    "in_mediation",
-    "rejected",
-    "cancelled",
-    "refunded",
-    "charged_back",
-  ]);
-  return status && knownStatuses.has(status) ? status : "pending";
+export function normalizeOrderStatus(status?: string): string {
+  if (status === "processed") return "approved";
+  if (status === "refunded") return "refunded";
+  if (status === "charged_back") return "charged_back";
+  if (status === "canceled" || status === "expired") return "cancelled";
+  if (status === "failed") return "rejected";
+  return "pending";
 }

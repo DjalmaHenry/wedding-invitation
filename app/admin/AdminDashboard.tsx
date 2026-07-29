@@ -16,7 +16,8 @@ type GuestRecord = {
 
 type GiftPaymentRecord = {
   id: string;
-  mercadoPagoPaymentId: string;
+  mercadoPagoOrderId: string;
+  mercadoPagoPaymentId: string | null;
   giftTitle: string;
   donorName: string;
   donorEmail: string;
