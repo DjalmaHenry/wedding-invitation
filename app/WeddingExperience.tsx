@@ -34,7 +34,7 @@ const GIFT_ITEMS: GiftItem[] = [
     description: "Um empurrãozinho para começarmos essa história.",
     detail:
       "Sua contribuição ajuda a transformar o primeiro trecho da nossa aventura em uma lembrança inesquecível.",
-    image: "/gift-flight-painted-v1.webp",
+    image: "/gift-flight-painted-v2.webp",
     minimum: 100,
     maximum: 800,
     suggestions: [100, 250, 500],
@@ -45,7 +45,7 @@ const GIFT_ITEMS: GiftItem[] = [
     description: "Aconchego para recarregar as energias.",
     detail:
       "Um carinho para as noites de descanso entre um novo cenário e outro, sempre com uma surpresa nos esperando.",
-    image: "/gift-stay-painted-v1.webp",
+    image: "/gift-stay-painted-v2.webp",
     minimum: 80,
     maximum: 600,
     suggestions: [80, 200, 400],
@@ -56,7 +56,7 @@ const GIFT_ITEMS: GiftItem[] = [
     description: "Um brinde aos primeiros dias dessa nova fase.",
     detail:
       "Ajude-nos a celebrar com uma experiência à mesa, feita de sabores, boas conversas e momentos só nossos.",
-    image: "/gift-dinner-painted-v1.webp",
+    image: "/gift-dinner-painted-v2.webp",
     minimum: 50,
     maximum: 350,
     suggestions: [50, 150, 300],
@@ -67,7 +67,7 @@ const GIFT_ITEMS: GiftItem[] = [
     description: "Um novo cenário para guardarmos na memória.",
     detail:
       "Sua contribuição vira tempo para explorar, admirar paisagens e colecionar histórias sem revelar o roteiro.",
-    image: "/gift-tour-painted-v1.webp",
+    image: "/gift-tour-painted-v2.webp",
     minimum: 60,
     maximum: 450,
     suggestions: [60, 180, 350],
@@ -78,7 +78,7 @@ const GIFT_ITEMS: GiftItem[] = [
     description: "Risadas e encantamento em uma parada especial.",
     detail:
       "Um presente para vivermos um dia leve, cheio de alegria e daquele friozinho bom na barriga.",
-    image: "/gift-fun-painted-v1.webp",
+    image: "/gift-fun-painted-v2.webp",
     minimum: 80,
     maximum: 500,
     suggestions: [80, 220, 400],
@@ -89,7 +89,7 @@ const GIFT_ITEMS: GiftItem[] = [
     description: "Liberdade para nossos deslocamentos de ida e volta.",
     detail:
       "Este presente ajuda na locação do carro que nos acompanhará pelos trajetos de ida e volta da viagem.",
-    image: "/gift-car-painted-v1.webp",
+    image: "/gift-car-painted-v2.webp",
     minimum: 100,
     maximum: 1000,
     suggestions: [100, 350, 700],
@@ -100,7 +100,7 @@ const GIFT_ITEMS: GiftItem[] = [
     description: "Para seguirmos pela estrada com tranquilidade.",
     detail:
       "Uma contribuição para combustível, pedágios e pequenos cuidados que deixam cada caminho mais leve.",
-    image: "/gift-road-painted-v1.webp",
+    image: "/gift-road-painted-v2.webp",
     minimum: 50,
     maximum: 400,
     suggestions: [50, 160, 300],
@@ -152,30 +152,73 @@ const GUIDE_TOPICS: GuideTopic[] = [
   },
 ];
 
-const MODAL_ASSET_URLS = [
-  "/couple-caricature-painted-olive-v2.webp",
-  "/menu-rsvp-painted-olive-v2.webp",
-  "/menu-gift-painted-olive-v2.webp",
-  "/menu-guide-painted-olive-v2.webp",
-  ...GIFT_ITEMS.map((gift) => gift.image),
-  ...GUIDE_TOPICS.map((topic) => topic.image),
-  "/guide-thanks-painted-v2.webp",
+const CORE_ASSET_URLS = [
+  "/garden-painted-olive-v1.png",
+  "/envelope-floral-background-olive-v1.png",
+  "/envelope-cutout-olive-v1.png",
+  "/djalma-profile-medallion-v2.png",
+  "/victoria-profile-medallion-v2.png",
+  "/map-frame-classic-olive-v1.png",
+  "/menu-floral-corner-painted-olive-v1.png",
+  "/menu-rsvp-painted-olive-v1.png",
+  "/menu-gift-painted-olive-v1.png",
+  "/menu-guide-painted-olive-v1.png",
+  "/google-maps-icon-painted-olive-v2.png",
+  "/waze-icon-painted-olive-v2.png",
 ];
-const preloadedModalImages: HTMLImageElement[] = [];
 
-function preloadModalAssets() {
-  if (preloadedModalImages.length > 0) return;
+const MODAL_ASSET_GROUPS: Record<Exclude<ModalName, null>, string[]> = {
+  rsvp: [
+    "/menu-rsvp-painted-olive-v1.png",
+    "/family-groom-painted-olive-v1.png",
+    "/family-bride-painted-olive-v1.png",
+    "/couple-caricature-painted-olive-v1.png",
+  ],
+  gifts: [
+    "/menu-gift-painted-olive-v1.png",
+    ...GIFT_ITEMS.map((gift) => gift.image),
+  ],
+  guide: [
+    "/menu-guide-painted-olive-v1.png",
+    ...GUIDE_TOPICS.map((topic) => topic.image),
+    "/guide-thanks-painted-v2.webp",
+  ],
+};
 
-  MODAL_ASSET_URLS.forEach((src, index) => {
+const imageLoadCache = new Map<string, Promise<void>>();
+
+function preloadImage(
+  src: string,
+  priority: "high" | "low" = "low",
+): Promise<void> {
+  const cached = imageLoadCache.get(src);
+  if (cached) return cached;
+
+  const request = new Promise<void>((resolve) => {
     const image = new Image();
     image.decoding = "async";
-    image.fetchPriority = index === 0 ? "high" : "low";
+    image.fetchPriority = priority;
     image.onload = () => {
-      void image.decode().catch(() => undefined);
+      void image
+        .decode()
+        .catch(() => undefined)
+        .finally(resolve);
     };
+    image.onerror = () => resolve();
     image.src = src;
-    preloadedModalImages.push(image);
   });
+
+  imageLoadCache.set(src, request);
+  return request;
+}
+
+function preloadImages(
+  sources: string[],
+  priority: "high" | "low" = "low",
+) {
+  return Promise.all(sources.map((src) => preloadImage(src, priority))).then(
+    () => undefined,
+  );
 }
 
 function formatCurrency(value: number) {
@@ -342,6 +385,7 @@ async function createPersonalizedInvitationPdf(
 }
 
 export function WeddingExperience() {
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [opening, setOpening] = useState(false);
   const [open, setOpen] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -349,6 +393,7 @@ export function WeddingExperience() {
     "convite" | "local" | "mais-detalhes"
   >("convite");
   const [activeModal, setActiveModal] = useState<ModalName>(null);
+  const [modalAssetsReady, setModalAssetsReady] = useState(true);
   const [familySide, setFamilySide] = useState<FamilySide>(null);
   const [guestName, setGuestName] = useState("");
   const [companions, setCompanions] = useState<string[]>([]);
@@ -370,6 +415,19 @@ export function WeddingExperience() {
     seconds: 0,
   });
   const hasOpened = useRef(false);
+  const modalLoadRequest = useRef(0);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    void preloadImages(CORE_ASSET_URLS, "high").finally(() => {
+      if (isCurrent) setIsInitialLoading(false);
+    });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
 
   useEffect(() => {
     const updateCountdown = () => setTimeLeft(getTimeLeft());
@@ -381,7 +439,10 @@ export function WeddingExperience() {
   useEffect(() => {
     if (!open) return;
 
-    const preloadTimer = window.setTimeout(preloadModalAssets, 120);
+    const modalSources = Object.values(MODAL_ASSET_GROUPS).flat();
+    const preloadTimer = window.setTimeout(() => {
+      void preloadImages(modalSources);
+    }, 300);
     return () => window.clearTimeout(preloadTimer);
   }, [open]);
 
@@ -449,7 +510,11 @@ export function WeddingExperience() {
     document.documentElement.style.overflow = "hidden";
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setActiveModal(null);
+      if (event.key === "Escape") {
+        modalLoadRequest.current += 1;
+        setModalAssetsReady(true);
+        setActiveModal(null);
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -497,7 +562,22 @@ export function WeddingExperience() {
     );
   };
 
+  const openModal = (modal: Exclude<ModalName, null>) => {
+    const requestId = modalLoadRequest.current + 1;
+    modalLoadRequest.current = requestId;
+    setModalAssetsReady(false);
+    setActiveModal(modal);
+
+    void preloadImages(MODAL_ASSET_GROUPS[modal], "high").finally(() => {
+      if (modalLoadRequest.current === requestId) {
+        setModalAssetsReady(true);
+      }
+    });
+  };
+
   const closeModal = () => {
+    modalLoadRequest.current += 1;
+    setModalAssetsReady(true);
     setActiveModal(null);
     setSelectedGiftId(null);
     setSelectedGiftAmount(null);
@@ -510,7 +590,7 @@ export function WeddingExperience() {
     setSelectedGiftId(null);
     setSelectedGiftAmount(null);
     setPixCopied(false);
-    setActiveModal("gifts");
+    openModal("gifts");
   };
 
   const selectGift = (gift: GiftItem) => {
@@ -635,6 +715,24 @@ export function WeddingExperience() {
     <main
       className={`storybook${opening ? " is-opening" : ""}${open ? " is-open" : ""}`}
     >
+      {isInitialLoading && (
+        <div
+          className="quality-loader quality-loader-site"
+          role="status"
+          aria-live="polite"
+          aria-label="Carregando o convite em alta resolução"
+        >
+          <div className="quality-loader-card">
+            <span className="quality-loader-seal" aria-hidden="true">
+              D&amp;V
+            </span>
+            <strong>Preparando nosso convite</strong>
+            <small>Carregando cada detalhe em alta resolução…</small>
+            <i aria-hidden="true" />
+          </div>
+        </div>
+      )}
+
       <section className="painted-garden" aria-label="Jardim do casamento">
         <div className="garden-art" style={gardenStyle} />
         <div className="garden-wash" />
@@ -741,7 +839,7 @@ export function WeddingExperience() {
         >
           <span className="section-rail-label">Convite</span>
           <span className="section-rail-icon">
-            <img src="/menu-rsvp-painted-olive-v2.webp" alt="" aria-hidden="true" />
+            <img src="/menu-rsvp-painted-olive-v1.png" alt="" aria-hidden="true" />
           </span>
         </a>
         <a
@@ -764,7 +862,7 @@ export function WeddingExperience() {
             <span className="section-label-mobile">Mais</span>
           </span>
           <span className="section-rail-icon">
-            <img src="/menu-guide-painted-olive-v2.webp" alt="" aria-hidden="true" />
+            <img src="/menu-guide-painted-olive-v1.png" alt="" aria-hidden="true" />
           </span>
         </a>
       </nav>
@@ -884,10 +982,10 @@ export function WeddingExperience() {
             <button
               className="menu-card"
               type="button"
-              onClick={() => setActiveModal("rsvp")}
+              onClick={() => openModal("rsvp")}
             >
               <img
-                src="/menu-rsvp-painted-olive-v2.webp"
+                src="/menu-rsvp-painted-olive-v1.png"
                 alt=""
                 aria-hidden="true"
               />
@@ -902,7 +1000,7 @@ export function WeddingExperience() {
               onClick={openGiftList}
             >
               <img
-                src="/menu-gift-painted-olive-v2.webp"
+                src="/menu-gift-painted-olive-v1.png"
                 alt=""
                 aria-hidden="true"
               />
@@ -914,10 +1012,10 @@ export function WeddingExperience() {
             <button
               className="menu-card"
               type="button"
-              onClick={() => setActiveModal("guide")}
+              onClick={() => openModal("guide")}
             >
               <img
-                src="/menu-guide-painted-olive-v2.webp"
+                src="/menu-guide-painted-olive-v1.png"
                 alt=""
                 aria-hidden="true"
               />
@@ -952,11 +1050,28 @@ export function WeddingExperience() {
               ×
             </button>
 
+            {!modalAssetsReady && (
+              <div
+                className="quality-loader quality-loader-modal"
+                role="status"
+                aria-live="polite"
+              >
+                <div className="quality-loader-card">
+                  <span className="quality-loader-seal" aria-hidden="true">
+                    D&amp;V
+                  </span>
+                  <strong>Preparando os detalhes</strong>
+                  <small>Carregando as ilustrações em alta resolução…</small>
+                  <i aria-hidden="true" />
+                </div>
+              </div>
+            )}
+
             {activeModal === "rsvp" && !isConfirmed && (
               <div className="modal-content">
                 <header className="modal-heading">
                   <img
-                    src="/menu-rsvp-painted-olive-v2.webp"
+                    src="/menu-rsvp-painted-olive-v1.png"
                     alt=""
                     aria-hidden="true"
                   />
@@ -1169,7 +1284,7 @@ export function WeddingExperience() {
                   <div className="confirmation-art">
                     <img
                       className="couple-caricature"
-                      src="/couple-caricature-painted-olive-v2.webp"
+                      src="/couple-caricature-painted-olive-v1.png"
                       decoding="async"
                       fetchPriority="high"
                       alt="Caricatura pintada de Djalma e Victoria entre rosas"
@@ -1185,7 +1300,7 @@ export function WeddingExperience() {
                   <>
                     <header className="gift-marketplace-heading">
                       <img
-                        src="/menu-gift-painted-olive-v2.webp"
+                        src="/menu-gift-painted-olive-v1.png"
                         alt=""
                         aria-hidden="true"
                       />
@@ -1333,7 +1448,7 @@ export function WeddingExperience() {
               <div className="modal-content guest-guide">
                 <header className="guest-guide-heading">
                   <img
-                    src="/menu-guide-painted-olive-v2.webp"
+                    src="/menu-guide-painted-olive-v1.png"
                     alt=""
                     aria-hidden="true"
                   />
