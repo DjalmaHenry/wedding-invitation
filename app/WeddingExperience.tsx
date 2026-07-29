@@ -111,7 +111,7 @@ const GUIDE_TOPICS: GuideTopic[] = [
   {
     title: "Confirme sua presença",
     text: "Pedimos, com muito carinho, que confirme sua presença com antecedência, para que possamos organizar cada detalhe da melhor maneira e garantir o conforto de todos durante a celebração.",
-    image: "/guide-rsvp-painted-v3.png",
+    image: "/guide-rsvp-painted-v4.png",
     alt: "Caricatura de Djalma e Victoria recebendo uma confirmação de presença",
   },
   {
