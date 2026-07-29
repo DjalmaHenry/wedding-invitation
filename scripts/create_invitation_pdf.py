@@ -165,7 +165,7 @@ def letter_paragraphs(family, names):
             "nosso casamento."
         ),
         (
-            "Nosso encontro será no sábado, 31 de outubro de 2026, às 16h20, "
+            "Nosso encontro será no sábado, 31 de outubro de 2026, às 16h30, "
             "no Villa Garden, localizado na R. Dr. Rodrigo Codes Sandoval, 76, "
             "Mondubim, Fortaleza - CE."
         ),

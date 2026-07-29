@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const WEDDING_DATE = new Date("2026-10-31T16:20:00-03:00").getTime();
+const WEDDING_DATE = new Date("2026-10-31T16:30:00-03:00").getTime();
 
 type ModalName = "rsvp" | "gifts" | "guide" | null;
 type FamilySide = "groom" | "bride" | null;
@@ -280,7 +280,7 @@ async function createPersonalizedInvitationPdf(
   const paragraphs = [
     "Queridos convidados,",
     `Com muita alegria, confirmamos a presença de ${formattedNames} em nosso casamento.`,
-    `Nosso encontro será no sábado, 31 de outubro de 2026, às 16h20, no Villa Garden, localizado na ${WEDDING_ADDRESS}.`,
+    `Nosso encontro será no sábado, 31 de outubro de 2026, às 16h30, no Villa Garden, localizado na ${WEDDING_ADDRESS}.`,
     "Esperamos vocês para fazer parte dessa história nesse dia tão especial.",
   ];
 
@@ -358,7 +358,7 @@ async function createPersonalizedInvitationPdf(
 
   outputDocument.setTitle("Djalma & Victoria - Confirmação de presença");
   outputDocument.setSubject(
-    `Casamento em 31 de outubro de 2026, às 16h20, no Villa Garden. ${familyLabel}.`,
+    `Casamento em 31 de outubro de 2026, às 16h30, no Villa Garden. ${familyLabel}.`,
   );
   outputDocument.setAuthor("Djalma & Victoria");
   outputDocument.setCreator("Convite de casamento Djalma & Victoria");
@@ -632,7 +632,7 @@ export function WeddingExperience() {
   const calendarParams = new URLSearchParams({
     action: "TEMPLATE",
     text: "Casamento de Djalma & Victoria",
-    dates: "20261031T192000Z/20261101T010000Z",
+    dates: "20261031T193000Z/20261101T010000Z",
     details: calendarDetails,
     location: WEDDING_ADDRESS,
     ctz: "America/Fortaleza",
@@ -777,7 +777,7 @@ export function WeddingExperience() {
             <span />
             <div>
               <small>às</small>
-              <strong>16:20</strong>
+              <strong>16:30</strong>
               <small>horas</small>
             </div>
           </div>
