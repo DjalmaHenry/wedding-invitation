@@ -27,7 +27,7 @@ export const GIFT_ITEMS: GiftItem[] = [
     description: "Aconchego para recarregar as energias.",
     detail:
       "Um carinho para as noites de descanso entre um novo cenário e outro, sempre com uma surpresa nos esperando.",
-    image: "/gift-stay-painted-v3.png",
+    image: "/gift-stay-painted-v4.png",
     minimum: 80,
     maximum: 600,
     suggestions: [80, 200, 400],
