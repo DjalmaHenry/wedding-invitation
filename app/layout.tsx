@@ -18,6 +18,14 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
+      <head>
+        <link
+          rel="preload"
+          href="/salut-damour-elgar.mp3"
+          as="audio"
+          type="audio/mpeg"
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

@@ -25,6 +25,10 @@ type GuideTopic = {
 const WEDDING_ADDRESS =
   "R. Dr. Rodrigo Codes Sandoval, 76 - Mondubim, Fortaleza - CE, 60711-455";
 
+const MUSIC_START_TIME = 2.95;
+const MUSIC_INITIAL_VOLUME = 0.11;
+const MUSIC_TARGET_VOLUME = 0.26;
+
 const GUIDE_TOPICS: GuideTopic[] = [
   {
     title: "Confirme sua presença",
@@ -362,6 +366,26 @@ export function WeddingExperience() {
   }, []);
 
   useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const prepareOpening = () => {
+      if (audio.currentTime < MUSIC_START_TIME) {
+        audio.currentTime = MUSIC_START_TIME;
+      }
+    };
+
+    audio.load();
+    if (audio.readyState >= HTMLMediaElement.HAVE_METADATA) {
+      prepareOpening();
+    } else {
+      audio.addEventListener("loadedmetadata", prepareOpening, { once: true });
+    }
+
+    return () => audio.removeEventListener("loadedmetadata", prepareOpening);
+  }, []);
+
+  useEffect(() => {
     const updateCountdown = () => setTimeLeft(getTimeLeft());
     updateCountdown();
     const timer = window.setInterval(updateCountdown, 1000);
@@ -512,20 +536,25 @@ export function WeddingExperience() {
 
     const audio = audioRef.current;
     if (audio) {
-      audio.currentTime = 0;
+      if (musicFadeFrame.current !== null) {
+        window.cancelAnimationFrame(musicFadeFrame.current);
+      }
+      audio.currentTime = MUSIC_START_TIME;
       audio.muted = false;
-      audio.volume = 0;
+      audio.volume = MUSIC_INITIAL_VOLUME;
       setMusicMuted(false);
 
       void audio
         .play()
         .then(() => {
           const startedAt = window.performance.now();
-          const fadeDuration = 1800;
-          const targetVolume = 0.26;
+          const fadeDuration = 900;
           const fadeIn = (now: number) => {
             const progress = Math.min((now - startedAt) / fadeDuration, 1);
-            audio.volume = targetVolume * progress;
+            const easedProgress = 1 - Math.pow(1 - progress, 3);
+            audio.volume =
+              MUSIC_INITIAL_VOLUME +
+              (MUSIC_TARGET_VOLUME - MUSIC_INITIAL_VOLUME) * easedProgress;
             if (progress < 1) {
               musicFadeFrame.current = window.requestAnimationFrame(fadeIn);
             } else {
