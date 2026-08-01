@@ -4012,6 +4012,36 @@ body:has(.admin-page) {
 
 .admin-entry-form .admin-card-title { grid-column: 1 / -1; }
 .admin-entry-form label { display: grid; gap: 6px; }
+.admin-category-field { display: grid; align-content: start; gap: 7px; }
+.admin-add-category {
+  width: fit-content;
+  padding: 0;
+  color: #5f6d3f;
+  font: 900 0.74rem "Cormorant Garamond Variable", Georgia, serif;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.admin-add-category:hover { color: #3f4d29; text-decoration: underline; }
+.admin-new-category { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 7px; }
+.admin-new-category input { min-width: 0; }
+.admin-new-category button {
+  min-height: 42px;
+  padding: 0 13px;
+  color: #fff6e5;
+  font: 900 0.7rem "Cormorant Garamond Variable", Georgia, serif;
+  background: #5f6d3f;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.admin-new-category .admin-cancel-category {
+  width: 42px;
+  padding: 0;
+  color: #765a48;
+  font-size: 1.2rem;
+  background: rgba(126, 91, 65, 0.1);
+}
 .admin-entry-form label span { color: #6a4e3e; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
 .admin-entry-form input,
 .admin-entry-form select,

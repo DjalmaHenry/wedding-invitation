@@ -89,6 +89,16 @@ export const weddingExpenses = sqliteTable(
   ],
 );
 
+export const expenseCategories = sqliteTable(
+  "expense_categories",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull().unique(),
+    createdAt: text("created_at").notNull(),
+  },
+  (table) => [index("expense_categories_name_idx").on(table.name)],
+);
+
 export const weddingChecklist = sqliteTable(
   "wedding_checklist",
   {

@@ -18,6 +18,12 @@ export type ExpenseRecord = {
   updatedAt: string;
 };
 
+export type ExpenseCategoryRecord = {
+  id: string;
+  name: string;
+  createdAt: string;
+};
+
 export type ChecklistRecord = {
   id: string;
   title: string;
@@ -124,6 +130,36 @@ export async function deleteExpense(id: string): Promise<boolean> {
     .bind(id)
     .run();
   return (result.meta.changes ?? 0) > 0;
+}
+
+export async function listExpenseCategories(): Promise<ExpenseCategoryRecord[]> {
+  const result = await getD1()
+    .prepare(
+      `SELECT id, name, created_at AS createdAt
+       FROM expense_categories
+       ORDER BY name COLLATE NOCASE ASC`,
+    )
+    .all<ExpenseCategoryRecord>();
+  return result.results ?? [];
+}
+
+export async function createExpenseCategory(
+  name: string,
+): Promise<ExpenseCategoryRecord | null> {
+  const id = crypto.randomUUID();
+  const createdAt = new Date().toISOString();
+  const result = await getD1()
+    .prepare(
+      `INSERT INTO expense_categories (id, name, created_at)
+       SELECT ?1, ?2, ?3
+       WHERE NOT EXISTS (
+         SELECT 1 FROM expense_categories WHERE LOWER(name) = LOWER(?2)
+       )`,
+    )
+    .bind(id, name, createdAt)
+    .run();
+  if ((result.meta.changes ?? 0) === 0) return null;
+  return { id, name, createdAt };
 }
 
 export async function listChecklistItems(): Promise<ChecklistRecord[]> {

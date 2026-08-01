@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import type {
   ChecklistRecord,
+  ExpenseCategoryRecord,
   ExpensePaymentType,
   ExpenseRecord,
   ServiceProviderRecord,
@@ -11,19 +12,6 @@ import type {
 } from "../../db/admin-dashboard";
 
 type ToolTab = "finance" | "checklist" | "timeline" | "providers";
-
-const EXPENSE_CATEGORIES = [
-  "Local",
-  "Buffet",
-  "Decoração",
-  "Vestuário",
-  "Fotografia e vídeo",
-  "Música",
-  "Cerimonial",
-  "Convites e papelaria",
-  "Lua de mel",
-  "Outros",
-];
 
 const EMPTY_EXPENSE = {
   description: "",
@@ -70,12 +58,16 @@ export function AdminPlanningTools({
 }) {
   const [activeTab, setActiveTab] = useState<ToolTab>("finance");
   const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
+  const [expenseCategories, setExpenseCategories] = useState<ExpenseCategoryRecord[]>([]);
   const [checklist, setChecklist] = useState<ChecklistRecord[]>([]);
   const [timeline, setTimeline] = useState<TimelineRecord[]>([]);
   const [providers, setProviders] = useState<ServiceProviderRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [categoryBusy, setCategoryBusy] = useState(false);
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
   const [expenseDraft, setExpenseDraft] = useState(EMPTY_EXPENSE);
   const [checklistTitle, setChecklistTitle] = useState("");
   const [timelineDraft, setTimelineDraft] = useState({
@@ -90,34 +82,39 @@ export function AdminPlanningTools({
     setLoading(true);
     setError("");
     try {
-      const [expenseResponse, checklistResponse, timelineResponse, providerResponse] =
+      const [expenseResponse, categoryResponse, checklistResponse, timelineResponse, providerResponse] =
         await Promise.all([
           fetch("/api/admin/expenses", { cache: "no-store" }),
+          fetch("/api/admin/expense-categories", { cache: "no-store" }),
           fetch("/api/admin/checklist", { cache: "no-store" }),
           fetch("/api/admin/timeline", { cache: "no-store" }),
           fetch("/api/admin/providers", { cache: "no-store" }),
         ]);
       if (
         !expenseResponse.ok ||
+        !categoryResponse.ok ||
         !checklistResponse.ok ||
         !timelineResponse.ok ||
         !providerResponse.ok
       ) {
         throw new Error();
       }
-      const [expenseData, checklistData, timelineData, providerData] =
+      const [expenseData, categoryData, checklistData, timelineData, providerData] =
         (await Promise.all([
           expenseResponse.json(),
+          categoryResponse.json(),
           checklistResponse.json(),
           timelineResponse.json(),
           providerResponse.json(),
         ])) as [
           { expenses?: ExpenseRecord[] },
+          { categories?: ExpenseCategoryRecord[] },
           { items?: ChecklistRecord[] },
           { items?: TimelineRecord[] },
           { providers?: ServiceProviderRecord[] },
         ];
       setExpenses(expenseData.expenses ?? []);
+      setExpenseCategories(categoryData.categories ?? []);
       setChecklist(checklistData.items ?? []);
       setTimeline(timelineData.items ?? []);
       setProviders(providerData.providers ?? []);
@@ -217,6 +214,37 @@ export function AdminPlanningTools({
       setError(cause instanceof Error ? cause.message : "Não foi possível salvar a despesa.");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const addExpenseCategory = async () => {
+    const name = newCategoryName.trim().replace(/\s+/g, " ");
+    if (name.length < 2) {
+      setError("Informe um nome válido para a nova categoria.");
+      return;
+    }
+    setCategoryBusy(true);
+    setError("");
+    try {
+      const response = await fetch("/api/admin/expense-categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      if (!response.ok) {
+        throw new Error(await readError(response, "Não foi possível criar a categoria."));
+      }
+      const data = (await response.json()) as { category: ExpenseCategoryRecord };
+      setExpenseCategories((current) =>
+        [...current, data.category].sort((a, b) => a.name.localeCompare(b.name, "pt-BR")),
+      );
+      setExpenseDraft((current) => ({ ...current, category: data.category.name }));
+      setNewCategoryName("");
+      setAddingCategory(false);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível criar a categoria.");
+    } finally {
+      setCategoryBusy(false);
     }
   };
 
@@ -437,7 +465,11 @@ export function AdminPlanningTools({
           <form className="admin-entry-form admin-expense-form" onSubmit={addExpense}>
             <div className="admin-card-title"><div><small>Novo lançamento</small><h3>Adicionar despesa</h3></div></div>
             <label><span>Descrição</span><input required maxLength={120} value={expenseDraft.description} onChange={(event) => setExpenseDraft({ ...expenseDraft, description: event.target.value })} placeholder="Ex.: Fotografia do casamento" /></label>
-            <label><span>Categoria</span><select value={expenseDraft.category} onChange={(event) => setExpenseDraft({ ...expenseDraft, category: event.target.value })}>{EXPENSE_CATEGORIES.map((item) => <option key={item}>{item}</option>)}</select></label>
+            <div className="admin-category-field">
+              <label><span>Categoria</span><select value={expenseDraft.category} onChange={(event) => setExpenseDraft({ ...expenseDraft, category: event.target.value })}>{expenseCategories.map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}</select></label>
+              {!addingCategory && <button className="admin-add-category" type="button" onClick={() => setAddingCategory(true)}>+ Adicionar nova categoria</button>}
+              {addingCategory && <div className="admin-new-category"><input autoFocus maxLength={60} value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); void addExpenseCategory(); } }} placeholder="Nome da nova categoria" aria-label="Nome da nova categoria" /><button type="button" disabled={categoryBusy} onClick={() => void addExpenseCategory()}>{categoryBusy ? "Salvando…" : "Adicionar"}</button><button className="admin-cancel-category" type="button" aria-label="Cancelar nova categoria" onClick={() => { setAddingCategory(false); setNewCategoryName(""); }}>×</button></div>}
+            </div>
             <label><span>Valor total</span><input required inputMode="decimal" value={expenseDraft.amount} onChange={(event) => setExpenseDraft({ ...expenseDraft, amount: event.target.value })} placeholder="0,00" /></label>
             <label><span>Forma de pagamento</span><select value={expenseDraft.paymentType} onChange={(event) => setExpenseDraft({ ...expenseDraft, paymentType: event.target.value as ExpensePaymentType })}><option value="pix_paid">Já pago no Pix</option><option value="installments">Pagamento parcelado</option><option value="pix_pending">Pix a pagar futuramente</option></select></label>
             {expenseDraft.paymentType === "installments" && <><label><span>Total de parcelas</span><input type="number" min="1" max="120" required value={expenseDraft.installmentsTotal} onChange={(event) => setExpenseDraft({ ...expenseDraft, installmentsTotal: event.target.value })} /></label><label><span>Parcelas já pagas</span><input type="number" min="0" max={expenseDraft.installmentsTotal} required value={expenseDraft.installmentsPaid} onChange={(event) => setExpenseDraft({ ...expenseDraft, installmentsPaid: event.target.value })} /></label></>}
