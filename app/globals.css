@@ -4101,7 +4101,7 @@ body:has(.admin-page) {
   border-radius: 12px;
 }
 
-.admin-checklist-list > div.is-complete span { color: #857666; text-decoration: line-through; }
+.admin-checklist-list > div.is-complete .admin-checklist-content strong { color: #857666; text-decoration: line-through; }
 .admin-check-button { display: grid; width: 27px; height: 27px; padding: 0; color: #fff8e9; place-items: center; background: rgba(95, 109, 63, 0.12); border: 1px solid #7e8a60; border-radius: 7px; cursor: pointer; }
 .admin-checklist-list > div.is-complete .admin-check-button { background: #5f6d3f; }
 .admin-icon-remove { width: 30px; height: 30px; padding: 0; color: #815b48; font-size: 1.15rem; background: transparent; border: 1px solid rgba(104, 67, 42, 0.2); border-radius: 50%; cursor: pointer; }
@@ -4718,6 +4718,68 @@ body:has(.admin-page) {
   transition: width 0.3s ease;
 }
 
+.admin-checklist-list > div {
+  grid-template-columns: auto minmax(0, 1fr) 152px auto;
+  grid-template-areas: "check content date remove";
+  border-left: 4px solid #d9dfd6;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.admin-checklist-list > div.is-warning {
+  background: #fff9e9;
+  border-color: #ead79d;
+  border-left-color: #c99c2d;
+}
+
+.admin-checklist-list > div.is-danger {
+  background: #fff1ef;
+  border-color: #eac8c2;
+  border-left-color: #b8584d;
+}
+
+.admin-checklist-list > div.is-complete {
+  background: #f2f6ee;
+  border-color: #dbe4d3;
+  border-left-color: #667647;
+}
+
+.admin-check-button { grid-area: check; }
+.admin-checklist-content { grid-area: content; min-width: 0; }
+.admin-checklist-content strong { display: block; overflow: hidden; color: #2d3730; font-size: 0.82rem; text-overflow: ellipsis; white-space: nowrap; }
+.admin-checklist-content small { display: inline-flex; margin-top: 4px; padding: 3px 7px; color: #737c74; font-size: 0.62rem; font-weight: 750; background: #eef1ed; border-radius: 5px; }
+.is-warning .admin-checklist-content small { color: #7b5b0d; background: #f6e8bb; }
+.is-danger .admin-checklist-content small { color: #8f3e35; background: #f4d6d1; }
+.is-complete .admin-checklist-content small { color: #506039; background: #dde7d5; }
+
+.admin-checklist-date {
+  grid-area: date;
+  display: grid;
+  gap: 3px;
+}
+
+.admin-checklist-date span {
+  color: #788079;
+  font-size: 0.57rem;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.admin-checklist-date input {
+  width: 100%;
+  min-height: 34px;
+  padding: 0 8px;
+  color: #3d473f;
+  font: 600 0.72rem var(--admin-font);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #ccd4cb;
+  border-radius: 7px;
+  outline: none;
+}
+
+.admin-checklist-date input:focus { border-color: #667647; box-shadow: 0 0 0 2px rgba(95, 109, 63, 0.1); }
+.admin-checklist-list > div > .admin-icon-remove { grid-area: remove; }
+
 .admin-list-card,
 .admin-chart-card,
 .admin-entry-form,
@@ -4865,6 +4927,16 @@ body:has(.admin-page) {
   .admin-budget-progress { grid-column: auto; }
   .admin-budget-input { grid-template-columns: auto minmax(0, 1fr); }
   .admin-budget-input button { grid-column: 1 / -1; min-height: 40px; margin: 0 4px 4px; }
+
+  .admin-checklist-list > div {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "check content remove"
+      ". date date";
+    align-items: center;
+  }
+
+  .admin-checklist-date { margin-top: 4px; }
 
   .admin-toolbar { padding: 15px; }
   .admin-table-wrap { padding: 6px 10px 10px; overflow: visible; }

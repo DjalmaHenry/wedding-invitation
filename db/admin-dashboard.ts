@@ -33,6 +33,7 @@ export type ChecklistRecord = {
   id: string;
   title: string;
   completed: boolean;
+  dueDate: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -201,9 +202,11 @@ export async function listChecklistItems(): Promise<ChecklistRecord[]> {
   const result = await getD1()
     .prepare(
       `SELECT id, title, completed, created_at AS createdAt,
-        updated_at AS updatedAt
+        due_date AS dueDate, updated_at AS updatedAt
       FROM wedding_checklist
-      ORDER BY completed ASC, created_at DESC`,
+      ORDER BY completed ASC,
+        CASE WHEN due_date IS NULL THEN 1 ELSE 0 END ASC,
+        due_date ASC, created_at DESC`,
     )
     .all<Omit<ChecklistRecord, "completed"> & { completed: number }>();
   return (result.results ?? []).map((item) => ({
@@ -214,18 +217,19 @@ export async function listChecklistItems(): Promise<ChecklistRecord[]> {
 
 export async function createChecklistItem(
   title: string,
+  dueDate: string,
 ): Promise<ChecklistRecord> {
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
   await getD1()
     .prepare(
       `INSERT INTO wedding_checklist
-       (id, title, completed, created_at, updated_at)
-       VALUES (?1, ?2, 0, ?3, ?3)`,
+      (id, title, completed, due_date, created_at, updated_at)
+       VALUES (?1, ?2, 0, ?3, ?4, ?4)`,
     )
-    .bind(id, title, now)
+    .bind(id, title, dueDate, now)
     .run();
-  return { id, title, completed: false, createdAt: now, updatedAt: now };
+  return { id, title, completed: false, dueDate, createdAt: now, updatedAt: now };
 }
 
 export async function updateChecklistItem(
@@ -239,6 +243,21 @@ export async function updateChecklistItem(
        WHERE id = ?1`,
     )
     .bind(id, completed ? 1 : 0, new Date().toISOString())
+    .run();
+  return (result.meta.changes ?? 0) > 0;
+}
+
+export async function updateChecklistDueDate(
+  id: string,
+  dueDate: string,
+): Promise<boolean> {
+  const result = await getD1()
+    .prepare(
+      `UPDATE wedding_checklist
+       SET due_date = ?2, updated_at = ?3
+       WHERE id = ?1`,
+    )
+    .bind(id, dueDate, new Date().toISOString())
     .run();
   return (result.meta.changes ?? 0) > 0;
 }

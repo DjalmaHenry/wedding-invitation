@@ -138,6 +138,7 @@ export const weddingChecklist = sqliteTable(
     completed: integer("completed", { mode: "boolean" })
       .notNull()
       .default(false),
+    dueDate: text("due_date"),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
   },

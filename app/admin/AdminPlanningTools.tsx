@@ -57,6 +57,47 @@ async function readError(response: Response, fallback: string) {
   }
 }
 
+function fortalezaDateKey(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Fortaleza",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${value("year")}-${value("month")}-${value("day")}`;
+}
+
+function checklistDeadline(item: ChecklistRecord) {
+  if (item.completed) return { tone: "is-complete", label: "Concluída" };
+  if (!item.dueDate) return { tone: "is-undated", label: "Defina uma data-limite" };
+  const today = new Date(`${fortalezaDateKey(new Date())}T12:00:00-03:00`);
+  const due = new Date(`${item.dueDate}T12:00:00-03:00`);
+  const difference = Math.round((due.getTime() - today.getTime()) / 86_400_000);
+  if (difference < 0) {
+    const days = Math.abs(difference);
+    return { tone: "is-danger", label: `Atrasada há ${days} ${days === 1 ? "dia" : "dias"}` };
+  }
+  if (difference === 0) return { tone: "is-danger", label: "Vence hoje" };
+  if (difference <= 7) {
+    return { tone: "is-warning", label: `Vence em ${difference} ${difference === 1 ? "dia" : "dias"}` };
+  }
+  return {
+    tone: "is-neutral",
+    label: `Prazo em ${due.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Fortaleza" })}`,
+  };
+}
+
+function sortChecklist(items: ChecklistRecord[]) {
+  return [...items].sort((left, right) => {
+    if (left.completed !== right.completed) return left.completed ? 1 : -1;
+    if (left.dueDate && right.dueDate) return left.dueDate.localeCompare(right.dueDate);
+    if (left.dueDate) return -1;
+    if (right.dueDate) return 1;
+    return right.createdAt.localeCompare(left.createdAt);
+  });
+}
+
 export function AdminPlanningTools({
   guestsCount,
   onProviderCountChange,
@@ -78,6 +119,7 @@ export function AdminPlanningTools({
   const [newCategoryName, setNewCategoryName] = useState("");
   const [expenseDraft, setExpenseDraft] = useState(EMPTY_EXPENSE);
   const [checklistTitle, setChecklistTitle] = useState("");
+  const [checklistDueDate, setChecklistDueDate] = useState("");
   const [timelineDraft, setTimelineDraft] = useState({
     time: "08:00",
     title: "",
@@ -331,16 +373,34 @@ export function AdminPlanningTools({
       const response = await fetch("/api/admin/checklist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: checklistTitle }),
+        body: JSON.stringify({ title: checklistTitle, dueDate: checklistDueDate }),
       });
       if (!response.ok) throw new Error(await readError(response, "Não foi possível adicionar o item."));
       const data = (await response.json()) as { item: ChecklistRecord };
-      setChecklist((current) => [data.item, ...current]);
+      setChecklist((current) => sortChecklist([data.item, ...current]));
       setChecklistTitle("");
+      setChecklistDueDate("");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Não foi possível adicionar o item.");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const updateChecklistDeadline = async (item: ChecklistRecord, dueDate: string) => {
+    const response = await fetch("/api/admin/checklist", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: item.id, dueDate }),
+    });
+    if (response.ok) {
+      setChecklist((current) =>
+        sortChecklist(
+          current.map((entry) => (entry.id === item.id ? { ...entry, dueDate } : entry)),
+        ),
+      );
+    } else {
+      setError("Não foi possível atualizar o prazo da tarefa.");
     }
   };
 
@@ -353,7 +413,9 @@ export function AdminPlanningTools({
     });
     if (response.ok) {
       setChecklist((current) =>
-        current.map((entry) => (entry.id === item.id ? { ...entry, completed } : entry)),
+        sortChecklist(
+          current.map((entry) => (entry.id === item.id ? { ...entry, completed } : entry)),
+        ),
       );
     }
   };
@@ -547,8 +609,30 @@ export function AdminPlanningTools({
 
       {!loading && activeTab === "checklist" && (
         <div className="admin-tool-panel admin-two-column-tool">
-          <form className="admin-entry-form" onSubmit={addChecklistItem}><div className="admin-card-title"><div><small>Nova pendência</small><h3>Adicionar ao checklist</h3></div></div><label><span>O que precisa ser feito?</span><input required maxLength={160} value={checklistTitle} onChange={(event) => setChecklistTitle(event.target.value)} placeholder="Ex.: Confirmar decoração do altar" /></label><button type="submit" disabled={busy}>Adicionar item</button></form>
-          <div className="admin-checklist-card"><div className="admin-card-title"><div><small>{checklistProgress}% concluído</small><h3>Checklist do casamento</h3></div><strong>{completedChecklist}/{checklist.length}</strong></div><div className="admin-progress"><i style={{ width: `${checklistProgress}%` }} /></div><div className="admin-checklist-list">{checklist.map((item) => <div className={item.completed ? "is-complete" : ""} key={item.id}><button className="admin-check-button" type="button" aria-label={item.completed ? `Desmarcar ${item.title}` : `Concluir ${item.title}`} onClick={() => void toggleChecklistItem(item)}>{item.completed ? "✓" : ""}</button><span>{item.title}</span><button className="admin-icon-remove" type="button" aria-label={`Remover ${item.title}`} onClick={() => void removeChecklistItem(item.id)}>×</button></div>)}{checklist.length === 0 && <p className="admin-muted-copy">Nenhum item adicionado ainda.</p>}</div></div>
+          <form className="admin-entry-form" onSubmit={addChecklistItem}>
+            <div className="admin-card-title"><div><small>Nova pendência</small><h3>Adicionar ao checklist</h3></div></div>
+            <label><span>O que precisa ser feito?</span><input required maxLength={160} value={checklistTitle} onChange={(event) => setChecklistTitle(event.target.value)} placeholder="Ex.: Confirmar decoração do altar" /></label>
+            <label><span>Data-limite</span><input type="date" required value={checklistDueDate} onChange={(event) => setChecklistDueDate(event.target.value)} /></label>
+            <button type="submit" disabled={busy}>Adicionar item</button>
+          </form>
+          <div className="admin-checklist-card">
+            <div className="admin-card-title"><div><small>{checklistProgress}% concluído</small><h3>Checklist do casamento</h3></div><strong>{completedChecklist}/{checklist.length}</strong></div>
+            <div className="admin-progress"><i style={{ width: `${checklistProgress}%` }} /></div>
+            <div className="admin-checklist-list">
+              {checklist.map((item) => {
+                const deadline = checklistDeadline(item);
+                return (
+                  <div className={`${deadline.tone} ${item.completed ? "is-complete" : ""}`} key={item.id}>
+                    <button className="admin-check-button" type="button" aria-label={item.completed ? `Desmarcar ${item.title}` : `Concluir ${item.title}`} onClick={() => void toggleChecklistItem(item)}>{item.completed ? "✓" : ""}</button>
+                    <div className="admin-checklist-content"><strong>{item.title}</strong><small>{deadline.label}</small></div>
+                    <label className="admin-checklist-date"><span>Prazo</span><input type="date" value={item.dueDate ?? ""} onChange={(event) => void updateChecklistDeadline(item, event.target.value)} aria-label={`Prazo de ${item.title}`} /></label>
+                    <button className="admin-icon-remove" type="button" aria-label={`Remover ${item.title}`} onClick={() => void removeChecklistItem(item.id)}>×</button>
+                  </div>
+                );
+              })}
+              {checklist.length === 0 && <p className="admin-muted-copy">Nenhum item adicionado ainda.</p>}
+            </div>
+          </div>
         </div>
       )}
 

@@ -50,6 +50,13 @@
       "when": 1785626801372,
       "tag": "0006_shallow_doctor_octopus",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1785627203674,
+      "tag": "0007_talented_hannibal_king",
+      "breakpoints": true
     }
   ]
 }

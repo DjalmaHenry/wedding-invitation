@@ -1,0 +1,1 @@
+ALTER TABLE `wedding_checklist` ADD `due_date` text;
