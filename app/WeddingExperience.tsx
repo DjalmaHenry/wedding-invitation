@@ -779,7 +779,7 @@ export function WeddingExperience() {
   };
 
   const gardenStyle = {
-    transform: `scale(${(opening ? 1.04 : 1.24) + progress * 0.34}) translateY(${progress * 3.5}%)`,
+    transform: `scale(${(opening ? 1.04 : 1.24) + progress * 0.42}) translateY(${progress * 3.5}%)`,
   };
 
   return (
