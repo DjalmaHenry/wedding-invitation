@@ -11,6 +11,13 @@ export type GuestRecord = {
   createdAt: string;
 };
 
+export type InvitedGuestRecord = {
+  id: string;
+  firstName: string;
+  normalizedFirstName: string;
+  createdAt: string;
+};
+
 type RuntimeEnv = {
   DB?: D1Database;
 };
@@ -94,5 +101,56 @@ export async function deleteGuest(id: string): Promise<boolean> {
     .bind(id)
     .run();
 
+  return (result.meta.changes ?? 0) > 0;
+}
+
+export async function listInvitedGuests(): Promise<InvitedGuestRecord[]> {
+  const result = await getD1()
+    .prepare(
+      `SELECT id, first_name AS firstName,
+        normalized_first_name AS normalizedFirstName,
+        created_at AS createdAt
+       FROM invited_guests
+       ORDER BY first_name COLLATE NOCASE ASC, created_at ASC`,
+    )
+    .all<InvitedGuestRecord>();
+  return result.results ?? [];
+}
+
+export async function createInvitedGuests(
+  names: Array<{ firstName: string; normalizedFirstName: string }>,
+): Promise<InvitedGuestRecord[]> {
+  if (names.length === 0) return [];
+  const database = getD1();
+  const createdAt = new Date().toISOString();
+  const records = names.map((name) => ({
+    id: crypto.randomUUID(),
+    ...name,
+    createdAt,
+  }));
+  await database.batch(
+    records.map((record) =>
+      database
+        .prepare(
+          `INSERT INTO invited_guests
+           (id, first_name, normalized_first_name, created_at)
+           VALUES (?1, ?2, ?3, ?4)`,
+        )
+        .bind(
+          record.id,
+          record.firstName,
+          record.normalizedFirstName,
+          record.createdAt,
+        ),
+    ),
+  );
+  return records;
+}
+
+export async function deleteInvitedGuest(id: string): Promise<boolean> {
+  const result = await getD1()
+    .prepare("DELETE FROM invited_guests WHERE id = ?1")
+    .bind(id)
+    .run();
   return (result.meta.changes ?? 0) > 0;
 }

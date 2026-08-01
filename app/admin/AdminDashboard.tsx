@@ -15,6 +15,13 @@ type GuestRecord = {
   createdAt: string;
 };
 
+type InvitedGuestRecord = {
+  id: string;
+  firstName: string;
+  normalizedFirstName: string;
+  createdAt: string;
+};
+
 type GiftPaymentRecord = {
   id: string;
   mercadoPagoOrderId: string;
@@ -28,9 +35,26 @@ type GiftPaymentRecord = {
   paidAt: string | null;
 };
 
+function normalizeFirstName(value: string) {
+  return (value.trim().split(/\s+/)[0] ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("pt-BR");
+}
+
+async function readResponseError(response: Response, fallback: string) {
+  try {
+    const body = (await response.json()) as { error?: string };
+    return body.error || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export function AdminDashboard() {
   const [password, setPassword] = useState("");
   const [guests, setGuests] = useState<GuestRecord[]>([]);
+  const [invitedGuests, setInvitedGuests] = useState<InvitedGuestRecord[]>([]);
   const [giftPayments, setGiftPayments] = useState<GiftPaymentRecord[]>([]);
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,27 +66,41 @@ export function AdminDashboard() {
   const [exportError, setExportError] = useState("");
   const [providerCount, setProviderCount] = useState(0);
   const [daysUntilWedding, setDaysUntilWedding] = useState<number | null>(null);
+  const [invitedNamesDraft, setInvitedNamesDraft] = useState("");
+  const [invitedBusy, setInvitedBusy] = useState(false);
+  const [invitedError, setInvitedError] = useState("");
+  const [deletingInvitedId, setDeletingInvitedId] = useState<string | null>(null);
 
   const loadGuests = useCallback(async () => {
     try {
-      const [guestResponse, giftResponse] = await Promise.all([
+      const [guestResponse, invitedResponse, giftResponse] = await Promise.all([
         fetch("/api/admin/guests", { cache: "no-store" }),
+        fetch("/api/admin/invited-guests", { cache: "no-store" }),
         fetch("/api/admin/gift-payments", { cache: "no-store" }),
       ]);
-      if (guestResponse.status === 401 || giftResponse.status === 401) {
+      if (
+        guestResponse.status === 401 ||
+        invitedResponse.status === 401 ||
+        giftResponse.status === 401
+      ) {
         setAuthenticated(false);
         setGuests([]);
+        setInvitedGuests([]);
         setGiftPayments([]);
         return;
       }
-      if (!guestResponse.ok || !giftResponse.ok) throw new Error();
+      if (!guestResponse.ok || !invitedResponse.ok || !giftResponse.ok) throw new Error();
       const guestData = (await guestResponse.json()) as {
         guests?: GuestRecord[];
       };
       const giftData = (await giftResponse.json()) as {
         payments?: GiftPaymentRecord[];
       };
+      const invitedData = (await invitedResponse.json()) as {
+        invitedGuests?: InvitedGuestRecord[];
+      };
       setGuests(guestData.guests ?? []);
+      setInvitedGuests(invitedData.invitedGuests ?? []);
       setGiftPayments(giftData.payments ?? []);
       setAuthenticated(true);
     } catch {
@@ -116,6 +154,29 @@ export function AdminDashboard() {
     }),
     [guests],
   );
+
+  const invitedRoster = useMemo(() => {
+    const confirmedByFirstName = new Map<string, GuestRecord[]>();
+    guests.forEach((guest) => {
+      const key = normalizeFirstName(guest.name);
+      if (!key) return;
+      const matches = confirmedByFirstName.get(key) ?? [];
+      matches.push(guest);
+      confirmedByFirstName.set(key, matches);
+    });
+    return invitedGuests.map((invitedGuest) => {
+      const matches = confirmedByFirstName.get(invitedGuest.normalizedFirstName) ?? [];
+      const matchedGuest = matches.shift() ?? null;
+      confirmedByFirstName.set(invitedGuest.normalizedFirstName, matches);
+      return { ...invitedGuest, matchedGuest };
+    });
+  }, [guests, invitedGuests]);
+
+  const invitedMatchedCount = invitedRoster.filter((item) => item.matchedGuest).length;
+  const invitedPendingCount = invitedRoster.length - invitedMatchedCount;
+  const invitedProgress = invitedRoster.length
+    ? Math.round((invitedMatchedCount / invitedRoster.length) * 100)
+    : 0;
 
   const occupiedSpots = totals.all + providerCount;
 
@@ -178,7 +239,59 @@ export function AdminDashboard() {
     await fetch("/api/admin/logout", { method: "POST" });
     setAuthenticated(false);
     setGuests([]);
+    setInvitedGuests([]);
     setGiftPayments([]);
+  };
+
+  const addInvitedNames = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const names = invitedNamesDraft
+      .split(/[\n,;]+/)
+      .map((name) => name.trim())
+      .filter(Boolean);
+    if (names.length === 0) {
+      setInvitedError("Digite ao menos um primeiro nome.");
+      return;
+    }
+    setInvitedBusy(true);
+    setInvitedError("");
+    try {
+      const response = await fetch("/api/admin/invited-guests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ names }),
+      });
+      if (!response.ok) {
+        throw new Error(await readResponseError(response, "Não foi possível adicionar os nomes."));
+      }
+      const data = (await response.json()) as { invitedGuests: InvitedGuestRecord[] };
+      setInvitedGuests((current) =>
+        [...current, ...data.invitedGuests].sort((a, b) =>
+          a.firstName.localeCompare(b.firstName, "pt-BR"),
+        ),
+      );
+      setInvitedNamesDraft("");
+    } catch (cause) {
+      setInvitedError(cause instanceof Error ? cause.message : "Não foi possível adicionar os nomes.");
+    } finally {
+      setInvitedBusy(false);
+    }
+  };
+
+  const removeInvitedName = async (item: InvitedGuestRecord) => {
+    if (!window.confirm(`Remover ${item.firstName} da lista de convidados esperados?`)) return;
+    setDeletingInvitedId(item.id);
+    try {
+      const response = await fetch(
+        `/api/admin/invited-guests?id=${encodeURIComponent(item.id)}`,
+        { method: "DELETE" },
+      );
+      if (response.ok) {
+        setInvitedGuests((current) => current.filter((entry) => entry.id !== item.id));
+      }
+    } finally {
+      setDeletingInvitedId(null);
+    }
   };
 
   const removeGuest = async (guest: GuestRecord) => {
@@ -428,6 +541,83 @@ export function AdminDashboard() {
           <span>Família da noiva</span>
           <strong>{totals.noiva}</strong>
         </article>
+        <article>
+          <span>Aguardando retorno</span>
+          <strong>{invitedPendingCount}</strong>
+        </article>
+      </section>
+
+      <section className="admin-guests-section">
+        <div className="admin-section-heading">
+          <div>
+            <p className="admin-kicker">Gestão de convidados</p>
+            <h2>Lista planejada e confirmações</h2>
+          </div>
+          <p>
+            O painel cruza automaticamente cada primeiro nome com as confirmações recebidas.
+          </p>
+        </div>
+
+        <div className="admin-roster-card">
+          <form className="admin-roster-form" onSubmit={addInvitedNames}>
+            <div>
+              <span className="admin-eyebrow">Base de convidados</span>
+              <h3>Adicionar primeiros nomes</h3>
+              <p>Digite um nome por linha. Também aceitamos nomes separados por vírgula.</p>
+            </div>
+            <label>
+              <span>Primeiros nomes</span>
+              <textarea
+                value={invitedNamesDraft}
+                onChange={(event) => setInvitedNamesDraft(event.target.value)}
+                placeholder={"Ex.:\nAna\nCarlos\nJosé"}
+                maxLength={4000}
+                required
+              />
+            </label>
+            {invitedError && <p className="admin-inline-error" role="alert">{invitedError}</p>}
+            <button type="submit" disabled={invitedBusy}>
+              {invitedBusy ? "Adicionando…" : "Adicionar à lista"}
+            </button>
+          </form>
+
+          <div className="admin-roster-overview">
+            <div className="admin-roster-summary">
+              <div><strong>{invitedRoster.length}</strong><span>planejados</span></div>
+              <div><strong>{invitedMatchedCount}</strong><span>confirmados</span></div>
+              <div><strong>{invitedPendingCount}</strong><span>pendentes</span></div>
+              <div className="admin-roster-percentage"><strong>{invitedProgress}%</strong><span>de retorno</span></div>
+            </div>
+            <div className="admin-progress admin-roster-progress" aria-label={`${invitedProgress}% dos convidados planejados confirmados`}>
+              <i style={{ width: `${invitedProgress}%` }} />
+            </div>
+            <div className="admin-roster-list">
+              {invitedRoster.map((item) => (
+                <article className={item.matchedGuest ? "is-matched" : "is-pending"} key={item.id}>
+                  <span className="admin-roster-check" aria-hidden="true">{item.matchedGuest ? "✓" : ""}</span>
+                  <div>
+                    <strong>{item.firstName}</strong>
+                    <small>{item.matchedGuest ? `Confirmado como ${item.matchedGuest.name}` : "Aguardando confirmação"}</small>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label={`Remover ${item.firstName}`}
+                    disabled={deletingInvitedId === item.id}
+                    onClick={() => void removeInvitedName(item)}
+                  >
+                    ×
+                  </button>
+                </article>
+              ))}
+              {invitedRoster.length === 0 && (
+                <div className="admin-roster-empty">
+                  <strong>Sua lista começa aqui</strong>
+                  <p>Adicione os primeiros nomes para acompanhar automaticamente quem já confirmou.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </section>
 
       <section className="admin-list-card">

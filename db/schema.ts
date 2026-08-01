@@ -30,6 +30,22 @@ export const guests = sqliteTable(
   ],
 );
 
+export const invitedGuests = sqliteTable(
+  "invited_guests",
+  {
+    id: text("id").primaryKey(),
+    firstName: text("first_name").notNull(),
+    normalizedFirstName: text("normalized_first_name").notNull(),
+    createdAt: text("created_at").notNull(),
+  },
+  (table) => [
+    index("invited_guests_normalized_first_name_idx").on(
+      table.normalizedFirstName,
+    ),
+    index("invited_guests_created_at_idx").on(table.createdAt),
+  ],
+);
+
 export const giftPayments = sqliteTable(
   "gift_payments",
   {
