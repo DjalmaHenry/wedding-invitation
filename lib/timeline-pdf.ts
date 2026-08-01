@@ -79,7 +79,7 @@ export async function createTimelinePdf(
     });
 
     page.drawRectangle({ x: 130, y: 674, width: 335, height: 122, color: paper });
-    const title = pageIndex === 0 ? "CRONOGRAMA DO DIA" : "CONTINUAÇÃO DO CRONOGRAMA";
+    const title = pageIndex === 0 ? "CRONOGRAMA DA CERIMONIALISTA" : "CONTINUAÇÃO DO CRONOGRAMA";
     const titleSize = pageIndex === 0 ? 12 : 10.5;
     const titleWidth = bold.widthOfTextAtSize(title, titleSize);
     page.drawText(title, {
@@ -180,7 +180,7 @@ export async function createTimelinePdf(
     });
   }
 
-  outputDocument.setTitle("Djalma & Victoria - Cronograma do casamento");
+  outputDocument.setTitle("Djalma & Victoria - Cronograma da cerimonialista");
   outputDocument.setAuthor("Djalma & Victoria");
   outputDocument.setCreator("Dashboard do casamento");
   return outputDocument.save();

@@ -115,6 +115,21 @@ export const expenseCategories = sqliteTable(
   (table) => [index("expense_categories_name_idx").on(table.name)],
 );
 
+export const weddingFinanceSettings = sqliteTable(
+  "wedding_finance_settings",
+  {
+    id: text("id").primaryKey(),
+    totalPlannedCents: integer("total_planned_cents").notNull().default(0),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => [
+    check(
+      "wedding_finance_settings_total_check",
+      sql`${table.totalPlannedCents} >= 0`,
+    ),
+  ],
+);
+
 export const weddingChecklist = sqliteTable(
   "wedding_checklist",
   {

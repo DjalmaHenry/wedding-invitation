@@ -4598,6 +4598,126 @@ body:has(.admin-page) {
 .admin-roster-empty p { max-width: 430px; margin: 6px auto 0; font-size: 0.78rem; line-height: 1.5; }
 .admin-guests-section + .admin-list-card { margin-top: 16px; }
 
+.admin-budget-card {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.8fr) minmax(0, 1.2fr);
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #dce2da;
+  border-radius: 16px;
+  box-shadow: 0 7px 24px rgba(41, 52, 43, 0.05);
+}
+
+.admin-budget-card form {
+  display: grid;
+  padding: 22px 24px;
+  align-content: center;
+  gap: 15px;
+  background: #f7f9f5;
+  border-right: 1px solid #e1e6df;
+}
+
+.admin-budget-card small {
+  color: #617044;
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.admin-budget-card h3 {
+  margin: 4px 0 5px;
+  color: #263029;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.admin-budget-card p {
+  margin: 0;
+  color: #737c74;
+  font-size: 0.78rem;
+}
+
+.admin-budget-input {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #cbd3ca;
+  border-radius: 10px;
+}
+
+.admin-budget-input > span {
+  padding-left: 13px;
+  color: #687169;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.admin-budget-input input {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 9px;
+  color: #263029;
+  font: 650 0.95rem var(--admin-font);
+  background: transparent;
+  border: 0;
+  outline: none;
+}
+
+.admin-budget-input button {
+  min-height: 36px;
+  margin-right: 4px;
+  padding: 0 14px;
+  color: #fff;
+  font: 750 0.7rem var(--admin-font);
+  background: #5f6d3f;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.admin-budget-input button:disabled { cursor: wait; opacity: 0.6; }
+
+.admin-budget-overview {
+  display: grid;
+  padding: 22px 24px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-content: center;
+  gap: 12px;
+}
+
+.admin-budget-overview > div:not(.admin-budget-progress) {
+  padding: 13px;
+  background: #f7f8f6;
+  border: 1px solid #e5e9e3;
+  border-radius: 10px;
+}
+
+.admin-budget-overview span,
+.admin-budget-overview strong { display: block; }
+.admin-budget-overview span { color: #737c74; font-size: 0.64rem; font-weight: 750; letter-spacing: 0.05em; text-transform: uppercase; }
+.admin-budget-overview strong { margin-top: 5px; color: #42502f; font-size: clamp(0.95rem, 1.8vw, 1.25rem); }
+.admin-budget-overview .is-over-budget { background: #fbf1ef !important; border-color: #efd9d5 !important; }
+.admin-budget-overview .is-over-budget strong { color: #924f45; }
+
+.admin-budget-progress {
+  grid-column: 1 / -1;
+  height: 8px;
+  overflow: hidden;
+  background: #e8ece5;
+  border-radius: 999px;
+}
+
+.admin-budget-progress i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #5f6d3f, #8c9a68);
+  border-radius: inherit;
+  transition: width 0.3s ease;
+}
+
 .admin-list-card,
 .admin-chart-card,
 .admin-entry-form,
@@ -4738,6 +4858,13 @@ body:has(.admin-page) {
   .admin-roster-summary > div { padding: 10px; }
   .admin-roster-list { max-height: 380px; grid-template-columns: 1fr; }
   .admin-roster-list article { padding: 11px; }
+
+  .admin-budget-card { grid-template-columns: 1fr; }
+  .admin-budget-card form { padding: 18px; border-right: 0; border-bottom: 1px solid #e1e6df; }
+  .admin-budget-overview { padding: 16px; grid-template-columns: 1fr; gap: 8px; }
+  .admin-budget-progress { grid-column: auto; }
+  .admin-budget-input { grid-template-columns: auto minmax(0, 1fr); }
+  .admin-budget-input button { grid-column: 1 / -1; min-height: 40px; margin: 0 4px 4px; }
 
   .admin-toolbar { padding: 15px; }
   .admin-table-wrap { padding: 6px 10px 10px; overflow: visible; }

@@ -7,6 +7,7 @@ import type {
   ExpenseCategoryRecord,
   ExpensePaymentType,
   ExpenseRecord,
+  FinanceBudgetRecord,
   ServiceProviderRecord,
   TimelineRecord,
 } from "../../db/admin-dashboard";
@@ -38,6 +39,13 @@ function parseMoneyToCents(value: string) {
     .replace(",", ".");
   const number = Number(normalized);
   return Number.isFinite(number) ? Math.round(number * 100) : 0;
+}
+
+function centsToInput(amountCents: number) {
+  return new Intl.NumberFormat("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amountCents / 100);
 }
 
 async function readError(response: Response, fallback: string) {
@@ -77,15 +85,19 @@ export function AdminPlanningTools({
   });
   const [providerDraft, setProviderDraft] = useState({ name: "", role: "" });
   const [exportingTimeline, setExportingTimeline] = useState(false);
+  const [plannedBudgetCents, setPlannedBudgetCents] = useState(0);
+  const [plannedBudgetInput, setPlannedBudgetInput] = useState("");
+  const [budgetBusy, setBudgetBusy] = useState(false);
 
   const loadPlanningData = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const [expenseResponse, categoryResponse, checklistResponse, timelineResponse, providerResponse] =
+      const [expenseResponse, categoryResponse, budgetResponse, checklistResponse, timelineResponse, providerResponse] =
         await Promise.all([
           fetch("/api/admin/expenses", { cache: "no-store" }),
           fetch("/api/admin/expense-categories", { cache: "no-store" }),
+          fetch("/api/admin/finance-budget", { cache: "no-store" }),
           fetch("/api/admin/checklist", { cache: "no-store" }),
           fetch("/api/admin/timeline", { cache: "no-store" }),
           fetch("/api/admin/providers", { cache: "no-store" }),
@@ -93,28 +105,34 @@ export function AdminPlanningTools({
       if (
         !expenseResponse.ok ||
         !categoryResponse.ok ||
+        !budgetResponse.ok ||
         !checklistResponse.ok ||
         !timelineResponse.ok ||
         !providerResponse.ok
       ) {
         throw new Error();
       }
-      const [expenseData, categoryData, checklistData, timelineData, providerData] =
+      const [expenseData, categoryData, budgetData, checklistData, timelineData, providerData] =
         (await Promise.all([
           expenseResponse.json(),
           categoryResponse.json(),
+          budgetResponse.json(),
           checklistResponse.json(),
           timelineResponse.json(),
           providerResponse.json(),
         ])) as [
           { expenses?: ExpenseRecord[] },
           { categories?: ExpenseCategoryRecord[] },
+          { budget?: FinanceBudgetRecord },
           { items?: ChecklistRecord[] },
           { items?: TimelineRecord[] },
           { providers?: ServiceProviderRecord[] },
         ];
       setExpenses(expenseData.expenses ?? []);
       setExpenseCategories(categoryData.categories ?? []);
+      const loadedBudget = budgetData.budget?.totalPlannedCents ?? 0;
+      setPlannedBudgetCents(loadedBudget);
+      setPlannedBudgetInput(loadedBudget > 0 ? centsToInput(loadedBudget) : "");
       setChecklist(checklistData.items ?? []);
       setTimeline(timelineData.items ?? []);
       setProviders(providerData.providers ?? []);
@@ -179,6 +197,11 @@ export function AdminPlanningTools({
       .sort((left, right) => right.amountCents - left.amountCents);
   }, [expenses]);
 
+  const budgetRemaining = plannedBudgetCents - finances.total;
+  const budgetProgress = plannedBudgetCents
+    ? Math.min((finances.total / plannedBudgetCents) * 100, 100)
+    : 0;
+
   const completedChecklist = checklist.filter((item) => item.completed).length;
   const checklistProgress = checklist.length
     ? Math.round((completedChecklist / checklist.length) * 100)
@@ -214,6 +237,34 @@ export function AdminPlanningTools({
       setError(cause instanceof Error ? cause.message : "Não foi possível salvar a despesa.");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const savePlannedBudget = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const totalPlannedCents = parseMoneyToCents(plannedBudgetInput);
+    if (totalPlannedCents <= 0) {
+      setError("Informe um valor válido para o orçamento planejado.");
+      return;
+    }
+    setBudgetBusy(true);
+    setError("");
+    try {
+      const response = await fetch("/api/admin/finance-budget", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ totalPlannedCents }),
+      });
+      if (!response.ok) {
+        throw new Error(await readError(response, "Não foi possível salvar o orçamento."));
+      }
+      const data = (await response.json()) as { budget: FinanceBudgetRecord };
+      setPlannedBudgetCents(data.budget.totalPlannedCents);
+      setPlannedBudgetInput(centsToInput(data.budget.totalPlannedCents));
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível salvar o orçamento.");
+    } finally {
+      setBudgetBusy(false);
     }
   };
 
@@ -352,7 +403,7 @@ export function AdminPlanningTools({
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = "cronograma-casamento-djalma-victoria.pdf";
+      anchor.download = "cronograma-cerimonialista-djalma-victoria.pdf";
       anchor.click();
       window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
     } catch {
@@ -408,7 +459,7 @@ export function AdminPlanningTools({
         {([
           ["finance", "Financeiro"],
           ["checklist", `Checklist ${completedChecklist}/${checklist.length}`],
-          ["timeline", "Cronograma"],
+          ["timeline", "Cronograma da cerimonialista"],
           ["providers", `Prestadores ${providers.length}`],
         ] as [ToolTab, string][]).map(([tab, label]) => (
           <button
@@ -427,8 +478,21 @@ export function AdminPlanningTools({
 
       {!loading && activeTab === "finance" && (
         <div className="admin-tool-panel">
+          <section className="admin-budget-card">
+            <form onSubmit={savePlannedBudget}>
+              <div><small>Orçamento geral</small><h3>Total planejado</h3><p>Defina quanto vocês pretendem investir no casamento.</p></div>
+              <div className="admin-budget-input"><span>R$</span><input required inputMode="decimal" value={plannedBudgetInput} onChange={(event) => setPlannedBudgetInput(event.target.value)} placeholder="0,00" aria-label="Total planejado para o casamento" /><button type="submit" disabled={budgetBusy}>{budgetBusy ? "Salvando…" : plannedBudgetCents ? "Atualizar" : "Salvar"}</button></div>
+            </form>
+            <div className="admin-budget-overview">
+              <div><span>Orçamento</span><strong>{plannedBudgetCents ? money(plannedBudgetCents) : "Não definido"}</strong></div>
+              <div><span>Gastos lançados</span><strong>{money(finances.total)}</strong></div>
+              <div className={budgetRemaining < 0 ? "is-over-budget" : ""}><span>{budgetRemaining < 0 ? "Acima do orçamento" : "Ainda disponível"}</span><strong>{plannedBudgetCents ? money(Math.abs(budgetRemaining)) : "—"}</strong></div>
+              <div className="admin-budget-progress" aria-label={`${Math.round(budgetProgress)}% do orçamento comprometido`}><i style={{ width: `${budgetProgress}%` }} /></div>
+            </div>
+          </section>
+
           <div className="admin-finance-stats">
-            <article><span>Total planejado</span><strong>{money(finances.total)}</strong></article>
+            <article><span>Total lançado</span><strong>{money(finances.total)}</strong></article>
             <article><span>Pago no Pix</span><strong>{money(finances.paidPix)}</strong></article>
             <article><span>Em parcelas</span><strong>{money(finances.installments)}</strong><small>{money(finances.installmentsPaid)} já pago</small></article>
             <article><span>Pix futuro</span><strong>{money(finances.futurePix)}</strong></article>
@@ -490,8 +554,8 @@ export function AdminPlanningTools({
 
       {!loading && activeTab === "timeline" && (
         <div className="admin-tool-panel admin-two-column-tool">
-          <form className="admin-entry-form" onSubmit={addTimelineItem}><div className="admin-card-title"><div><small>Nova etapa</small><h3>Montar cronograma</h3></div></div><label><span>Horário</span><input type="time" required value={timelineDraft.time} onChange={(event) => setTimelineDraft({ ...timelineDraft, time: event.target.value })} /></label><label><span>Tarefa</span><input required maxLength={120} value={timelineDraft.title} onChange={(event) => setTimelineDraft({ ...timelineDraft, title: event.target.value })} placeholder="Ex.: Receber equipe de decoração" /></label><label><span>Orientações para a cerimonialista</span><textarea maxLength={500} value={timelineDraft.details} onChange={(event) => setTimelineDraft({ ...timelineDraft, details: event.target.value })} placeholder="Responsáveis, contatos ou observações importantes" /></label><button type="submit" disabled={busy}>Adicionar ao cronograma</button></form>
-          <div className="admin-timeline-card"><div className="admin-card-title"><div><small>31 de outubro</small><h3>Roteiro do grande dia</h3></div><button className="admin-small-action" type="button" disabled={exportingTimeline} onClick={() => void exportTimelinePdf()}>{exportingTimeline ? "Gerando…" : "Exportar PDF"}</button></div><div className="admin-timeline-list">{timeline.map((item) => <article key={item.id}><time>{item.time}</time><div><strong>{item.title}</strong>{item.details && <p>{item.details}</p>}</div><button className="admin-icon-remove" type="button" aria-label={`Remover ${item.title}`} onClick={() => void removeTimelineItem(item.id)}>×</button></article>)}{timeline.length === 0 && <p className="admin-muted-copy">Adicione os primeiros horários para montar o roteiro.</p>}</div></div>
+          <form className="admin-entry-form" onSubmit={addTimelineItem}><div className="admin-card-title"><div><small>Nova etapa</small><h3>Montar cronograma da cerimonialista</h3></div></div><label><span>Horário</span><input type="time" required value={timelineDraft.time} onChange={(event) => setTimelineDraft({ ...timelineDraft, time: event.target.value })} /></label><label><span>Tarefa</span><input required maxLength={120} value={timelineDraft.title} onChange={(event) => setTimelineDraft({ ...timelineDraft, title: event.target.value })} placeholder="Ex.: Receber equipe de decoração" /></label><label><span>Orientações para a cerimonialista</span><textarea maxLength={500} value={timelineDraft.details} onChange={(event) => setTimelineDraft({ ...timelineDraft, details: event.target.value })} placeholder="Responsáveis, contatos ou observações importantes" /></label><button type="submit" disabled={busy}>Adicionar ao cronograma</button></form>
+          <div className="admin-timeline-card"><div className="admin-card-title"><div><small>31 de outubro</small><h3>Cronograma da cerimonialista</h3></div><button className="admin-small-action" type="button" disabled={exportingTimeline} onClick={() => void exportTimelinePdf()}>{exportingTimeline ? "Gerando…" : "Exportar PDF"}</button></div><div className="admin-timeline-list">{timeline.map((item) => <article key={item.id}><time>{item.time}</time><div><strong>{item.title}</strong>{item.details && <p>{item.details}</p>}</div><button className="admin-icon-remove" type="button" aria-label={`Remover ${item.title}`} onClick={() => void removeTimelineItem(item.id)}>×</button></article>)}{timeline.length === 0 && <p className="admin-muted-copy">Adicione os primeiros horários para montar o roteiro.</p>}</div></div>
         </div>
       )}
 

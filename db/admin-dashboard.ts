@@ -24,6 +24,11 @@ export type ExpenseCategoryRecord = {
   createdAt: string;
 };
 
+export type FinanceBudgetRecord = {
+  totalPlannedCents: number;
+  updatedAt: string;
+};
+
 export type ChecklistRecord = {
   id: string;
   title: string;
@@ -160,6 +165,36 @@ export async function createExpenseCategory(
     .run();
   if ((result.meta.changes ?? 0) === 0) return null;
   return { id, name, createdAt };
+}
+
+export async function getFinanceBudget(): Promise<FinanceBudgetRecord> {
+  const record = await getD1()
+    .prepare(
+      `SELECT total_planned_cents AS totalPlannedCents,
+        updated_at AS updatedAt
+       FROM wedding_finance_settings
+       WHERE id = 'main'`,
+    )
+    .first<FinanceBudgetRecord>();
+  return record ?? { totalPlannedCents: 0, updatedAt: "" };
+}
+
+export async function updateFinanceBudget(
+  totalPlannedCents: number,
+): Promise<FinanceBudgetRecord> {
+  const updatedAt = new Date().toISOString();
+  await getD1()
+    .prepare(
+      `INSERT INTO wedding_finance_settings
+       (id, total_planned_cents, updated_at)
+       VALUES ('main', ?1, ?2)
+       ON CONFLICT(id) DO UPDATE SET
+         total_planned_cents = excluded.total_planned_cents,
+         updated_at = excluded.updated_at`,
+    )
+    .bind(totalPlannedCents, updatedAt)
+    .run();
+  return { totalPlannedCents, updatedAt };
 }
 
 export async function listChecklistItems(): Promise<ChecklistRecord[]> {
