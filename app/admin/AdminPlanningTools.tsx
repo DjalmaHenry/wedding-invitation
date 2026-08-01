@@ -245,6 +245,8 @@ export function AdminPlanningTools({
     : 0;
 
   const completedChecklist = checklist.filter((item) => item.completed).length;
+  const pendingChecklist = checklist.filter((item) => !item.completed);
+  const completedChecklistItems = checklist.filter((item) => item.completed);
   const checklistProgress = checklist.length
     ? Math.round((completedChecklist / checklist.length) * 100)
     : 0;
@@ -608,8 +610,8 @@ export function AdminPlanningTools({
       )}
 
       {!loading && activeTab === "checklist" && (
-        <div className="admin-tool-panel admin-two-column-tool">
-          <form className="admin-entry-form" onSubmit={addChecklistItem}>
+        <div className="admin-tool-panel admin-checklist-panel">
+          <form className="admin-entry-form admin-checklist-form" onSubmit={addChecklistItem}>
             <div className="admin-card-title"><div><small>Nova pendência</small><h3>Adicionar ao checklist</h3></div></div>
             <label><span>O que precisa ser feito?</span><input required maxLength={160} value={checklistTitle} onChange={(event) => setChecklistTitle(event.target.value)} placeholder="Ex.: Confirmar decoração do altar" /></label>
             <label><span>Data-limite</span><input type="date" required value={checklistDueDate} onChange={(event) => setChecklistDueDate(event.target.value)} /></label>
@@ -619,19 +621,37 @@ export function AdminPlanningTools({
             <div className="admin-card-title"><div><small>{checklistProgress}% concluído</small><h3>Checklist do casamento</h3></div><strong>{completedChecklist}/{checklist.length}</strong></div>
             <div className="admin-progress"><i style={{ width: `${checklistProgress}%` }} /></div>
             <div className="admin-checklist-list">
-              {checklist.map((item) => {
+              {pendingChecklist.map((item) => {
                 const deadline = checklistDeadline(item);
                 return (
-                  <div className={`${deadline.tone} ${item.completed ? "is-complete" : ""}`} key={item.id}>
-                    <button className="admin-check-button" type="button" aria-label={item.completed ? `Desmarcar ${item.title}` : `Concluir ${item.title}`} onClick={() => void toggleChecklistItem(item)}>{item.completed ? "✓" : ""}</button>
+                  <div className={deadline.tone} key={item.id}>
+                    <button className="admin-check-button" type="button" aria-label={`Concluir ${item.title}`} onClick={() => void toggleChecklistItem(item)} />
                     <div className="admin-checklist-content"><strong>{item.title}</strong><small>{deadline.label}</small></div>
                     <label className="admin-checklist-date"><span>Prazo</span><input type="date" value={item.dueDate ?? ""} onChange={(event) => void updateChecklistDeadline(item, event.target.value)} aria-label={`Prazo de ${item.title}`} /></label>
                     <button className="admin-icon-remove" type="button" aria-label={`Remover ${item.title}`} onClick={() => void removeChecklistItem(item.id)}>×</button>
                   </div>
                 );
               })}
-              {checklist.length === 0 && <p className="admin-muted-copy">Nenhum item adicionado ainda.</p>}
+              {pendingChecklist.length === 0 && <p className="admin-muted-copy">{checklist.length === 0 ? "Nenhum item adicionado ainda." : "Tudo em dia por aqui."}</p>}
             </div>
+            {completedChecklistItems.length > 0 && (
+              <details className="admin-checklist-completed">
+                <summary><span>Concluídos</span><strong>{completedChecklistItems.length}</strong></summary>
+                <div className="admin-checklist-list">
+                  {completedChecklistItems.map((item) => {
+                    const deadline = checklistDeadline(item);
+                    return (
+                      <div className={`${deadline.tone} is-complete`} key={item.id}>
+                        <button className="admin-check-button" type="button" aria-label={`Desmarcar ${item.title}`} onClick={() => void toggleChecklistItem(item)}>✓</button>
+                        <div className="admin-checklist-content"><strong>{item.title}</strong><small>{deadline.label}</small></div>
+                        <label className="admin-checklist-date"><span>Prazo</span><input type="date" value={item.dueDate ?? ""} onChange={(event) => void updateChecklistDeadline(item, event.target.value)} aria-label={`Prazo de ${item.title}`} /></label>
+                        <button className="admin-icon-remove" type="button" aria-label={`Remover ${item.title}`} onClick={() => void removeChecklistItem(item.id)}>×</button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </details>
+            )}
           </div>
         </div>
       )}
