@@ -57,7 +57,7 @@ const GUIDE_TOPICS: GuideTopic[] = [
   {
     title: "Sobre as bebidas",
     text: "Com carinho, informamos que não haverá serviço de bebidas alcoólicas durante o evento. Caso deseje brindar conosco com sua bebida de preferência, fique à vontade para levá-la. Também será permitida a entrada de gelo e cooler, para que tudo permaneça bem acondicionado durante a celebração.",
-    image: "/guide-drinks-painted-v2.png",
+    image: "/guide-drinks-painted-v3.png",
     alt: "Caricatura de um convidado chegando à celebração com bebida, gelo e cooler",
   },
   {
