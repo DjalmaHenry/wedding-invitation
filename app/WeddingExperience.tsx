@@ -40,13 +40,13 @@ const GUIDE_TOPICS: GuideTopic[] = [
   },
   {
     title: "Traje: esporte fino",
-    text: "Escolhemos um estilo elegante e confortável para que todos aproveitem esse dia tão especial. Prefira peças bem alinhadas, tecidos leves e calçados que permitam celebrar conosco com conforto.",
+    text: "Escolhemos o esporte fino para unir elegância e conforto nesse dia tão especial. Para os homens, o paletó não é obrigatório — uma camisa social bem escolhida já compõe o traje com elegância. Prefira peças bem alinhadas, tecidos leves e calçados confortáveis para celebrar conosco.",
     image: "/guide-attire-painted-v2.webp",
     alt: "Caricatura com exemplos de trajes esporte fino",
   },
   {
     title: "Cores reservadas",
-    text: "Solicitamos gentilmente que não utilizem trajes nas cores branco, off-white, tons de bege e verde-oliva, pois essas cores serão reservadas para os noivos, padrinhos e madrinhas nesse dia tão especial.",
+    text: "Solicitamos gentilmente que não utilizem trajes nas cores branco, off-white, tons de bege e verde-oliva, pois essa paleta foi reservada para os noivos e para os elementos da decoração que darão vida ao nosso dia tão especial.",
     image: "/guide-colors-painted-v2.webp",
     alt: "Caricatura orientando sobre as cores reservadas para o casamento",
   },
@@ -64,7 +64,7 @@ const GUIDE_TOPICS: GuideTopic[] = [
   },
   {
     title: "Durante o nosso sim",
-    text: "Para vivermos a cerimônia com toda a emoção que ela merece, pedimos que mantenha o celular no silencioso. Depois do nosso sim, as câmeras estão liberadas para registrar cada sorriso.",
+    text: "Para vivermos a celebração com toda a emoção que ela merece, pedimos apenas que mantenha o celular no silencioso. Fique à vontade para tirar fotos e filmar os momentos que desejar.",
     image: "/guide-silent-painted-v2.webp",
     alt: "Caricatura de um convidado colocando o celular no silencioso durante a cerimônia",
   },
@@ -1625,8 +1625,8 @@ export function WeddingExperience() {
                   <div>
                     <span aria-hidden="true">✦</span>
                     <p>
-                      Agradecemos pela compreensão e mal podemos esperar para
-                      celebrar esse grande dia ao lado de vocês!
+                      Agradecemos pela compreensão e esperamos você para
+                      celebrar esse grande dia ao nosso lado!
                     </p>
                     <small>Com carinho,</small>
                     <strong>Djalma &amp; Victoria</strong>
