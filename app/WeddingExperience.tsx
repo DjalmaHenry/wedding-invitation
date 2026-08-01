@@ -40,7 +40,7 @@ const GUIDE_TOPICS: GuideTopic[] = [
   },
   {
     title: "Traje: esporte fino",
-    text: "Escolhemos o esporte fino para unir elegância e conforto nesse dia tão especial. Para os homens, o paletó não é obrigatório — uma camisa social bem escolhida já compõe o traje com elegância. Prefira peças bem alinhadas, tecidos leves e calçados confortáveis para celebrar conosco.",
+    text: "Escolhemos o esporte fino para unir elegância e conforto nesse dia tão especial. Para os homens, o paletó não é obrigatório; uma camisa social bem escolhida já compõe o traje com elegância. Prefira peças bem alinhadas, tecidos leves e calçados confortáveis para celebrar conosco.",
     image: "/guide-attire-painted-v2.webp",
     alt: "Caricatura com exemplos de trajes esporte fino",
   },
