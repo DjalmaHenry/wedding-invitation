@@ -3539,6 +3539,33 @@ body:has(.admin-page) {
   opacity: 0.58;
 }
 
+.admin-countdown {
+  display: grid;
+  min-width: 138px;
+  padding: 14px 18px;
+  text-align: center;
+  background: rgba(248, 239, 219, 0.76);
+  border: 1px solid rgba(95, 109, 63, 0.25);
+  border-radius: 18px;
+}
+
+.admin-countdown strong {
+  color: #5f6d3f;
+  font-family: "Bodoni Moda Variable", Georgia, serif;
+  font-size: 2.35rem;
+  font-weight: 500;
+  line-height: 0.9;
+}
+
+.admin-countdown span {
+  margin-top: 7px;
+  color: #6d5141;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .admin-export-error {
   max-width: 1180px;
   margin: -14px auto 22px;
@@ -3550,7 +3577,7 @@ body:has(.admin-page) {
   display: grid;
   max-width: 1180px;
   margin: 0 auto 22px;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 14px;
 }
 
@@ -3579,6 +3606,11 @@ body:has(.admin-page) {
   font-size: 3rem;
   font-weight: 500;
   line-height: 1;
+}
+
+.admin-stats strong small {
+  color: #8d755e;
+  font-size: 1.15rem;
 }
 
 .admin-list-card {
@@ -3745,6 +3777,324 @@ body:has(.admin-page) {
   background: #d7bf91;
 }
 
+.admin-planning-section {
+  max-width: 1180px;
+  margin: 54px auto 0;
+}
+
+.admin-tool-tabs {
+  display: grid;
+  margin-bottom: 16px;
+  padding: 6px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  background: rgba(249, 241, 223, 0.72);
+  border: 1px solid rgba(104, 67, 42, 0.16);
+  border-radius: 18px;
+}
+
+.admin-tool-tabs button {
+  min-height: 46px;
+  padding: 8px 14px;
+  color: #634838;
+  font: 800 0.78rem "Cormorant Garamond Variable", Georgia, serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 0;
+  border-radius: 13px;
+  cursor: pointer;
+}
+
+.admin-tool-tabs button.is-active {
+  color: #fff8e9;
+  background: #5f6d3f;
+  box-shadow: 0 8px 20px rgba(95, 109, 63, 0.22);
+}
+
+.admin-tool-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.admin-tool-loading,
+.admin-inline-error {
+  padding: 18px 20px;
+  text-align: center;
+  background: rgba(249, 241, 223, 0.86);
+  border: 1px solid rgba(104, 67, 42, 0.16);
+  border-radius: 16px;
+}
+
+.admin-inline-error {
+  color: #754437;
+  font-weight: 800;
+}
+
+.admin-finance-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.admin-finance-stats article {
+  display: grid;
+  min-height: 116px;
+  padding: 19px;
+  align-content: space-between;
+  background: rgba(249, 241, 223, 0.9);
+  border: 1px solid rgba(104, 67, 42, 0.17);
+  border-radius: 17px;
+}
+
+.admin-finance-stats span,
+.admin-card-title small {
+  color: #6d5141;
+  font-size: 0.67rem;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.admin-finance-stats strong {
+  color: #5f6d3f;
+  font-family: "Bodoni Moda Variable", Georgia, serif;
+  font-size: clamp(1.5rem, 2.8vw, 2.2rem);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.admin-finance-stats small {
+  color: #856b56;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.admin-finance-grid,
+.admin-two-column-tool {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-chart-card,
+.admin-entry-form,
+.admin-checklist-card,
+.admin-timeline-card,
+.admin-provider-card {
+  padding: clamp(20px, 3vw, 30px);
+  background: rgba(249, 241, 223, 0.9);
+  border: 1px solid rgba(104, 67, 42, 0.18);
+  border-radius: 22px;
+  box-shadow: 0 14px 38px rgba(67, 42, 30, 0.08);
+}
+
+.admin-card-title {
+  display: flex;
+  margin-bottom: 20px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-card-title h3 {
+  margin: 3px 0 0;
+  color: #3f281e;
+  font-family: "Bodoni Moda Variable", Georgia, serif;
+  font-size: clamp(1.55rem, 3vw, 2.25rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.admin-card-title > strong {
+  color: #5f6d3f;
+  font-family: "Bodoni Moda Variable", Georgia, serif;
+  font-size: 2.15rem;
+  font-weight: 500;
+}
+
+.admin-donut-wrap {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  align-items: center;
+  gap: 25px;
+}
+
+.admin-donut {
+  display: grid;
+  width: 180px;
+  height: 180px;
+  place-items: center;
+  border-radius: 50%;
+  position: relative;
+}
+
+.admin-donut::after {
+  position: absolute;
+  width: 118px;
+  height: 118px;
+  content: "";
+  background: #f5ead3;
+  border-radius: 50%;
+}
+
+.admin-donut span {
+  z-index: 1;
+  max-width: 102px;
+  color: #4e3628;
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.admin-chart-legend {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  gap: 13px;
+  list-style: none;
+}
+
+.admin-chart-legend li {
+  display: grid;
+  grid-template-columns: 10px 1fr;
+  color: #694d3c;
+  font-size: 0.84rem;
+  font-weight: 700;
+  gap: 0 9px;
+}
+
+.admin-chart-legend li strong {
+  grid-column: 2;
+  color: #3f281e;
+  font-size: 0.95rem;
+}
+
+.admin-chart-legend i {
+  width: 10px;
+  height: 10px;
+  margin-top: 3px;
+  border-radius: 50%;
+}
+
+.admin-chart-legend i.paid { background: #5f6d3f; }
+.admin-chart-legend i.installments { background: #a8895f; }
+.admin-chart-legend i.future { background: #d6bd8f; }
+
+.admin-finance-balance {
+  display: grid;
+  margin-top: 22px;
+  padding-top: 17px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  border-top: 1px solid rgba(104, 67, 42, 0.14);
+}
+
+.admin-finance-balance span {
+  color: #765a48;
+  font-size: 0.78rem;
+}
+
+.admin-finance-balance strong { display: block; margin-top: 3px; color: #4f5d36; font-size: 1rem; }
+
+.admin-category-chart { display: grid; gap: 14px; }
+.admin-category-chart p { display: flex; margin: 0 0 5px; justify-content: space-between; gap: 15px; color: #674b3b; font-size: 0.84rem; }
+.admin-category-chart p strong { color: #4c3528; }
+.admin-category-chart > div > i { display: block; height: 8px; overflow: hidden; background: rgba(166, 139, 104, 0.2); border-radius: 999px; }
+.admin-category-chart > div > i > b { display: block; height: 100%; background: linear-gradient(90deg, #5f6d3f, #97a372); border-radius: inherit; }
+
+.admin-entry-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.admin-entry-form .admin-card-title { grid-column: 1 / -1; }
+.admin-entry-form label { display: grid; gap: 6px; }
+.admin-entry-form label span { color: #6a4e3e; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
+.admin-entry-form input,
+.admin-entry-form select,
+.admin-entry-form textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 13px;
+  color: #432a1e;
+  font: 700 0.95rem "Cormorant Garamond Variable", Georgia, serif;
+  background: rgba(255, 251, 241, 0.86);
+  border: 1px solid rgba(98, 63, 39, 0.28);
+  border-radius: 11px;
+  outline: none;
+}
+
+.admin-entry-form textarea { min-height: 106px; resize: vertical; }
+.admin-entry-form input:focus,
+.admin-entry-form select:focus,
+.admin-entry-form textarea:focus { border-color: #667647; box-shadow: 0 0 0 3px rgba(95, 109, 63, 0.1); }
+.admin-entry-form > button,
+.admin-small-action {
+  min-height: 46px;
+  padding: 0 18px;
+  align-self: end;
+  color: #fff6e5;
+  font: 900 0.74rem "Cormorant Garamond Variable", Georgia, serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: #5f6d3f;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.admin-entry-form > button:disabled,
+.admin-small-action:disabled { cursor: wait; opacity: 0.58; }
+.admin-tool-list { max-width: none; }
+.admin-installment-control { display: inline-flex; align-items: center; gap: 7px; }
+.admin-installment-control button { display: grid; width: 25px; height: 25px; padding: 0; color: #fff8e9; place-items: center; background: #6f7b50; border: 0; border-radius: 50%; cursor: pointer; }
+.admin-installment-control span { min-width: 64px; font-size: 0.76rem; font-weight: 800; text-align: center; }
+
+.admin-progress { height: 9px; overflow: hidden; background: rgba(166, 139, 104, 0.22); border-radius: 999px; }
+.admin-progress i { display: block; height: 100%; background: linear-gradient(90deg, #5f6d3f, #9aa574); border-radius: inherit; transition: width 0.3s ease; }
+.admin-progress.capacity i { background: linear-gradient(90deg, #81664d, #5f6d3f); }
+.admin-checklist-list,
+.admin-provider-list,
+.admin-timeline-list { display: grid; margin-top: 18px; gap: 9px; }
+.admin-checklist-list > div,
+.admin-provider-list article {
+  display: grid;
+  padding: 12px;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 11px;
+  background: rgba(255, 251, 242, 0.7);
+  border: 1px solid rgba(104, 67, 42, 0.13);
+  border-radius: 12px;
+}
+
+.admin-checklist-list > div.is-complete span { color: #857666; text-decoration: line-through; }
+.admin-check-button { display: grid; width: 27px; height: 27px; padding: 0; color: #fff8e9; place-items: center; background: rgba(95, 109, 63, 0.12); border: 1px solid #7e8a60; border-radius: 7px; cursor: pointer; }
+.admin-checklist-list > div.is-complete .admin-check-button { background: #5f6d3f; }
+.admin-icon-remove { width: 30px; height: 30px; padding: 0; color: #815b48; font-size: 1.15rem; background: transparent; border: 1px solid rgba(104, 67, 42, 0.2); border-radius: 50%; cursor: pointer; }
+.admin-muted-copy { margin: 16px 0; color: #826856; font-style: italic; text-align: center; }
+.admin-form-note { grid-column: 1 / -1; margin: 0; color: #795044; font-weight: 800; }
+
+.admin-timeline-list article {
+  display: grid;
+  padding: 13px 10px;
+  grid-template-columns: 62px 1fr auto;
+  align-items: start;
+  gap: 13px;
+  border-bottom: 1px solid rgba(104, 67, 42, 0.14);
+}
+.admin-timeline-list time { color: #5f6d3f; font-family: "Bodoni Moda Variable", Georgia, serif; font-size: 1.2rem; font-weight: 600; }
+.admin-timeline-list article strong { display: block; color: #432a1e; }
+.admin-timeline-list article p { margin: 4px 0 0; color: #775b49; font-size: 0.83rem; line-height: 1.4; }
+.admin-provider-list article > span { color: #7c895c; }
+.admin-provider-list article strong,
+.admin-provider-list article small { display: block; }
+.admin-provider-list article small { margin-top: 2px; color: #806552; }
+.admin-capacity-copy { margin: 10px 0 0; color: #755948; font-size: 0.84rem; text-align: center; }
+
 @media (max-width: 720px) {
   .admin-page {
     padding: 22px 14px 40px;
@@ -3754,6 +4104,8 @@ body:has(.admin-page) {
     align-items: start;
     flex-direction: column;
   }
+
+  .admin-countdown { width: 100%; }
 
   .admin-header-actions {
     width: 100%;
@@ -3766,6 +4118,27 @@ body:has(.admin-page) {
   .admin-stats {
     grid-template-columns: 1fr;
   }
+
+  .admin-tool-tabs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .admin-finance-stats,
+  .admin-finance-grid,
+  .admin-two-column-tool,
+  .admin-entry-form {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-finance-stats { grid-template-columns: repeat(2, 1fr); }
+
+  .admin-donut-wrap { grid-template-columns: 1fr; justify-items: center; }
+
+  .admin-chart-legend { width: 100%; }
+
+  .admin-entry-form .admin-card-title { grid-column: auto; }
+
+  .admin-planning-section { margin-top: 38px; }
 
   .admin-stats article {
     min-height: 100px;

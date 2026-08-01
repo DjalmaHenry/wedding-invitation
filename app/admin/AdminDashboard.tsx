@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { AdminPlanningTools } from "./AdminPlanningTools";
 
 type GuestCategory = "noivo" | "noiva";
 
@@ -39,6 +40,8 @@ export function AdminDashboard() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState("");
+  const [providerCount, setProviderCount] = useState(0);
+  const [daysUntilWedding, setDaysUntilWedding] = useState<number | null>(null);
 
   const loadGuests = useCallback(async () => {
     try {
@@ -75,6 +78,26 @@ export function AdminDashboard() {
     void loadGuests();
   }, [loadGuests]);
 
+  useEffect(() => {
+    const updateCountdown = () => {
+      setDaysUntilWedding(
+        Math.max(
+          0,
+          Math.ceil(
+            (new Date("2026-10-31T16:30:00-03:00").getTime() - Date.now()) /
+              86_400_000,
+          ),
+        ),
+      );
+    };
+    const initialTimer = window.setTimeout(updateCountdown, 0);
+    const interval = window.setInterval(updateCountdown, 3_600_000);
+    return () => {
+      window.clearTimeout(initialTimer);
+      window.clearInterval(interval);
+    };
+  }, []);
+
   const filteredGuests = useMemo(() => {
     const normalizedSearch = search.trim().toLocaleLowerCase("pt-BR");
     return guests.filter(
@@ -93,6 +116,8 @@ export function AdminDashboard() {
     }),
     [guests],
   );
+
+  const occupiedSpots = totals.all + providerCount;
 
   const giftTotals = useMemo(() => {
     const approved = giftPayments.filter(
@@ -361,7 +386,11 @@ export function AdminDashboard() {
         <div>
           <p className="admin-kicker">Djalma & Victoria</p>
           <h1>Painel do casamento</h1>
-          <p>Confirmações de presença e presentes recebidos.</p>
+          <p>Planejamento, convidados, finanças e operação do grande dia.</p>
+        </div>
+        <div className="admin-countdown" aria-label={`${daysUntilWedding ?? ""} dias para o casamento`}>
+          <strong>{daysUntilWedding ?? "—"}</strong>
+          <span>dias para o nosso sim</span>
         </div>
         <div className="admin-header-actions">
           <button
@@ -384,7 +413,11 @@ export function AdminDashboard() {
 
       <section className="admin-stats" aria-label="Resumo das confirmações">
         <article>
-          <span>Total confirmado</span>
+          <span>Vagas ocupadas</span>
+          <strong>{occupiedSpots}<small>/50</small></strong>
+        </article>
+        <article>
+          <span>Convidados confirmados</span>
           <strong>{totals.all}</strong>
         </article>
         <article>
@@ -477,6 +510,11 @@ export function AdminDashboard() {
           )}
         </div>
       </section>
+
+      <AdminPlanningTools
+        guestsCount={totals.all}
+        onProviderCountChange={setProviderCount}
+      />
 
       <section className="admin-gifts-section">
         <div className="admin-section-heading">

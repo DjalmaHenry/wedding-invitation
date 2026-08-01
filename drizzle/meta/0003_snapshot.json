@@ -1,0 +1,546 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "95bf466b-95c7-4045-8461-67be9999094b",
+  "prevId": "795656d2-e16c-482d-815d-978d3dbde5a9",
+  "tables": {
+    "gift_payments": {
+      "name": "gift_payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mercado_pago_order_id": {
+          "name": "mercado_pago_order_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mercado_pago_payment_id": {
+          "name": "mercado_pago_payment_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "external_reference": {
+          "name": "external_reference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "gift_id": {
+          "name": "gift_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "gift_title": {
+          "name": "gift_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "donor_name": {
+          "name": "donor_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "donor_email": {
+          "name": "donor_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount_cents": {
+          "name": "amount_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status_detail": {
+          "name": "status_detail",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "ticket_url": {
+          "name": "ticket_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "paid_at": {
+          "name": "paid_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "gift_payments_mercado_pago_order_id_unique": {
+          "name": "gift_payments_mercado_pago_order_id_unique",
+          "columns": [
+            "mercado_pago_order_id"
+          ],
+          "isUnique": true
+        },
+        "gift_payments_external_reference_unique": {
+          "name": "gift_payments_external_reference_unique",
+          "columns": [
+            "external_reference"
+          ],
+          "isUnique": true
+        },
+        "gift_payments_status_idx": {
+          "name": "gift_payments_status_idx",
+          "columns": [
+            "status"
+          ],
+          "isUnique": false
+        },
+        "gift_payments_created_at_idx": {
+          "name": "gift_payments_created_at_idx",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "gift_payments_donor_name_idx": {
+          "name": "gift_payments_donor_name_idx",
+          "columns": [
+            "donor_name"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "gift_payments_amount_check": {
+          "name": "gift_payments_amount_check",
+          "value": "\"gift_payments\".\"amount_cents\" > 0"
+        }
+      }
+    },
+    "guests": {
+      "name": "guests",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "submission_id": {
+          "name": "submission_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "is_primary": {
+          "name": "is_primary",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "guests_submission_id_idx": {
+          "name": "guests_submission_id_idx",
+          "columns": [
+            "submission_id"
+          ],
+          "isUnique": false
+        },
+        "guests_category_idx": {
+          "name": "guests_category_idx",
+          "columns": [
+            "category"
+          ],
+          "isUnique": false
+        },
+        "guests_created_at_idx": {
+          "name": "guests_created_at_idx",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "guests_category_check": {
+          "name": "guests_category_check",
+          "value": "\"guests\".\"category\" IN ('noivo', 'noiva')"
+        }
+      }
+    },
+    "service_providers": {
+      "name": "service_providers",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "service_providers_created_at_idx": {
+          "name": "service_providers_created_at_idx",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "service_providers_name_idx": {
+          "name": "service_providers_name_idx",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "wedding_checklist": {
+      "name": "wedding_checklist",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "completed": {
+          "name": "completed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "wedding_checklist_completed_idx": {
+          "name": "wedding_checklist_completed_idx",
+          "columns": [
+            "completed"
+          ],
+          "isUnique": false
+        },
+        "wedding_checklist_created_at_idx": {
+          "name": "wedding_checklist_created_at_idx",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "wedding_expenses": {
+      "name": "wedding_expenses",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "payment_type": {
+          "name": "payment_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount_cents": {
+          "name": "amount_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "installments_total": {
+          "name": "installments_total",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "installments_paid": {
+          "name": "installments_paid",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "due_date": {
+          "name": "due_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "wedding_expenses_category_idx": {
+          "name": "wedding_expenses_category_idx",
+          "columns": [
+            "category"
+          ],
+          "isUnique": false
+        },
+        "wedding_expenses_payment_type_idx": {
+          "name": "wedding_expenses_payment_type_idx",
+          "columns": [
+            "payment_type"
+          ],
+          "isUnique": false
+        },
+        "wedding_expenses_created_at_idx": {
+          "name": "wedding_expenses_created_at_idx",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "wedding_expenses_amount_check": {
+          "name": "wedding_expenses_amount_check",
+          "value": "\"wedding_expenses\".\"amount_cents\" > 0"
+        },
+        "wedding_expenses_payment_type_check": {
+          "name": "wedding_expenses_payment_type_check",
+          "value": "\"wedding_expenses\".\"payment_type\" IN ('pix_paid', 'installments', 'pix_pending')"
+        },
+        "wedding_expenses_installments_check": {
+          "name": "wedding_expenses_installments_check",
+          "value": "\"wedding_expenses\".\"installments_total\" >= 0 AND \"wedding_expenses\".\"installments_paid\" >= 0 AND \"wedding_expenses\".\"installments_paid\" <= \"wedding_expenses\".\"installments_total\""
+        }
+      }
+    },
+    "wedding_timeline": {
+      "name": "wedding_timeline",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "time": {
+          "name": "time",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "details": {
+          "name": "details",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "wedding_timeline_time_idx": {
+          "name": "wedding_timeline_time_idx",
+          "columns": [
+            "time"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

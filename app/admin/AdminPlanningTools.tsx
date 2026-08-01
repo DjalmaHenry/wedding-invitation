@@ -1,0 +1,474 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
+import type {
+  ChecklistRecord,
+  ExpensePaymentType,
+  ExpenseRecord,
+  ServiceProviderRecord,
+  TimelineRecord,
+} from "../../db/admin-dashboard";
+
+type ToolTab = "finance" | "checklist" | "timeline" | "providers";
+
+const EXPENSE_CATEGORIES = [
+  "Local",
+  "Buffet",
+  "Decoração",
+  "Vestuário",
+  "Fotografia e vídeo",
+  "Música",
+  "Cerimonial",
+  "Convites e papelaria",
+  "Lua de mel",
+  "Outros",
+];
+
+const EMPTY_EXPENSE = {
+  description: "",
+  category: "Local",
+  paymentType: "pix_paid" as ExpensePaymentType,
+  amount: "",
+  installmentsTotal: "2",
+  installmentsPaid: "0",
+  dueDate: "",
+};
+
+function money(amountCents: number) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(amountCents / 100);
+}
+
+function parseMoneyToCents(value: string) {
+  const normalized = value
+    .trim()
+    .replace(/\s/g, "")
+    .replace(/\.(?=\d{3}(?:\D|$))/g, "")
+    .replace(",", ".");
+  const number = Number(normalized);
+  return Number.isFinite(number) ? Math.round(number * 100) : 0;
+}
+
+async function readError(response: Response, fallback: string) {
+  try {
+    const body = (await response.json()) as { error?: string };
+    return body.error || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export function AdminPlanningTools({
+  guestsCount,
+  onProviderCountChange,
+}: {
+  guestsCount: number;
+  onProviderCountChange(count: number): void;
+}) {
+  const [activeTab, setActiveTab] = useState<ToolTab>("finance");
+  const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
+  const [checklist, setChecklist] = useState<ChecklistRecord[]>([]);
+  const [timeline, setTimeline] = useState<TimelineRecord[]>([]);
+  const [providers, setProviders] = useState<ServiceProviderRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [expenseDraft, setExpenseDraft] = useState(EMPTY_EXPENSE);
+  const [checklistTitle, setChecklistTitle] = useState("");
+  const [timelineDraft, setTimelineDraft] = useState({
+    time: "08:00",
+    title: "",
+    details: "",
+  });
+  const [providerDraft, setProviderDraft] = useState({ name: "", role: "" });
+  const [exportingTimeline, setExportingTimeline] = useState(false);
+
+  const loadPlanningData = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const [expenseResponse, checklistResponse, timelineResponse, providerResponse] =
+        await Promise.all([
+          fetch("/api/admin/expenses", { cache: "no-store" }),
+          fetch("/api/admin/checklist", { cache: "no-store" }),
+          fetch("/api/admin/timeline", { cache: "no-store" }),
+          fetch("/api/admin/providers", { cache: "no-store" }),
+        ]);
+      if (
+        !expenseResponse.ok ||
+        !checklistResponse.ok ||
+        !timelineResponse.ok ||
+        !providerResponse.ok
+      ) {
+        throw new Error();
+      }
+      const [expenseData, checklistData, timelineData, providerData] =
+        (await Promise.all([
+          expenseResponse.json(),
+          checklistResponse.json(),
+          timelineResponse.json(),
+          providerResponse.json(),
+        ])) as [
+          { expenses?: ExpenseRecord[] },
+          { items?: ChecklistRecord[] },
+          { items?: TimelineRecord[] },
+          { providers?: ServiceProviderRecord[] },
+        ];
+      setExpenses(expenseData.expenses ?? []);
+      setChecklist(checklistData.items ?? []);
+      setTimeline(timelineData.items ?? []);
+      setProviders(providerData.providers ?? []);
+    } catch {
+      setError("Não foi possível carregar os dados de planejamento.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Loads the authenticated planning workspace when the dashboard mounts.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadPlanningData();
+  }, [loadPlanningData]);
+
+  useEffect(() => {
+    onProviderCountChange(providers.length);
+  }, [onProviderCountChange, providers.length]);
+
+  const finances = useMemo(() => {
+    const paidPix = expenses
+      .filter((expense) => expense.paymentType === "pix_paid")
+      .reduce((sum, expense) => sum + expense.amountCents, 0);
+    const installments = expenses
+      .filter((expense) => expense.paymentType === "installments")
+      .reduce((sum, expense) => sum + expense.amountCents, 0);
+    const futurePix = expenses
+      .filter((expense) => expense.paymentType === "pix_pending")
+      .reduce((sum, expense) => sum + expense.amountCents, 0);
+    const installmentsPaid = expenses
+      .filter((expense) => expense.paymentType === "installments")
+      .reduce(
+        (sum, expense) =>
+          sum +
+          Math.round(
+            expense.amountCents *
+              (expense.installmentsTotal > 0
+                ? expense.installmentsPaid / expense.installmentsTotal
+                : 0),
+          ),
+        0,
+      );
+    return {
+      total: paidPix + installments + futurePix,
+      paidPix,
+      installments,
+      installmentsPaid,
+      futurePix,
+      paid: paidPix + installmentsPaid,
+      pending: futurePix + installments - installmentsPaid,
+    };
+  }, [expenses]);
+
+  const categoryTotals = useMemo(() => {
+    const totals = new Map<string, number>();
+    expenses.forEach((expense) => {
+      totals.set(expense.category, (totals.get(expense.category) ?? 0) + expense.amountCents);
+    });
+    return [...totals.entries()]
+      .map(([category, amountCents]) => ({ category, amountCents }))
+      .sort((left, right) => right.amountCents - left.amountCents);
+  }, [expenses]);
+
+  const completedChecklist = checklist.filter((item) => item.completed).length;
+  const checklistProgress = checklist.length
+    ? Math.round((completedChecklist / checklist.length) * 100)
+    : 0;
+  const occupied = guestsCount + providers.length;
+  const capacityPercent = Math.min((occupied / 50) * 100, 100);
+
+  const addExpense = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const amountCents = parseMoneyToCents(expenseDraft.amount);
+    if (amountCents <= 0) {
+      setError("Informe um valor válido para a despesa.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      const response = await fetch("/api/admin/expenses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...expenseDraft,
+          amountCents,
+          installmentsTotal: Number(expenseDraft.installmentsTotal),
+          installmentsPaid: Number(expenseDraft.installmentsPaid),
+        }),
+      });
+      if (!response.ok) throw new Error(await readError(response, "Não foi possível salvar a despesa."));
+      const data = (await response.json()) as { expense: ExpenseRecord };
+      setExpenses((current) => [data.expense, ...current]);
+      setExpenseDraft(EMPTY_EXPENSE);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível salvar a despesa.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const deleteExpenseItem = async (id: string) => {
+    if (!window.confirm("Remover esta despesa do planejamento?")) return;
+    const response = await fetch(`/api/admin/expenses?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    if (response.ok) setExpenses((current) => current.filter((item) => item.id !== id));
+  };
+
+  const setPaidInstallments = async (expense: ExpenseRecord, nextValue: number) => {
+    if (nextValue < 0 || nextValue > expense.installmentsTotal) return;
+    const response = await fetch("/api/admin/expenses", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: expense.id, installmentsPaid: nextValue }),
+    });
+    if (response.ok) {
+      setExpenses((current) =>
+        current.map((item) =>
+          item.id === expense.id ? { ...item, installmentsPaid: nextValue } : item,
+        ),
+      );
+    }
+  };
+
+  const addChecklistItem = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      const response = await fetch("/api/admin/checklist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: checklistTitle }),
+      });
+      if (!response.ok) throw new Error(await readError(response, "Não foi possível adicionar o item."));
+      const data = (await response.json()) as { item: ChecklistRecord };
+      setChecklist((current) => [data.item, ...current]);
+      setChecklistTitle("");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível adicionar o item.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const toggleChecklistItem = async (item: ChecklistRecord) => {
+    const completed = !item.completed;
+    const response = await fetch("/api/admin/checklist", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: item.id, completed }),
+    });
+    if (response.ok) {
+      setChecklist((current) =>
+        current.map((entry) => (entry.id === item.id ? { ...entry, completed } : entry)),
+      );
+    }
+  };
+
+  const removeChecklistItem = async (id: string) => {
+    const response = await fetch(`/api/admin/checklist?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    if (response.ok) setChecklist((current) => current.filter((item) => item.id !== id));
+  };
+
+  const addTimelineItem = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      const response = await fetch("/api/admin/timeline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(timelineDraft),
+      });
+      if (!response.ok) throw new Error(await readError(response, "Não foi possível adicionar a etapa."));
+      const data = (await response.json()) as { item: TimelineRecord };
+      setTimeline((current) => [...current, data.item].sort((a, b) => a.time.localeCompare(b.time)));
+      setTimelineDraft((current) => ({ ...current, title: "", details: "" }));
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível adicionar a etapa.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removeTimelineItem = async (id: string) => {
+    const response = await fetch(`/api/admin/timeline?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    if (response.ok) setTimeline((current) => current.filter((item) => item.id !== id));
+  };
+
+  const exportTimelinePdf = async () => {
+    setExportingTimeline(true);
+    setError("");
+    try {
+      const { createTimelinePdf } = await import("../../lib/timeline-pdf");
+      const bytes = await createTimelinePdf(timeline);
+      const blob = new Blob([bytes.slice().buffer as ArrayBuffer], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = "cronograma-casamento-djalma-victoria.pdf";
+      anchor.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
+    } catch {
+      setError("Não foi possível gerar o PDF do cronograma agora.");
+    } finally {
+      setExportingTimeline(false);
+    }
+  };
+
+  const addProvider = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      const response = await fetch("/api/admin/providers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(providerDraft),
+      });
+      if (!response.ok) throw new Error(await readError(response, "Não foi possível adicionar o prestador."));
+      const data = (await response.json()) as { provider: ServiceProviderRecord };
+      setProviders((current) => [...current, data.provider].sort((a, b) => a.name.localeCompare(b.name, "pt-BR")));
+      setProviderDraft({ name: "", role: "" });
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível adicionar o prestador.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removeProvider = async (id: string) => {
+    const response = await fetch(`/api/admin/providers?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    if (response.ok) setProviders((current) => current.filter((item) => item.id !== id));
+  };
+
+  const statusChart = finances.total
+    ? `conic-gradient(#5f6d3f 0 ${(finances.paidPix / finances.total) * 360}deg, #a8895f ${(finances.paidPix / finances.total) * 360}deg ${((finances.paidPix + finances.installments) / finances.total) * 360}deg, #d6bd8f ${((finances.paidPix + finances.installments) / finances.total) * 360}deg 360deg)`
+    : "conic-gradient(#d8c7a8 0 360deg)";
+
+  return (
+    <section className="admin-planning-section">
+      <div className="admin-section-heading">
+        <div>
+          <p className="admin-kicker">Planejamento central</p>
+          <h2>Organização do casamento</h2>
+        </div>
+        <p>Finanças, pendências, equipe e roteiro do grande dia em um só lugar.</p>
+      </div>
+
+      <nav className="admin-tool-tabs" aria-label="Áreas do planejamento">
+        {([
+          ["finance", "Financeiro"],
+          ["checklist", `Checklist ${completedChecklist}/${checklist.length}`],
+          ["timeline", "Cronograma"],
+          ["providers", `Prestadores ${providers.length}`],
+        ] as [ToolTab, string][]).map(([tab, label]) => (
+          <button
+            key={tab}
+            type="button"
+            className={activeTab === tab ? "is-active" : ""}
+            onClick={() => setActiveTab(tab)}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+
+      {error && <p className="admin-inline-error" role="alert">{error}</p>}
+      {loading && <div className="admin-tool-loading">Preparando o planejamento…</div>}
+
+      {!loading && activeTab === "finance" && (
+        <div className="admin-tool-panel">
+          <div className="admin-finance-stats">
+            <article><span>Total planejado</span><strong>{money(finances.total)}</strong></article>
+            <article><span>Pago no Pix</span><strong>{money(finances.paidPix)}</strong></article>
+            <article><span>Em parcelas</span><strong>{money(finances.installments)}</strong><small>{money(finances.installmentsPaid)} já pago</small></article>
+            <article><span>Pix futuro</span><strong>{money(finances.futurePix)}</strong></article>
+          </div>
+
+          <div className="admin-finance-grid">
+            <article className="admin-chart-card">
+              <div className="admin-card-title"><div><small>Resumo</small><h3>Destino dos valores</h3></div></div>
+              <div className="admin-donut-wrap">
+                <div className="admin-donut" style={{ background: statusChart }}><span>{money(finances.total)}</span></div>
+                <ul className="admin-chart-legend">
+                  <li><i className="paid" />Pix pago <strong>{money(finances.paidPix)}</strong></li>
+                  <li><i className="installments" />Parcelado <strong>{money(finances.installments)}</strong></li>
+                  <li><i className="future" />Pix futuro <strong>{money(finances.futurePix)}</strong></li>
+                </ul>
+              </div>
+              <div className="admin-finance-balance"><span>Já desembolsado <strong>{money(finances.paid)}</strong></span><span>A desembolsar <strong>{money(finances.pending)}</strong></span></div>
+            </article>
+
+            <article className="admin-chart-card">
+              <div className="admin-card-title"><div><small>Categorias</small><h3>Distribuição dos gastos</h3></div></div>
+              <div className="admin-category-chart">
+                {categoryTotals.map((item) => (
+                  <div key={item.category}>
+                    <p><span>{item.category}</span><strong>{money(item.amountCents)}</strong></p>
+                    <i><b style={{ width: `${finances.total ? (item.amountCents / Math.max(...categoryTotals.map((entry) => entry.amountCents))) * 100 : 0}%` }} /></i>
+                  </div>
+                ))}
+                {categoryTotals.length === 0 && <p className="admin-muted-copy">Cadastre a primeira despesa para visualizar o gráfico.</p>}
+              </div>
+            </article>
+          </div>
+
+          <form className="admin-entry-form admin-expense-form" onSubmit={addExpense}>
+            <div className="admin-card-title"><div><small>Novo lançamento</small><h3>Adicionar despesa</h3></div></div>
+            <label><span>Descrição</span><input required maxLength={120} value={expenseDraft.description} onChange={(event) => setExpenseDraft({ ...expenseDraft, description: event.target.value })} placeholder="Ex.: Fotografia do casamento" /></label>
+            <label><span>Categoria</span><select value={expenseDraft.category} onChange={(event) => setExpenseDraft({ ...expenseDraft, category: event.target.value })}>{EXPENSE_CATEGORIES.map((item) => <option key={item}>{item}</option>)}</select></label>
+            <label><span>Valor total</span><input required inputMode="decimal" value={expenseDraft.amount} onChange={(event) => setExpenseDraft({ ...expenseDraft, amount: event.target.value })} placeholder="0,00" /></label>
+            <label><span>Forma de pagamento</span><select value={expenseDraft.paymentType} onChange={(event) => setExpenseDraft({ ...expenseDraft, paymentType: event.target.value as ExpensePaymentType })}><option value="pix_paid">Já pago no Pix</option><option value="installments">Pagamento parcelado</option><option value="pix_pending">Pix a pagar futuramente</option></select></label>
+            {expenseDraft.paymentType === "installments" && <><label><span>Total de parcelas</span><input type="number" min="1" max="120" required value={expenseDraft.installmentsTotal} onChange={(event) => setExpenseDraft({ ...expenseDraft, installmentsTotal: event.target.value })} /></label><label><span>Parcelas já pagas</span><input type="number" min="0" max={expenseDraft.installmentsTotal} required value={expenseDraft.installmentsPaid} onChange={(event) => setExpenseDraft({ ...expenseDraft, installmentsPaid: event.target.value })} /></label></>}
+            {expenseDraft.paymentType === "pix_pending" && <label><span>Previsão de pagamento</span><input type="date" value={expenseDraft.dueDate} onChange={(event) => setExpenseDraft({ ...expenseDraft, dueDate: event.target.value })} /></label>}
+            <button type="submit" disabled={busy}>Salvar despesa</button>
+          </form>
+
+          <div className="admin-list-card admin-tool-list"><div className="admin-table-wrap"><table><thead><tr><th>Despesa</th><th>Categoria</th><th>Valor</th><th>Situação</th><th aria-label="Ações" /></tr></thead><tbody>{expenses.map((expense) => <tr key={expense.id}><td data-label="Despesa"><strong>{expense.description}</strong>{expense.dueDate && <small className="admin-payment-email">Previsto para {new Date(`${expense.dueDate}T12:00:00`).toLocaleDateString("pt-BR")}</small>}</td><td data-label="Categoria">{expense.category}</td><td data-label="Valor">{money(expense.amountCents)}</td><td data-label="Situação">{expense.paymentType === "pix_paid" && <span className="admin-payment-status approved">Pix pago</span>}{expense.paymentType === "pix_pending" && <span className="admin-payment-status pending">Pix futuro</span>}{expense.paymentType === "installments" && <div className="admin-installment-control"><button type="button" aria-label="Diminuir parcelas pagas" onClick={() => void setPaidInstallments(expense, expense.installmentsPaid - 1)}>−</button><span>{expense.installmentsPaid}/{expense.installmentsTotal} pagas</span><button type="button" aria-label="Aumentar parcelas pagas" onClick={() => void setPaidInstallments(expense, expense.installmentsPaid + 1)}>+</button></div>}</td><td><button className="admin-remove" type="button" onClick={() => void deleteExpenseItem(expense.id)}>Remover</button></td></tr>)}</tbody></table>{expenses.length === 0 && <div className="admin-empty"><p>Nenhuma despesa cadastrada.</p></div>}</div></div>
+        </div>
+      )}
+
+      {!loading && activeTab === "checklist" && (
+        <div className="admin-tool-panel admin-two-column-tool">
+          <form className="admin-entry-form" onSubmit={addChecklistItem}><div className="admin-card-title"><div><small>Nova pendência</small><h3>Adicionar ao checklist</h3></div></div><label><span>O que precisa ser feito?</span><input required maxLength={160} value={checklistTitle} onChange={(event) => setChecklistTitle(event.target.value)} placeholder="Ex.: Confirmar decoração do altar" /></label><button type="submit" disabled={busy}>Adicionar item</button></form>
+          <div className="admin-checklist-card"><div className="admin-card-title"><div><small>{checklistProgress}% concluído</small><h3>Checklist do casamento</h3></div><strong>{completedChecklist}/{checklist.length}</strong></div><div className="admin-progress"><i style={{ width: `${checklistProgress}%` }} /></div><div className="admin-checklist-list">{checklist.map((item) => <div className={item.completed ? "is-complete" : ""} key={item.id}><button className="admin-check-button" type="button" aria-label={item.completed ? `Desmarcar ${item.title}` : `Concluir ${item.title}`} onClick={() => void toggleChecklistItem(item)}>{item.completed ? "✓" : ""}</button><span>{item.title}</span><button className="admin-icon-remove" type="button" aria-label={`Remover ${item.title}`} onClick={() => void removeChecklistItem(item.id)}>×</button></div>)}{checklist.length === 0 && <p className="admin-muted-copy">Nenhum item adicionado ainda.</p>}</div></div>
+        </div>
+      )}
+
+      {!loading && activeTab === "timeline" && (
+        <div className="admin-tool-panel admin-two-column-tool">
+          <form className="admin-entry-form" onSubmit={addTimelineItem}><div className="admin-card-title"><div><small>Nova etapa</small><h3>Montar cronograma</h3></div></div><label><span>Horário</span><input type="time" required value={timelineDraft.time} onChange={(event) => setTimelineDraft({ ...timelineDraft, time: event.target.value })} /></label><label><span>Tarefa</span><input required maxLength={120} value={timelineDraft.title} onChange={(event) => setTimelineDraft({ ...timelineDraft, title: event.target.value })} placeholder="Ex.: Receber equipe de decoração" /></label><label><span>Orientações para a cerimonialista</span><textarea maxLength={500} value={timelineDraft.details} onChange={(event) => setTimelineDraft({ ...timelineDraft, details: event.target.value })} placeholder="Responsáveis, contatos ou observações importantes" /></label><button type="submit" disabled={busy}>Adicionar ao cronograma</button></form>
+          <div className="admin-timeline-card"><div className="admin-card-title"><div><small>31 de outubro</small><h3>Roteiro do grande dia</h3></div><button className="admin-small-action" type="button" disabled={exportingTimeline} onClick={() => void exportTimelinePdf()}>{exportingTimeline ? "Gerando…" : "Exportar PDF"}</button></div><div className="admin-timeline-list">{timeline.map((item) => <article key={item.id}><time>{item.time}</time><div><strong>{item.title}</strong>{item.details && <p>{item.details}</p>}</div><button className="admin-icon-remove" type="button" aria-label={`Remover ${item.title}`} onClick={() => void removeTimelineItem(item.id)}>×</button></article>)}{timeline.length === 0 && <p className="admin-muted-copy">Adicione os primeiros horários para montar o roteiro.</p>}</div></div>
+        </div>
+      )}
+
+      {!loading && activeTab === "providers" && (
+        <div className="admin-tool-panel admin-two-column-tool">
+          <form className="admin-entry-form" onSubmit={addProvider}><div className="admin-card-title"><div><small>Equipe do evento</small><h3>Adicionar prestador</h3></div></div><label><span>Nome completo</span><input required maxLength={120} value={providerDraft.name} onChange={(event) => setProviderDraft({ ...providerDraft, name: event.target.value })} placeholder="Nome da pessoa" /></label><label><span>Função</span><input required maxLength={100} value={providerDraft.role} onChange={(event) => setProviderDraft({ ...providerDraft, role: event.target.value })} placeholder="Ex.: Cerimonialista" /></label><button type="submit" disabled={busy || occupied >= 50}>Adicionar prestador</button>{occupied >= 50 && <p className="admin-form-note">As 50 vagas estão ocupadas.</p>}</form>
+          <div className="admin-provider-card"><div className="admin-card-title"><div><small>Capacidade do evento</small><h3>{occupied} de 50 vagas ocupadas</h3></div><strong>{Math.max(50 - occupied, 0)}</strong></div><div className="admin-progress capacity"><i style={{ width: `${capacityPercent}%` }} /></div><p className="admin-capacity-copy">{guestsCount} convidados + {providers.length} prestadores de serviço</p><div className="admin-provider-list">{providers.map((provider) => <article key={provider.id}><span aria-hidden="true">✦</span><div><strong>{provider.name}</strong><small>{provider.role}</small></div><button className="admin-icon-remove" type="button" aria-label={`Remover ${provider.name}`} onClick={() => void removeProvider(provider.id)}>×</button></article>)}{providers.length === 0 && <p className="admin-muted-copy">Nenhum prestador adicionado ainda.</p>}</div></div>
+        </div>
+      )}
+    </section>
+  );
+}

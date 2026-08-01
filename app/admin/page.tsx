@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AdminDashboard } from "./AdminDashboard";
 
 export const metadata: Metadata = {
-  title: "Confirmações | Djalma & Victoria",
+  title: "Painel do casamento | Djalma & Victoria",
   robots: {
     index: false,
     follow: false,
