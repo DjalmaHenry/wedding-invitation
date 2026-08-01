@@ -28,7 +28,7 @@ const WEDDING_ADDRESS =
 const GUIDE_TOPICS: GuideTopic[] = [
   {
     title: "Confirme sua presença",
-    text: "Pedimos, com muito carinho, que confirme sua presença com antecedência, para que possamos organizar cada detalhe da melhor maneira e garantir o conforto de todos durante a celebração.",
+    text: "Pedimos, com muito carinho, que confirme sua presença até o dia 22 de agosto de 2026. Assim, poderemos organizar cada detalhe da melhor maneira e garantir o conforto de todos durante a celebração.",
     image: "/guide-rsvp-painted-v4.png",
     alt: "Caricatura de Djalma e Victoria recebendo uma confirmação de presença",
   },
@@ -1196,6 +1196,10 @@ export function WeddingExperience() {
                   <p>Esperamos você</p>
                   <h2 id="rsvp-modal-title">Confirmar presença</h2>
                   <span aria-hidden="true">✦</span>
+                  <p className="rsvp-deadline">
+                    Para prepararmos cada detalhe com carinho, pedimos que sua
+                    presença seja confirmada até o dia 22 de agosto de 2026.
+                  </p>
                 </header>
 
                 <form className="rsvp-form" onSubmit={submitConfirmation}>
@@ -1702,12 +1706,14 @@ export function WeddingExperience() {
                           alt={topic.alt}
                           decoding="async"
                         />
-                        <span aria-hidden="true">
-                          {String(index + 1).padStart(2, "0")}
-                        </span>
                       </div>
                       <div className="guest-guide-copy">
-                        <small>Um cuidado para o grande dia</small>
+                        <div className="guest-guide-kicker">
+                          <span aria-hidden="true">
+                            {String(index + 1).padStart(2, "0")}
+                          </span>
+                          <small>Um cuidado para o grande dia</small>
+                        </div>
                         <h3>{topic.title}</h3>
                         <p>{topic.text}</p>
                       </div>

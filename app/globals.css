@@ -2502,18 +2502,23 @@ img {
 }
 
 .guest-guide-art img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.guest-guide-art > span {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
+.guest-guide-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.guest-guide-kicker > span {
   display: grid;
   width: 38px;
   height: 38px;
+  flex: 0 0 38px;
   place-items: center;
   color: #fff9eb;
   font-family: Georgia, "Times New Roman", serif;
@@ -2537,6 +2542,16 @@ img {
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+}
+
+.rsvp-deadline {
+  width: min(560px, 100%);
+  margin: 14px auto 0;
+  color: #684d39;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.94rem;
+  font-style: italic;
+  line-height: 1.55;
 }
 
 .guest-guide-copy h3 {
@@ -3168,8 +3183,8 @@ img {
 
   .guest-guide-card,
   .guest-guide-card:nth-child(even) {
-    grid-template-columns: 112px minmax(0, 1fr);
-    min-height: 176px;
+    grid-template-columns: 1fr;
+    min-height: 0;
   }
 
   .guest-guide-card:nth-child(even) .guest-guide-art,
@@ -3179,38 +3194,52 @@ img {
   }
 
   .guest-guide-art {
-    min-height: 176px;
+    min-height: 0;
+    background: rgba(255, 250, 238, 0.72);
   }
 
   .guest-guide-art img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
     object-position: center;
   }
 
-  .guest-guide-art > span {
-    right: 7px;
-    bottom: 7px;
-    width: 29px;
-    height: 29px;
-    font-size: 0.52rem;
-  }
-
   .guest-guide-copy {
-    padding: 17px 13px;
+    padding: 20px 18px 23px;
   }
 
   .guest-guide-copy small {
-    font-size: 0.49rem;
-    letter-spacing: 0.1em;
+    font-size: 0.56rem;
+    letter-spacing: 0.11em;
+  }
+
+  .guest-guide-kicker {
+    gap: 9px;
+  }
+
+  .guest-guide-kicker > span {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+    font-size: 0.56rem;
   }
 
   .guest-guide-copy h3 {
-    margin: 5px 0 8px;
-    font-size: 1.35rem;
+    margin: 10px 0 9px;
+    font-size: 1.72rem;
   }
 
   .guest-guide-copy p {
-    font-size: 0.72rem;
-    line-height: 1.47;
+    font-size: 0.9rem;
+    line-height: 1.58;
+  }
+
+  .rsvp-deadline {
+    margin-top: 12px;
+    padding: 0 6px;
+    font-size: 0.88rem;
   }
 
   .guest-guide-closing {
