@@ -331,6 +331,8 @@ export function WeddingExperience() {
   const [isCreatingPix, setIsCreatingPix] = useState(false);
   const [pixError, setPixError] = useState("");
   const [pixCopied, setPixCopied] = useState(false);
+  const [musicMuted, setMusicMuted] = useState(false);
+  const [musicStarted, setMusicStarted] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -339,6 +341,8 @@ export function WeddingExperience() {
   });
   const hasOpened = useRef(false);
   const modalLoadRequest = useRef(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const musicFadeFrame = useRef<number | null>(null);
 
   useEffect(() => {
     let isCurrent = true;
@@ -358,6 +362,15 @@ export function WeddingExperience() {
     const timer = window.setInterval(updateCountdown, 1000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(
+    () => () => {
+      if (musicFadeFrame.current !== null) {
+        window.cancelAnimationFrame(musicFadeFrame.current);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -491,9 +504,52 @@ export function WeddingExperience() {
     hasOpened.current = true;
     window.scrollTo(0, 0);
     setOpening(true);
+
+    const audio = audioRef.current;
+    if (audio) {
+      audio.currentTime = 0;
+      audio.muted = false;
+      audio.volume = 0;
+      setMusicMuted(false);
+
+      void audio
+        .play()
+        .then(() => {
+          setMusicStarted(true);
+          const startedAt = window.performance.now();
+          const fadeDuration = 1800;
+          const targetVolume = 0.34;
+          const fadeIn = (now: number) => {
+            const progress = Math.min((now - startedAt) / fadeDuration, 1);
+            audio.volume = targetVolume * progress;
+            if (progress < 1) {
+              musicFadeFrame.current = window.requestAnimationFrame(fadeIn);
+            } else {
+              musicFadeFrame.current = null;
+            }
+          };
+          musicFadeFrame.current = window.requestAnimationFrame(fadeIn);
+        })
+        .catch(() => {
+          setMusicStarted(false);
+        });
+    }
+
     // Start revealing the invitation just before the zoom settles so there is
     // no perceptible pause between the two scenes.
     window.setTimeout(() => setOpen(true), 820);
+  };
+
+  const toggleMusic = () => {
+    const audio = audioRef.current;
+    const nextMuted = !musicMuted;
+    setMusicMuted(nextMuted);
+
+    if (!audio) return;
+    audio.muted = nextMuted;
+    if (!nextMuted) {
+      void audio.play().then(() => setMusicStarted(true)).catch(() => undefined);
+    }
   };
 
   const chooseFamily = (side: Exclude<FamilySide, null>) => {
@@ -734,6 +790,13 @@ export function WeddingExperience() {
     <main
       className={`storybook${opening ? " is-opening" : ""}${open ? " is-open" : ""}`}
     >
+      <audio
+        ref={audioRef}
+        src="/salut-damour-elgar.mp3"
+        preload="auto"
+        loop
+        aria-hidden="true"
+      />
       {isInitialLoading && (
         <div
           className="quality-loader quality-loader-site"
@@ -885,6 +948,50 @@ export function WeddingExperience() {
           </span>
         </a>
       </nav>
+
+      <div className="music-controller">
+        <button
+          type="button"
+          className={`music-control${musicMuted ? " is-muted" : ""}`}
+          onClick={toggleMusic}
+          aria-label={
+            musicMuted
+              ? "Ativar música do convite"
+              : "Silenciar música do convite"
+          }
+          aria-pressed={musicMuted}
+          title={
+            musicMuted
+              ? "Ativar Salut d’Amour"
+              : "Silenciar Salut d’Amour"
+          }
+        >
+          <span
+            className={`themed-sound-icon${musicMuted ? " is-muted" : ""}`}
+            aria-hidden="true"
+          >
+            <i className="sound-speaker" />
+            <i className="sound-wave sound-wave-one" />
+            <i className="sound-wave sound-wave-two" />
+            <i className="sound-slash" />
+          </span>
+          <span className="music-control-copy">
+            <strong>Música</strong>
+            <small>
+              {musicStarted && !musicMuted ? "tocando" : "silenciada"}
+            </small>
+          </span>
+        </button>
+        <a
+          className="music-credit"
+          href="https://imslp.org/wiki/Salut_d%27Amour%2C_Op.12_%28Elgar%2C_Edward%29"
+          target="_blank"
+          rel="noreferrer"
+          title="Salut d’Amour, Edward Elgar — Emanuel Salvador e Pau Casan — CC BY 3.0"
+        >
+          Salut d’Amour · Elgar
+        </a>
+      </div>
 
       <div
         id="convite"
