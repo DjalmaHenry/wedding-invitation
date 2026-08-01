@@ -51,6 +51,12 @@ const GUIDE_TOPICS: GuideTopic[] = [
     alt: "Caricatura orientando sobre as cores reservadas para o casamento",
   },
   {
+    title: "Sobre as bebidas",
+    text: "Com carinho, informamos que não haverá serviço de bebidas alcoólicas durante o evento. Caso deseje brindar conosco com sua bebida de preferência, fique à vontade para levá-la. Também será permitida a entrada de gelo e cooler, para que tudo permaneça bem acondicionado durante a celebração.",
+    image: "/guide-drinks-painted-v1.png",
+    alt: "Caricatura de um convidado chegando à celebração com bebida, gelo e cooler",
+  },
+  {
     title: "Registre e celebre",
     text: "Tirem muitas fotos, divirtam-se, celebrem conosco e aproveitem cada momento desse dia tão especial! Sua presença fará parte de uma das lembranças mais bonitas da nossa história.",
     image: "/guide-celebrate-painted-v2.webp",
