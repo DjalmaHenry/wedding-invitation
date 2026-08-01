@@ -35,8 +35,12 @@ type GiftPaymentRecord = {
   paidAt: string | null;
 };
 
-function normalizeFirstName(value: string) {
-  return (value.trim().split(/\s+/)[0] ?? "")
+function normalizeName(value: string, maximumParts = Number.POSITIVE_INFINITY) {
+  return value
+    .trim()
+    .split(/\s+/)
+    .slice(0, maximumParts)
+    .join(" ")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLocaleLowerCase("pt-BR");
@@ -156,19 +160,36 @@ export function AdminDashboard() {
   );
 
   const invitedRoster = useMemo(() => {
-    const confirmedByFirstName = new Map<string, GuestRecord[]>();
-    guests.forEach((guest) => {
-      const key = normalizeFirstName(guest.name);
-      if (!key) return;
-      const matches = confirmedByFirstName.get(key) ?? [];
-      matches.push(guest);
-      confirmedByFirstName.set(key, matches);
-    });
+    const availableGuests = [...guests];
+    const matchesByInvitation = new Map<string, GuestRecord>();
+
+    [...invitedGuests]
+      .sort((first, second) => {
+        const firstParts = first.normalizedFirstName.split(/\s+/).filter(Boolean).length;
+        const secondParts = second.normalizedFirstName.split(/\s+/).filter(Boolean).length;
+        return secondParts - firstParts;
+      })
+      .forEach((invitedGuest) => {
+        const referenceParts = invitedGuest.normalizedFirstName
+          .split(/\s+/)
+          .filter(Boolean).length;
+        const matchIndex = availableGuests.findIndex(
+          (guest) =>
+            normalizeName(guest.name, referenceParts) ===
+            invitedGuest.normalizedFirstName,
+        );
+
+        if (matchIndex >= 0) {
+          const [matchedGuest] = availableGuests.splice(matchIndex, 1);
+          matchesByInvitation.set(invitedGuest.id, matchedGuest);
+        }
+      });
+
     return invitedGuests.map((invitedGuest) => {
-      const matches = confirmedByFirstName.get(invitedGuest.normalizedFirstName) ?? [];
-      const matchedGuest = matches.shift() ?? null;
-      confirmedByFirstName.set(invitedGuest.normalizedFirstName, matches);
-      return { ...invitedGuest, matchedGuest };
+      return {
+        ...invitedGuest,
+        matchedGuest: matchesByInvitation.get(invitedGuest.id) ?? null,
+      };
     });
   }, [guests, invitedGuests]);
 
@@ -250,7 +271,7 @@ export function AdminDashboard() {
       .map((name) => name.trim())
       .filter(Boolean);
     if (names.length === 0) {
-      setInvitedError("Digite ao menos um primeiro nome.");
+      setInvitedError("Digite ao menos um nome.");
       return;
     }
     setInvitedBusy(true);
@@ -554,7 +575,8 @@ export function AdminDashboard() {
             <h2>Lista planejada e confirmações</h2>
           </div>
           <p>
-            O painel cruza automaticamente cada primeiro nome com as confirmações recebidas.
+            O painel cruza automaticamente o primeiro nome — e o segundo quando informado —
+            com as confirmações recebidas.
           </p>
         </div>
 
@@ -562,15 +584,18 @@ export function AdminDashboard() {
           <form className="admin-roster-form" onSubmit={addInvitedNames}>
             <div>
               <span className="admin-eyebrow">Base de convidados</span>
-              <h3>Adicionar primeiros nomes</h3>
-              <p>Digite um nome por linha. Também aceitamos nomes separados por vírgula.</p>
+              <h3>Adicionar nomes de referência</h3>
+              <p>
+                Use apenas o primeiro nome. Quando houver nomes repetidos, informe também o
+                segundo. Aceitamos um registro por linha ou separado por vírgula.
+              </p>
             </div>
             <label>
-              <span>Primeiros nomes</span>
+              <span>Primeiro nome ou primeiro e segundo</span>
               <textarea
                 value={invitedNamesDraft}
                 onChange={(event) => setInvitedNamesDraft(event.target.value)}
-                placeholder={"Ex.:\nAna\nCarlos\nJosé"}
+                placeholder={"Ex.:\nAna\nLuiz Fernando\nLuiz Henrique"}
                 maxLength={4000}
                 required
               />
@@ -612,7 +637,10 @@ export function AdminDashboard() {
               {invitedRoster.length === 0 && (
                 <div className="admin-roster-empty">
                   <strong>Sua lista começa aqui</strong>
-                  <p>Adicione os primeiros nomes para acompanhar automaticamente quem já confirmou.</p>
+                  <p>
+                    Adicione os nomes de referência para acompanhar automaticamente quem já
+                    confirmou.
+                  </p>
                 </div>
               )}
             </div>
