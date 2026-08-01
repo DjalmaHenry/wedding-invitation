@@ -332,7 +332,6 @@ export function WeddingExperience() {
   const [pixError, setPixError] = useState("");
   const [pixCopied, setPixCopied] = useState(false);
   const [musicMuted, setMusicMuted] = useState(false);
-  const [musicStarted, setMusicStarted] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -515,7 +514,6 @@ export function WeddingExperience() {
       void audio
         .play()
         .then(() => {
-          setMusicStarted(true);
           const startedAt = window.performance.now();
           const fadeDuration = 1800;
           const targetVolume = 0.34;
@@ -530,9 +528,7 @@ export function WeddingExperience() {
           };
           musicFadeFrame.current = window.requestAnimationFrame(fadeIn);
         })
-        .catch(() => {
-          setMusicStarted(false);
-        });
+        .catch(() => undefined);
     }
 
     // Start revealing the invitation just before the zoom settles so there is
@@ -548,7 +544,7 @@ export function WeddingExperience() {
     if (!audio) return;
     audio.muted = nextMuted;
     if (!nextMuted) {
-      void audio.play().then(() => setMusicStarted(true)).catch(() => undefined);
+      void audio.play().catch(() => undefined);
     }
   };
 
@@ -966,31 +962,21 @@ export function WeddingExperience() {
               : "Silenciar Salut d’Amour"
           }
         >
-          <span
-            className={`themed-sound-icon${musicMuted ? " is-muted" : ""}`}
+          <img
+            className="music-control-icon"
+            src={
+              musicMuted
+                ? "/sound-muted-painted-olive-v1.png"
+                : "/sound-on-painted-olive-v1.png"
+            }
+            alt=""
             aria-hidden="true"
-          >
-            <i className="sound-speaker" />
-            <i className="sound-wave sound-wave-one" />
-            <i className="sound-wave sound-wave-two" />
-            <i className="sound-slash" />
-          </span>
-          <span className="music-control-copy">
-            <strong>Música</strong>
-            <small>
-              {musicStarted && !musicMuted ? "tocando" : "silenciada"}
-            </small>
+          />
+          <span className="visually-hidden">
+            Salut d’Amour, de Edward Elgar, interpretada por Emanuel Salvador
+            e Pau Casan, sob licença Creative Commons Attribution 3.0.
           </span>
         </button>
-        <a
-          className="music-credit"
-          href="https://imslp.org/wiki/Salut_d%27Amour%2C_Op.12_%28Elgar%2C_Edward%29"
-          target="_blank"
-          rel="noreferrer"
-          title="Salut d’Amour, Edward Elgar — Emanuel Salvador e Pau Casan — CC BY 3.0"
-        >
-          Salut d’Amour · Elgar
-        </a>
       </div>
 
       <div
