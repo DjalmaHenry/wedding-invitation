@@ -516,7 +516,7 @@ export function WeddingExperience() {
         .then(() => {
           const startedAt = window.performance.now();
           const fadeDuration = 1800;
-          const targetVolume = 0.34;
+          const targetVolume = 0.26;
           const fadeIn = (now: number) => {
             const progress = Math.min((now - startedAt) / fadeDuration, 1);
             audio.volume = targetVolume * progress;
