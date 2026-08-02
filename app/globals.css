@@ -4090,7 +4090,13 @@ body:has(.admin-page) {
 .admin-provider-list,
 .admin-timeline-list { display: grid; margin-top: 18px; gap: 9px; }
 .admin-checklist-panel { display: grid; gap: 18px; }
-.admin-vendor-options-panel { display: grid; gap: 18px; }
+.admin-vendor-options-panel { display: grid; width: 100%; min-width: 0; gap: 18px; }
+.admin-vendor-options-panel > .admin-list-card {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  justify-self: stretch;
+}
 .admin-checklist-form {
   grid-template-columns: minmax(210px, 1.2fr) minmax(260px, 2fr) minmax(160px, 0.8fr) auto;
   align-items: end;
