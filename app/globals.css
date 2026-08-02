@@ -2912,7 +2912,7 @@ img {
 
   .menu-section {
     min-height: auto;
-    padding: 82px 20px 94px;
+    padding: 82px 20px calc(164px + env(safe-area-inset-bottom));
   }
 
   .menu-section::before {
