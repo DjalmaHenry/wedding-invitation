@@ -816,6 +816,12 @@ export function AdminDashboard() {
           </div>
         </div>
       </section>
+
+      <AdminPlanningTools
+        view="finance"
+        guestsCount={totals.all}
+        onProviderCountChange={setProviderCount}
+      />
     </main>
   );
 }

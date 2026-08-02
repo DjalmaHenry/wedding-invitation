@@ -13,7 +13,7 @@ import type {
   VendorOptionRecord,
 } from "../../db/admin-dashboard";
 
-type ToolTab = "finance" | "checklist" | "timeline" | "vendorOptions" | "providers";
+type ToolTab = "checklist" | "timeline" | "vendorOptions" | "providers";
 
 const EMPTY_EXPENSE = {
   description: "",
@@ -102,11 +102,13 @@ function sortChecklist(items: ChecklistRecord[]) {
 export function AdminPlanningTools({
   guestsCount,
   onProviderCountChange,
+  view = "planning",
 }: {
   guestsCount: number;
   onProviderCountChange(count: number): void;
+  view?: "planning" | "finance";
 }) {
-  const [activeTab, setActiveTab] = useState<ToolTab>("finance");
+  const [activeTab, setActiveTab] = useState<ToolTab>("checklist");
   const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<ExpenseCategoryRecord[]>([]);
   const [checklist, setChecklist] = useState<ChecklistRecord[]>([]);
@@ -144,20 +146,40 @@ export function AdminPlanningTools({
     setLoading(true);
     setError("");
     try {
-      const [expenseResponse, categoryResponse, budgetResponse, checklistResponse, timelineResponse, vendorOptionsResponse, providerResponse] =
-        await Promise.all([
+      if (view === "finance") {
+        const [expenseResponse, categoryResponse, budgetResponse] = await Promise.all([
           fetch("/api/admin/expenses", { cache: "no-store" }),
           fetch("/api/admin/expense-categories", { cache: "no-store" }),
           fetch("/api/admin/finance-budget", { cache: "no-store" }),
+        ]);
+        if (!expenseResponse.ok || !categoryResponse.ok || !budgetResponse.ok) {
+          throw new Error();
+        }
+        const [expenseData, categoryData, budgetData] = (await Promise.all([
+          expenseResponse.json(),
+          categoryResponse.json(),
+          budgetResponse.json(),
+        ])) as [
+          { expenses?: ExpenseRecord[] },
+          { categories?: ExpenseCategoryRecord[] },
+          { budget?: FinanceBudgetRecord },
+        ];
+        setExpenses(expenseData.expenses ?? []);
+        setExpenseCategories(categoryData.categories ?? []);
+        const loadedBudget = budgetData.budget?.totalPlannedCents ?? 0;
+        setPlannedBudgetCents(loadedBudget);
+        setPlannedBudgetInput(loadedBudget > 0 ? centsToInput(loadedBudget) : "");
+        return;
+      }
+
+      const [checklistResponse, timelineResponse, vendorOptionsResponse, providerResponse] =
+        await Promise.all([
           fetch("/api/admin/checklist", { cache: "no-store" }),
           fetch("/api/admin/timeline", { cache: "no-store" }),
           fetch("/api/admin/vendor-options", { cache: "no-store" }),
           fetch("/api/admin/providers", { cache: "no-store" }),
         ]);
       if (
-        !expenseResponse.ok ||
-        !categoryResponse.ok ||
-        !budgetResponse.ok ||
         !checklistResponse.ok ||
         !timelineResponse.ok ||
         !vendorOptionsResponse.ok ||
@@ -165,39 +187,32 @@ export function AdminPlanningTools({
       ) {
         throw new Error();
       }
-      const [expenseData, categoryData, budgetData, checklistData, timelineData, vendorOptionsData, providerData] =
+      const [checklistData, timelineData, vendorOptionsData, providerData] =
         (await Promise.all([
-          expenseResponse.json(),
-          categoryResponse.json(),
-          budgetResponse.json(),
           checklistResponse.json(),
           timelineResponse.json(),
           vendorOptionsResponse.json(),
           providerResponse.json(),
         ])) as [
-          { expenses?: ExpenseRecord[] },
-          { categories?: ExpenseCategoryRecord[] },
-          { budget?: FinanceBudgetRecord },
           { items?: ChecklistRecord[] },
           { items?: TimelineRecord[] },
           { options?: VendorOptionRecord[] },
           { providers?: ServiceProviderRecord[] },
         ];
-      setExpenses(expenseData.expenses ?? []);
-      setExpenseCategories(categoryData.categories ?? []);
-      const loadedBudget = budgetData.budget?.totalPlannedCents ?? 0;
-      setPlannedBudgetCents(loadedBudget);
-      setPlannedBudgetInput(loadedBudget > 0 ? centsToInput(loadedBudget) : "");
       setChecklist(checklistData.items ?? []);
       setTimeline(timelineData.items ?? []);
       setVendorOptions(vendorOptionsData.options ?? []);
       setProviders(providerData.providers ?? []);
     } catch {
-      setError("Não foi possível carregar os dados de planejamento.");
+      setError(
+        view === "finance"
+          ? "Não foi possível carregar os dados financeiros."
+          : "Não foi possível carregar os dados de planejamento.",
+      );
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [view]);
 
   useEffect(() => {
     // Loads the authenticated planning workspace when the dashboard mounts.
@@ -206,8 +221,8 @@ export function AdminPlanningTools({
   }, [loadPlanningData]);
 
   useEffect(() => {
-    onProviderCountChange(providers.length);
-  }, [onProviderCountChange, providers.length]);
+    if (view === "planning") onProviderCountChange(providers.length);
+  }, [onProviderCountChange, providers.length, view]);
 
   const finances = useMemo(() => {
     const paidPix = expenses
@@ -580,18 +595,17 @@ export function AdminPlanningTools({
     : "conic-gradient(#d8c7a8 0 360deg)";
 
   return (
-    <section className="admin-planning-section">
+    <section className={view === "finance" ? "admin-finance-section" : "admin-planning-section"}>
       <div className="admin-section-heading">
         <div>
-          <p className="admin-kicker">Planejamento central</p>
-          <h2>Organização do casamento</h2>
+          <p className="admin-kicker">{view === "finance" ? "Controle financeiro" : "Planejamento central"}</p>
+          <h2>{view === "finance" ? "Financeiro do casamento" : "Organização do casamento"}</h2>
         </div>
-        <p>Finanças, pendências, equipe e roteiro do grande dia em um só lugar.</p>
+        <p>{view === "finance" ? "Orçamento, pagamentos e valores futuros reunidos em uma área própria." : "Pendências, fornecedores, equipe e roteiro do grande dia em um só lugar."}</p>
       </div>
 
-      <nav className="admin-tool-tabs" aria-label="Áreas do planejamento">
+      {view === "planning" && <nav className="admin-tool-tabs" aria-label="Áreas do planejamento">
         {([
-          ["finance", "Financeiro"],
           ["checklist", `Checklist ${completedChecklist}/${checklist.length}`],
           ["timeline", "Cronograma da cerimonialista"],
           ["vendorOptions", `Opções de fornecedores ${vendorOptions.length}`],
@@ -606,12 +620,12 @@ export function AdminPlanningTools({
             {label}
           </button>
         ))}
-      </nav>
+      </nav>}
 
       {error && <p className="admin-inline-error" role="alert">{error}</p>}
-      {loading && <div className="admin-tool-loading">Preparando o planejamento…</div>}
+      {loading && <div className="admin-tool-loading">{view === "finance" ? "Preparando o financeiro…" : "Preparando o planejamento…"}</div>}
 
-      {!loading && activeTab === "finance" && (
+      {!loading && view === "finance" && (
         <div className="admin-tool-panel">
           <section className="admin-budget-card">
             <form onSubmit={savePlannedBudget}>
@@ -680,7 +694,7 @@ export function AdminPlanningTools({
         </div>
       )}
 
-      {!loading && activeTab === "checklist" && (
+      {!loading && view === "planning" && activeTab === "checklist" && (
         <div className="admin-tool-panel admin-checklist-panel">
           <form className="admin-entry-form admin-checklist-form" onSubmit={addChecklistItem}>
             <div className="admin-card-title"><div><small>Nova pendência</small><h3>Adicionar ao checklist</h3></div></div>
@@ -727,14 +741,14 @@ export function AdminPlanningTools({
         </div>
       )}
 
-      {!loading && activeTab === "timeline" && (
+      {!loading && view === "planning" && activeTab === "timeline" && (
         <div className="admin-tool-panel admin-two-column-tool">
           <form className="admin-entry-form" onSubmit={addTimelineItem}><div className="admin-card-title"><div><small>Nova etapa</small><h3>Montar cronograma da cerimonialista</h3></div></div><label><span>Horário</span><input type="time" required value={timelineDraft.time} onChange={(event) => setTimelineDraft({ ...timelineDraft, time: event.target.value })} /></label><label><span>Tarefa</span><input required maxLength={120} value={timelineDraft.title} onChange={(event) => setTimelineDraft({ ...timelineDraft, title: event.target.value })} placeholder="Ex.: Receber equipe de decoração" /></label><label><span>Orientações para a cerimonialista</span><textarea maxLength={500} value={timelineDraft.details} onChange={(event) => setTimelineDraft({ ...timelineDraft, details: event.target.value })} placeholder="Responsáveis, contatos ou observações importantes" /></label><button type="submit" disabled={busy}>Adicionar ao cronograma</button></form>
           <div className="admin-timeline-card"><div className="admin-card-title"><div><small>31 de outubro</small><h3>Cronograma da cerimonialista</h3></div><button className="admin-small-action" type="button" disabled={exportingTimeline} onClick={() => void exportTimelinePdf()}>{exportingTimeline ? "Gerando…" : "Exportar PDF"}</button></div><div className="admin-timeline-list">{timeline.map((item) => <article key={item.id}><time>{item.time}</time><div><strong>{item.title}</strong>{item.details && <p>{item.details}</p>}</div><button className="admin-icon-remove" type="button" aria-label={`Remover ${item.title}`} onClick={() => void removeTimelineItem(item.id)}>×</button></article>)}{timeline.length === 0 && <p className="admin-muted-copy">Adicione os primeiros horários para montar o roteiro.</p>}</div></div>
         </div>
       )}
 
-      {!loading && activeTab === "vendorOptions" && (
+      {!loading && view === "planning" && activeTab === "vendorOptions" && (
         <div className="admin-tool-panel admin-vendor-options-panel">
           <form className="admin-entry-form admin-vendor-option-form" onSubmit={addVendorOption}>
             <div className="admin-card-title"><div><small>Nova cotação</small><h3>Adicionar opção de fornecedor</h3></div></div>
@@ -770,7 +784,7 @@ export function AdminPlanningTools({
         </div>
       )}
 
-      {!loading && activeTab === "providers" && (
+      {!loading && view === "planning" && activeTab === "providers" && (
         <div className="admin-tool-panel admin-two-column-tool">
           <form className="admin-entry-form" onSubmit={addProvider}><div className="admin-card-title"><div><small>Equipe do evento</small><h3>Adicionar prestador</h3></div></div><label><span>Nome completo</span><input required maxLength={120} value={providerDraft.name} onChange={(event) => setProviderDraft({ ...providerDraft, name: event.target.value })} placeholder="Nome da pessoa" /></label><label><span>Função</span><input required maxLength={100} value={providerDraft.role} onChange={(event) => setProviderDraft({ ...providerDraft, role: event.target.value })} placeholder="Ex.: Cerimonialista" /></label><button type="submit" disabled={busy || occupied >= 50}>Adicionar prestador</button>{occupied >= 50 && <p className="admin-form-note">As 50 vagas estão ocupadas.</p>}</form>
           <div className="admin-provider-card"><div className="admin-card-title"><div><small>Capacidade do evento</small><h3>{occupied} de 50 vagas ocupadas</h3></div><strong>{Math.max(50 - occupied, 0)}</strong></div><div className="admin-progress capacity"><i style={{ width: `${capacityPercent}%` }} /></div><p className="admin-capacity-copy">{guestsCount} convidados + {providers.length} prestadores de serviço</p><div className="admin-provider-list">{providers.map((provider) => <article key={provider.id}><span aria-hidden="true">✦</span><div><strong>{provider.name}</strong><small>{provider.role}</small></div><button className="admin-icon-remove" type="button" aria-label={`Remover ${provider.name}`} onClick={() => void removeProvider(provider.id)}>×</button></article>)}{providers.length === 0 && <p className="admin-muted-copy">Nenhum prestador adicionado ainda.</p>}</div></div>

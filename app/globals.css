@@ -4914,6 +4914,7 @@ body:has(.admin-page) {
 .admin-payment-status { font-size: 0.65rem; border-radius: 6px; }
 
 .admin-planning-section,
+.admin-finance-section,
 .admin-gifts-section { margin-top: 44px; }
 
 .admin-tool-tabs {
@@ -5004,6 +5005,7 @@ body:has(.admin-page) {
 
   .admin-guests-section,
   .admin-planning-section,
+  .admin-finance-section,
   .admin-gifts-section { margin-top: 30px; }
 
   .admin-section-heading { gap: 8px; }
