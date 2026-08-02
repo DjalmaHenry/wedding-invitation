@@ -25,9 +25,9 @@ export const metadata: Metadata = {
       "Você está convidado para celebrar conosco o dia 31 de outubro de 2026.",
     images: [
       {
-        url: "https://victoriasandy.djalmahenry.com/preview-carta-whatsapp.jpg",
-        width: 1733,
-        height: 908,
+        url: "https://victoriasandy.djalmahenry.com/preview-carta-whatsapp-v2.jpg",
+        width: 1200,
+        height: 630,
         type: "image/jpeg",
         alt: "Carta fechada de Djalma e Victoria com lacre verde-oliva D & V",
       },
@@ -38,7 +38,9 @@ export const metadata: Metadata = {
     title: "Djalma & Victoria — Nosso casamento",
     description:
       "Você está convidado para celebrar conosco o dia 31 de outubro de 2026.",
-    images: ["https://victoriasandy.djalmahenry.com/preview-carta-whatsapp.jpg"],
+    images: [
+      "https://victoriasandy.djalmahenry.com/preview-carta-whatsapp-v2.jpg",
+    ],
   },
 };
 
@@ -48,6 +50,10 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <head>
+        <meta
+          property="og:image:secure_url"
+          content="https://victoriasandy.djalmahenry.com/preview-carta-whatsapp-v2.jpg"
+        />
         <link
           rel="preload"
           href="/salut-damour-elgar.mp3"
