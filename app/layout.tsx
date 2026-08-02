@@ -5,6 +5,9 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://victoriasandy.djalmahenry.com"),
+  alternates: {
+    canonical: "/",
+  },
   title: "Djalma & Victoria — Nosso casamento",
   description:
     "Um convite para viver conosco o dia 31 de outubro de 2026, no Villa Garden.",
@@ -22,9 +25,10 @@ export const metadata: Metadata = {
       "Você está convidado para celebrar conosco o dia 31 de outubro de 2026.",
     images: [
       {
-        url: "/og.png?v=20260802-1",
+        url: "https://victoriasandy.djalmahenry.com/preview-carta-whatsapp.jpg",
         width: 1733,
         height: 908,
+        type: "image/jpeg",
         alt: "Carta fechada de Djalma e Victoria com lacre verde-oliva D & V",
       },
     ],
@@ -34,7 +38,7 @@ export const metadata: Metadata = {
     title: "Djalma & Victoria — Nosso casamento",
     description:
       "Você está convidado para celebrar conosco o dia 31 de outubro de 2026.",
-    images: ["/og.png?v=20260802-1"],
+    images: ["https://victoriasandy.djalmahenry.com/preview-carta-whatsapp.jpg"],
   },
 };
 
