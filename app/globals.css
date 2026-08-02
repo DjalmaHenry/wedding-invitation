@@ -2150,10 +2150,6 @@ img {
   margin-top: 9px;
 }
 
-.gift-values > div:has(> :nth-child(4)) {
-  grid-template-columns: repeat(4, 1fr);
-}
-
 .gift-values button {
   min-height: 42px;
   padding: 0 8px;
@@ -3140,9 +3136,7 @@ img {
     font-size: 0.9rem;
   }
 
-  .gift-values > div,
-  .gift-values > div:has(> :nth-child(4)) {
-    grid-template-columns: repeat(2, 1fr);
+  .gift-values > div {
     gap: 6px;
   }
 
