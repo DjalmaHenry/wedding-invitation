@@ -4090,12 +4090,58 @@ body:has(.admin-page) {
 .admin-provider-list,
 .admin-timeline-list { display: grid; margin-top: 18px; gap: 9px; }
 .admin-checklist-panel { display: grid; gap: 18px; }
+.admin-vendor-options-panel { display: grid; gap: 18px; }
 .admin-checklist-form {
   grid-template-columns: minmax(210px, 1.2fr) minmax(260px, 2fr) minmax(160px, 0.8fr) auto;
   align-items: end;
 }
 .admin-checklist-form .admin-card-title { grid-column: auto; margin: 0; align-self: center; }
 .admin-checklist-form > button { white-space: nowrap; }
+.admin-vendor-option-form { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.admin-vendor-option-form .admin-card-title { grid-column: 1 / -1; }
+.admin-vendor-benefits-field { grid-column: span 3; }
+.admin-vendor-benefits-field textarea { min-height: 76px; }
+.admin-vendor-option-form > button { min-height: 76px; }
+.admin-vendor-options-heading {
+  display: flex;
+  padding: 20px 24px 14px;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+.admin-vendor-options-heading small {
+  color: #6d766e;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.admin-vendor-options-heading h3 {
+  margin: 3px 0 0;
+  color: #263029;
+  font-size: 1.25rem;
+}
+.admin-vendor-options-heading > strong {
+  color: #5f6d3f;
+  font-size: 1.65rem;
+}
+.admin-vendor-category {
+  display: inline-flex;
+  padding: 5px 8px;
+  color: #4f5d36;
+  font-size: 0.66rem;
+  font-weight: 800;
+  background: #edf1e8;
+  border-radius: 7px;
+}
+.admin-vendor-benefits {
+  max-width: 360px;
+  margin: 0;
+  color: #657067;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
 .admin-checklist-list > div,
 .admin-provider-list article {
   display: grid;
@@ -4991,6 +5037,12 @@ body:has(.admin-page) {
   .admin-checklist-date { margin-top: 4px; }
   .admin-checklist-form { grid-template-columns: 1fr; }
   .admin-checklist-form .admin-card-title { margin-bottom: 4px; }
+  .admin-vendor-option-form { grid-template-columns: 1fr; }
+  .admin-vendor-option-form .admin-card-title,
+  .admin-vendor-benefits-field { grid-column: auto; }
+  .admin-vendor-option-form > button { min-height: 46px; }
+  .admin-vendor-options-heading { padding: 17px 17px 10px; }
+  .admin-vendor-benefits { max-width: none; }
 
   .admin-toolbar { padding: 15px; }
   .admin-table-wrap { padding: 6px 10px 10px; overflow: visible; }

@@ -54,6 +54,16 @@ export type ServiceProviderRecord = {
   createdAt: string;
 };
 
+export type VendorOptionRecord = {
+  id: string;
+  category: string;
+  name: string;
+  hours: number;
+  amountCents: number;
+  benefits: string;
+  createdAt: string;
+};
+
 type RuntimeEnv = { DB?: D1Database };
 
 function getD1(): D1Database {
@@ -343,6 +353,54 @@ export async function createServiceProvider(input: {
 export async function deleteServiceProvider(id: string): Promise<boolean> {
   const result = await getD1()
     .prepare("DELETE FROM service_providers WHERE id = ?1")
+    .bind(id)
+    .run();
+  return (result.meta.changes ?? 0) > 0;
+}
+
+export async function listVendorOptions(): Promise<VendorOptionRecord[]> {
+  const result = await getD1()
+    .prepare(
+      `SELECT id, category, name, hours, amount_cents AS amountCents,
+        benefits, created_at AS createdAt
+       FROM vendor_options
+       ORDER BY category COLLATE NOCASE ASC, amount_cents ASC, name COLLATE NOCASE ASC`,
+    )
+    .all<VendorOptionRecord>();
+  return result.results ?? [];
+}
+
+export async function createVendorOption(input: {
+  category: string;
+  name: string;
+  hours: number;
+  amountCents: number;
+  benefits: string;
+}): Promise<VendorOptionRecord> {
+  const id = crypto.randomUUID();
+  const createdAt = new Date().toISOString();
+  await getD1()
+    .prepare(
+      `INSERT INTO vendor_options
+       (id, category, name, hours, amount_cents, benefits, created_at)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)`,
+    )
+    .bind(
+      id,
+      input.category,
+      input.name,
+      input.hours,
+      input.amountCents,
+      input.benefits,
+      createdAt,
+    )
+    .run();
+  return { id, ...input, createdAt };
+}
+
+export async function deleteVendorOption(id: string): Promise<boolean> {
+  const result = await getD1()
+    .prepare("DELETE FROM vendor_options WHERE id = ?1")
     .bind(id)
     .run();
   return (result.meta.changes ?? 0) > 0;

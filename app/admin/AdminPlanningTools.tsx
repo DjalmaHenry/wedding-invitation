@@ -10,9 +10,10 @@ import type {
   FinanceBudgetRecord,
   ServiceProviderRecord,
   TimelineRecord,
+  VendorOptionRecord,
 } from "../../db/admin-dashboard";
 
-type ToolTab = "finance" | "checklist" | "timeline" | "providers";
+type ToolTab = "finance" | "checklist" | "timeline" | "vendorOptions" | "providers";
 
 const EMPTY_EXPENSE = {
   description: "",
@@ -110,6 +111,7 @@ export function AdminPlanningTools({
   const [expenseCategories, setExpenseCategories] = useState<ExpenseCategoryRecord[]>([]);
   const [checklist, setChecklist] = useState<ChecklistRecord[]>([]);
   const [timeline, setTimeline] = useState<TimelineRecord[]>([]);
+  const [vendorOptions, setVendorOptions] = useState<VendorOptionRecord[]>([]);
   const [providers, setProviders] = useState<ServiceProviderRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -126,6 +128,13 @@ export function AdminPlanningTools({
     details: "",
   });
   const [providerDraft, setProviderDraft] = useState({ name: "", role: "" });
+  const [vendorOptionDraft, setVendorOptionDraft] = useState({
+    category: "",
+    name: "",
+    hours: "4",
+    amount: "",
+    benefits: "",
+  });
   const [exportingTimeline, setExportingTimeline] = useState(false);
   const [plannedBudgetCents, setPlannedBudgetCents] = useState(0);
   const [plannedBudgetInput, setPlannedBudgetInput] = useState("");
@@ -135,13 +144,14 @@ export function AdminPlanningTools({
     setLoading(true);
     setError("");
     try {
-      const [expenseResponse, categoryResponse, budgetResponse, checklistResponse, timelineResponse, providerResponse] =
+      const [expenseResponse, categoryResponse, budgetResponse, checklistResponse, timelineResponse, vendorOptionsResponse, providerResponse] =
         await Promise.all([
           fetch("/api/admin/expenses", { cache: "no-store" }),
           fetch("/api/admin/expense-categories", { cache: "no-store" }),
           fetch("/api/admin/finance-budget", { cache: "no-store" }),
           fetch("/api/admin/checklist", { cache: "no-store" }),
           fetch("/api/admin/timeline", { cache: "no-store" }),
+          fetch("/api/admin/vendor-options", { cache: "no-store" }),
           fetch("/api/admin/providers", { cache: "no-store" }),
         ]);
       if (
@@ -150,17 +160,19 @@ export function AdminPlanningTools({
         !budgetResponse.ok ||
         !checklistResponse.ok ||
         !timelineResponse.ok ||
+        !vendorOptionsResponse.ok ||
         !providerResponse.ok
       ) {
         throw new Error();
       }
-      const [expenseData, categoryData, budgetData, checklistData, timelineData, providerData] =
+      const [expenseData, categoryData, budgetData, checklistData, timelineData, vendorOptionsData, providerData] =
         (await Promise.all([
           expenseResponse.json(),
           categoryResponse.json(),
           budgetResponse.json(),
           checklistResponse.json(),
           timelineResponse.json(),
+          vendorOptionsResponse.json(),
           providerResponse.json(),
         ])) as [
           { expenses?: ExpenseRecord[] },
@@ -168,6 +180,7 @@ export function AdminPlanningTools({
           { budget?: FinanceBudgetRecord },
           { items?: ChecklistRecord[] },
           { items?: TimelineRecord[] },
+          { options?: VendorOptionRecord[] },
           { providers?: ServiceProviderRecord[] },
         ];
       setExpenses(expenseData.expenses ?? []);
@@ -177,6 +190,7 @@ export function AdminPlanningTools({
       setPlannedBudgetInput(loadedBudget > 0 ? centsToInput(loadedBudget) : "");
       setChecklist(checklistData.items ?? []);
       setTimeline(timelineData.items ?? []);
+      setVendorOptions(vendorOptionsData.options ?? []);
       setProviders(providerData.providers ?? []);
     } catch {
       setError("Não foi possível carregar os dados de planejamento.");
@@ -505,6 +519,62 @@ export function AdminPlanningTools({
     if (response.ok) setProviders((current) => current.filter((item) => item.id !== id));
   };
 
+  const addVendorOption = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const amountCents = parseMoneyToCents(vendorOptionDraft.amount);
+    const hours = Number(vendorOptionDraft.hours);
+    if (amountCents <= 0 || !Number.isInteger(hours) || hours < 1) {
+      setError("Informe horas e valor válidos para a opção de fornecedor.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      const response = await fetch("/api/admin/vendor-options", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: vendorOptionDraft.category,
+          name: vendorOptionDraft.name,
+          hours,
+          amountCents,
+          benefits: vendorOptionDraft.benefits,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(await readError(response, "Não foi possível salvar a opção."));
+      }
+      const data = (await response.json()) as { option: VendorOptionRecord };
+      setVendorOptions((current) =>
+        [...current, data.option].sort(
+          (left, right) =>
+            left.category.localeCompare(right.category, "pt-BR") ||
+            left.amountCents - right.amountCents,
+        ),
+      );
+      setVendorOptionDraft({
+        category: "",
+        name: "",
+        hours: "4",
+        amount: "",
+        benefits: "",
+      });
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível salvar a opção.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removeVendorOption = async (id: string) => {
+    const response = await fetch(`/api/admin/vendor-options?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    if (response.ok) {
+      setVendorOptions((current) => current.filter((item) => item.id !== id));
+    }
+  };
+
   const statusChart = finances.total
     ? `conic-gradient(#5f6d3f 0 ${(finances.paidPix / finances.total) * 360}deg, #a8895f ${(finances.paidPix / finances.total) * 360}deg ${((finances.paidPix + finances.installments) / finances.total) * 360}deg, #d6bd8f ${((finances.paidPix + finances.installments) / finances.total) * 360}deg 360deg)`
     : "conic-gradient(#d8c7a8 0 360deg)";
@@ -524,6 +594,7 @@ export function AdminPlanningTools({
           ["finance", "Financeiro"],
           ["checklist", `Checklist ${completedChecklist}/${checklist.length}`],
           ["timeline", "Cronograma da cerimonialista"],
+          ["vendorOptions", `Opções de fornecedores ${vendorOptions.length}`],
           ["providers", `Prestadores ${providers.length}`],
         ] as [ToolTab, string][]).map(([tab, label]) => (
           <button
@@ -660,6 +731,42 @@ export function AdminPlanningTools({
         <div className="admin-tool-panel admin-two-column-tool">
           <form className="admin-entry-form" onSubmit={addTimelineItem}><div className="admin-card-title"><div><small>Nova etapa</small><h3>Montar cronograma da cerimonialista</h3></div></div><label><span>Horário</span><input type="time" required value={timelineDraft.time} onChange={(event) => setTimelineDraft({ ...timelineDraft, time: event.target.value })} /></label><label><span>Tarefa</span><input required maxLength={120} value={timelineDraft.title} onChange={(event) => setTimelineDraft({ ...timelineDraft, title: event.target.value })} placeholder="Ex.: Receber equipe de decoração" /></label><label><span>Orientações para a cerimonialista</span><textarea maxLength={500} value={timelineDraft.details} onChange={(event) => setTimelineDraft({ ...timelineDraft, details: event.target.value })} placeholder="Responsáveis, contatos ou observações importantes" /></label><button type="submit" disabled={busy}>Adicionar ao cronograma</button></form>
           <div className="admin-timeline-card"><div className="admin-card-title"><div><small>31 de outubro</small><h3>Cronograma da cerimonialista</h3></div><button className="admin-small-action" type="button" disabled={exportingTimeline} onClick={() => void exportTimelinePdf()}>{exportingTimeline ? "Gerando…" : "Exportar PDF"}</button></div><div className="admin-timeline-list">{timeline.map((item) => <article key={item.id}><time>{item.time}</time><div><strong>{item.title}</strong>{item.details && <p>{item.details}</p>}</div><button className="admin-icon-remove" type="button" aria-label={`Remover ${item.title}`} onClick={() => void removeTimelineItem(item.id)}>×</button></article>)}{timeline.length === 0 && <p className="admin-muted-copy">Adicione os primeiros horários para montar o roteiro.</p>}</div></div>
+        </div>
+      )}
+
+      {!loading && activeTab === "vendorOptions" && (
+        <div className="admin-tool-panel admin-vendor-options-panel">
+          <form className="admin-entry-form admin-vendor-option-form" onSubmit={addVendorOption}>
+            <div className="admin-card-title"><div><small>Nova cotação</small><h3>Adicionar opção de fornecedor</h3></div></div>
+            <label><span>Categoria do serviço</span><input required maxLength={80} value={vendorOptionDraft.category} onChange={(event) => setVendorOptionDraft({ ...vendorOptionDraft, category: event.target.value })} placeholder="Ex.: Fotografia" /></label>
+            <label><span>Nome do fornecedor</span><input required maxLength={120} value={vendorOptionDraft.name} onChange={(event) => setVendorOptionDraft({ ...vendorOptionDraft, name: event.target.value })} placeholder="Nome da empresa ou profissional" /></label>
+            <label><span>Horas de serviço</span><input type="number" min="1" max="240" required value={vendorOptionDraft.hours} onChange={(event) => setVendorOptionDraft({ ...vendorOptionDraft, hours: event.target.value })} /></label>
+            <label><span>Valor</span><input required inputMode="decimal" value={vendorOptionDraft.amount} onChange={(event) => setVendorOptionDraft({ ...vendorOptionDraft, amount: event.target.value })} placeholder="0,00" /></label>
+            <label className="admin-vendor-benefits-field"><span>Benefícios inclusos</span><textarea required maxLength={1000} value={vendorOptionDraft.benefits} onChange={(event) => setVendorOptionDraft({ ...vendorOptionDraft, benefits: event.target.value })} placeholder="Ex.: Álbum impresso, making of e entrega digital" /></label>
+            <button type="submit" disabled={busy}>Salvar opção</button>
+          </form>
+
+          <div className="admin-list-card admin-tool-list">
+            <div className="admin-vendor-options-heading"><div><small>Comparativo</small><h3>Opções cadastradas</h3></div><strong>{vendorOptions.length}</strong></div>
+            <div className="admin-table-wrap">
+              <table>
+                <thead><tr><th>Categoria</th><th>Fornecedor</th><th>Horas</th><th>Valor</th><th>Benefícios</th><th aria-label="Ações" /></tr></thead>
+                <tbody>
+                  {vendorOptions.map((option) => (
+                    <tr key={option.id}>
+                      <td data-label="Categoria"><span className="admin-vendor-category">{option.category}</span></td>
+                      <td data-label="Fornecedor"><strong>{option.name}</strong></td>
+                      <td data-label="Horas">{option.hours}h</td>
+                      <td data-label="Valor"><strong>{money(option.amountCents)}</strong></td>
+                      <td data-label="Benefícios"><p className="admin-vendor-benefits">{option.benefits}</p></td>
+                      <td><button className="admin-remove" type="button" onClick={() => void removeVendorOption(option.id)}>Remover</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {vendorOptions.length === 0 && <div className="admin-empty"><p>Nenhuma opção de fornecedor cadastrada.</p></div>}
+            </div>
+          </div>
         </div>
       )}
 

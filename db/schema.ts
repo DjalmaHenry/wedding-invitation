@@ -176,3 +176,23 @@ export const serviceProviders = sqliteTable(
     index("service_providers_name_idx").on(table.name),
   ],
 );
+
+export const vendorOptions = sqliteTable(
+  "vendor_options",
+  {
+    id: text("id").primaryKey(),
+    category: text("category").notNull(),
+    name: text("name").notNull(),
+    hours: integer("hours").notNull(),
+    amountCents: integer("amount_cents").notNull(),
+    benefits: text("benefits").notNull(),
+    createdAt: text("created_at").notNull(),
+  },
+  (table) => [
+    index("vendor_options_category_idx").on(table.category),
+    index("vendor_options_name_idx").on(table.name),
+    index("vendor_options_created_at_idx").on(table.createdAt),
+    check("vendor_options_hours_check", sql`${table.hours} > 0`),
+    check("vendor_options_amount_check", sql`${table.amountCents} > 0`),
+  ],
+);
