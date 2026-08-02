@@ -4925,6 +4925,21 @@ body:has(.admin-page) {
 .admin-finance-section,
 .admin-gifts-section { margin-top: 44px; }
 
+.admin-finance-section {
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
+}
+
+.admin-finance-section > .admin-tool-panel,
+.admin-finance-section .admin-tool-list {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  margin-inline: 0;
+  justify-self: stretch;
+}
+
 .admin-tool-tabs {
   background: #fff;
   border-color: #e0e5df;
