@@ -190,3 +190,16 @@ export async function listGiftPayments(): Promise<GiftPaymentRecord[]> {
 
   return result.results ?? [];
 }
+
+export async function deleteDeletableGiftPayment(id: string): Promise<boolean> {
+  const result = await getD1()
+    .prepare(
+      `DELETE FROM gift_payments
+      WHERE id = ?1
+        AND status IN ('pending', 'in_process', 'authorized', 'cancelled')`,
+    )
+    .bind(id)
+    .run();
+
+  return (result.meta.changes ?? 0) > 0;
+}

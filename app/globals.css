@@ -3779,6 +3779,21 @@ body:has(.admin-page) {
   background: #d7bf91;
 }
 
+.admin-payment-status.cancelled {
+  color: #6a3f32;
+  background: #ead2ca;
+}
+
+.admin-gift-action-cell {
+  width: 112px;
+}
+
+.admin-action-locked {
+  color: #8a928b;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
 .admin-planning-section {
   max-width: 1180px;
   margin: 54px auto 0;

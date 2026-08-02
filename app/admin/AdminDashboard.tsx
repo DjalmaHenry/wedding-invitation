@@ -60,6 +60,8 @@ export function AdminDashboard() {
   const [guests, setGuests] = useState<GuestRecord[]>([]);
   const [invitedGuests, setInvitedGuests] = useState<InvitedGuestRecord[]>([]);
   const [giftPayments, setGiftPayments] = useState<GiftPaymentRecord[]>([]);
+  const [deletingGiftId, setDeletingGiftId] = useState<string | null>(null);
+  const [giftDeleteError, setGiftDeleteError] = useState("");
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [loginError, setLoginError] = useState("");
@@ -229,9 +231,12 @@ export function AdminDashboard() {
       return "Aguardando";
     }
     if (status === "refunded") return "Reembolsado";
-    if (status === "cancelled") return "Cancelado";
+    if (status === "cancelled") return "Expirado/cancelado";
     return "Não concluído";
   };
+
+  const canDeleteGiftPayment = (status: string) =>
+    ["pending", "in_process", "authorized", "cancelled"].includes(status);
 
   const login = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -332,6 +337,41 @@ export function AdminDashboard() {
       }
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const removeGiftPayment = async (payment: GiftPaymentRecord) => {
+    if (
+      !window.confirm(
+        `Apagar o pagamento de ${payment.donorName}? Esta ação não pode ser desfeita.`,
+      )
+    ) {
+      return;
+    }
+
+    setDeletingGiftId(payment.id);
+    setGiftDeleteError("");
+    try {
+      const response = await fetch(
+        `/api/admin/gift-payments?id=${encodeURIComponent(payment.id)}`,
+        { method: "DELETE" },
+      );
+      if (!response.ok) {
+        throw new Error(
+          await readResponseError(response, "Não foi possível apagar o pagamento."),
+        );
+      }
+      setGiftPayments((current) =>
+        current.filter((item) => item.id !== payment.id),
+      );
+    } catch (cause) {
+      setGiftDeleteError(
+        cause instanceof Error
+          ? cause.message
+          : "Não foi possível apagar o pagamento.",
+      );
+    } finally {
+      setDeletingGiftId(null);
     }
   };
 
@@ -763,6 +803,11 @@ export function AdminDashboard() {
         </div>
 
         <div className="admin-list-card">
+          {giftDeleteError && (
+            <p className="admin-export-error" role="alert">
+              {giftDeleteError}
+            </p>
+          )}
           <div className="admin-table-wrap">
             <table>
               <thead>
@@ -772,6 +817,7 @@ export function AdminDashboard() {
                   <th>Valor</th>
                   <th>Status</th>
                   <th>Data</th>
+                  <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -802,6 +848,22 @@ export function AdminDashboard() {
                         timeStyle: "short",
                         timeZone: "America/Fortaleza",
                       })}
+                    </td>
+                    <td data-label="Ações" className="admin-gift-action-cell">
+                      {canDeleteGiftPayment(payment.status) ? (
+                        <button
+                          className="admin-remove"
+                          type="button"
+                          disabled={deletingGiftId === payment.id}
+                          onClick={() => void removeGiftPayment(payment)}
+                        >
+                          {deletingGiftId === payment.id
+                            ? "Apagando..."
+                            : "Apagar"}
+                        </button>
+                      ) : (
+                        <span className="admin-action-locked">Preservado</span>
+                      )}
                     </td>
                   </tr>
                 ))}
