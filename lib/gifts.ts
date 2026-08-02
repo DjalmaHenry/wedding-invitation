@@ -78,11 +78,11 @@ export const GIFT_ITEMS: GiftItem[] = [
   },
   {
     id: "caminho",
-    title: "Entre estradas e descobertas",
-    description: "Para seguirmos pela estrada com tranquilidade.",
+    title: "Passeio especial com os pets",
+    description: "Um dia de carinho, alegria e companhia especial.",
     detail:
-      "Uma contribuição para combustível, pedágios e pequenos cuidados que deixam cada caminho mais leve.",
-    image: "/gift-road-painted-v3.png",
+      "Sua contribuição ajuda a transformar um passeio ao lado dos nossos companheiros de quatro patas em uma lembrança cheia de afeto.",
+    image: "/gift-pets-painted-v1.png",
     minimum: 50,
     maximum: 400,
     suggestions: [50, 160, 300],
