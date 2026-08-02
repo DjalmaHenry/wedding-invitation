@@ -15,6 +15,7 @@ export type InvitedGuestRecord = {
   id: string;
   firstName: string;
   normalizedFirstName: string;
+  matchedGuestId: string | null;
   createdAt: string;
 };
 
@@ -109,6 +110,7 @@ export async function listInvitedGuests(): Promise<InvitedGuestRecord[]> {
     .prepare(
       `SELECT id, first_name AS firstName,
         normalized_first_name AS normalizedFirstName,
+        matched_guest_id AS matchedGuestId,
         created_at AS createdAt
        FROM invited_guests
        ORDER BY first_name COLLATE NOCASE ASC, created_at ASC`,
@@ -126,6 +128,7 @@ export async function createInvitedGuests(
   const records = names.map((name) => ({
     id: crypto.randomUUID(),
     ...name,
+    matchedGuestId: null,
     createdAt,
   }));
   await database.batch(
@@ -153,4 +156,48 @@ export async function deleteInvitedGuest(id: string): Promise<boolean> {
     .bind(id)
     .run();
   return (result.meta.changes ?? 0) > 0;
+}
+
+export async function updateInvitedGuestMatch(
+  id: string,
+  guestId: string | null,
+): Promise<InvitedGuestRecord | null> {
+  const database = getD1();
+  const invitation = await database
+    .prepare("SELECT id FROM invited_guests WHERE id = ?1")
+    .bind(id)
+    .first<{ id: string }>();
+  if (!invitation) return null;
+
+  if (guestId) {
+    const guest = await database
+      .prepare("SELECT id FROM guests WHERE id = ?1")
+      .bind(guestId)
+      .first<{ id: string }>();
+    if (!guest) throw new Error("guest_not_found");
+
+    const existingMatch = await database
+      .prepare(
+        "SELECT id FROM invited_guests WHERE matched_guest_id = ?1 AND id != ?2",
+      )
+      .bind(guestId, id)
+      .first<{ id: string }>();
+    if (existingMatch) throw new Error("guest_already_linked");
+  }
+
+  await database
+    .prepare("UPDATE invited_guests SET matched_guest_id = ?1 WHERE id = ?2")
+    .bind(guestId, id)
+    .run();
+
+  return database
+    .prepare(
+      `SELECT id, first_name AS firstName,
+        normalized_first_name AS normalizedFirstName,
+        matched_guest_id AS matchedGuestId,
+        created_at AS createdAt
+       FROM invited_guests WHERE id = ?1`,
+    )
+    .bind(id)
+    .first<InvitedGuestRecord>();
 }

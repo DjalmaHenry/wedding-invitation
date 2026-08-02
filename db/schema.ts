@@ -5,6 +5,7 @@ import {
   integer,
   sqliteTable,
   text,
+  uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 
 export const guests = sqliteTable(
@@ -36,6 +37,9 @@ export const invitedGuests = sqliteTable(
     id: text("id").primaryKey(),
     firstName: text("first_name").notNull(),
     normalizedFirstName: text("normalized_first_name").notNull(),
+    matchedGuestId: text("matched_guest_id").references(() => guests.id, {
+      onDelete: "set null",
+    }),
     createdAt: text("created_at").notNull(),
   },
   (table) => [
@@ -43,6 +47,9 @@ export const invitedGuests = sqliteTable(
       table.normalizedFirstName,
     ),
     index("invited_guests_created_at_idx").on(table.createdAt),
+    uniqueIndex("invited_guests_matched_guest_id_unique").on(
+      table.matchedGuestId,
+    ),
   ],
 );
 

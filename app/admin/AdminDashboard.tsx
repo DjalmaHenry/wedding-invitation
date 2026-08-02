@@ -20,6 +20,7 @@ type InvitedGuestRecord = {
   id: string;
   firstName: string;
   normalizedFirstName: string;
+  matchedGuestId: string | null;
   createdAt: string;
 };
 
@@ -90,6 +91,10 @@ export function AdminDashboard() {
   const [invitedBusy, setInvitedBusy] = useState(false);
   const [invitedError, setInvitedError] = useState("");
   const [deletingInvitedId, setDeletingInvitedId] = useState<string | null>(null);
+  const [linkingInvitedId, setLinkingInvitedId] = useState<string | null>(null);
+  const [linkSearch, setLinkSearch] = useState("");
+  const [linkBusy, setLinkBusy] = useState(false);
+  const [linkError, setLinkError] = useState("");
 
   const loadGuests = useCallback(async () => {
     try {
@@ -211,10 +216,27 @@ export function AdminDashboard() {
   );
 
   const invitedRoster = useMemo(() => {
-    const availableGuests = [...guests];
     const matchesByInvitation = new Map<string, GuestRecord>();
+    const matchSources = new Map<string, "manual" | "automatico">();
+    const manuallyMatchedGuestIds = new Set<string>();
+
+    invitedGuests.forEach((invitedGuest) => {
+      if (!invitedGuest.matchedGuestId) return;
+      const matchedGuest = guests.find(
+        (guest) => guest.id === invitedGuest.matchedGuestId,
+      );
+      if (!matchedGuest || manuallyMatchedGuestIds.has(matchedGuest.id)) return;
+      matchesByInvitation.set(invitedGuest.id, matchedGuest);
+      matchSources.set(invitedGuest.id, "manual");
+      manuallyMatchedGuestIds.add(matchedGuest.id);
+    });
+
+    const availableGuests = guests.filter(
+      (guest) => !manuallyMatchedGuestIds.has(guest.id),
+    );
 
     [...invitedGuests]
+      .filter((invitedGuest) => !matchesByInvitation.has(invitedGuest.id))
       .sort((first, second) => {
         const firstParts = first.normalizedFirstName.split(/\s+/).filter(Boolean).length;
         const secondParts = second.normalizedFirstName.split(/\s+/).filter(Boolean).length;
@@ -233,6 +255,7 @@ export function AdminDashboard() {
         if (matchIndex >= 0) {
           const [matchedGuest] = availableGuests.splice(matchIndex, 1);
           matchesByInvitation.set(invitedGuest.id, matchedGuest);
+          matchSources.set(invitedGuest.id, "automatico");
         }
       });
 
@@ -240,6 +263,7 @@ export function AdminDashboard() {
       return {
         ...invitedGuest,
         matchedGuest: matchesByInvitation.get(invitedGuest.id) ?? null,
+        matchSource: matchSources.get(invitedGuest.id) ?? null,
       };
     });
   }, [guests, invitedGuests]);
@@ -249,6 +273,37 @@ export function AdminDashboard() {
   const invitedProgress = invitedRoster.length
     ? Math.round((invitedMatchedCount / invitedRoster.length) * 100)
     : 0;
+
+  const linkingInvited = invitedRoster.find(
+    (item) => item.id === linkingInvitedId,
+  ) ?? null;
+  const filteredLinkGuests = useMemo(() => {
+    const normalizedSearch = normalizeName(linkSearch);
+    return [...guests]
+      .filter(
+        (guest) =>
+          !normalizedSearch || normalizeName(guest.name).includes(normalizedSearch),
+      )
+      .sort((first, second) => first.name.localeCompare(second.name, "pt-BR"));
+  }, [guests, linkSearch]);
+
+  useEffect(() => {
+    if (!linkingInvitedId) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !linkBusy) {
+        setLinkingInvitedId(null);
+        setLinkSearch("");
+        setLinkError("");
+      }
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [linkBusy, linkingInvitedId]);
 
   const occupiedSpots = totals.all + providerCount;
 
@@ -366,6 +421,53 @@ export function AdminDashboard() {
       }
     } finally {
       setDeletingInvitedId(null);
+    }
+  };
+
+  const openGuestLinker = (item: InvitedGuestRecord) => {
+    setLinkingInvitedId(item.id);
+    setLinkSearch("");
+    setLinkError("");
+  };
+
+  const closeGuestLinker = () => {
+    if (linkBusy) return;
+    setLinkingInvitedId(null);
+    setLinkSearch("");
+    setLinkError("");
+  };
+
+  const saveInvitedGuestLink = async (guestId: string | null) => {
+    if (!linkingInvited) return;
+    setLinkBusy(true);
+    setLinkError("");
+    try {
+      const response = await fetch("/api/admin/invited-guests", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: linkingInvited.id, guestId }),
+      });
+      if (!response.ok) {
+        throw new Error(
+          await readResponseError(response, "Não foi possível salvar o vínculo."),
+        );
+      }
+      const data = (await response.json()) as {
+        invitedGuest: InvitedGuestRecord;
+      };
+      setInvitedGuests((current) =>
+        current.map((item) =>
+          item.id === data.invitedGuest.id ? data.invitedGuest : item,
+        ),
+      );
+      setLinkingInvitedId(null);
+      setLinkSearch("");
+    } catch (cause) {
+      setLinkError(
+        cause instanceof Error ? cause.message : "Não foi possível salvar o vínculo.",
+      );
+    } finally {
+      setLinkBusy(false);
     }
   };
 
@@ -734,8 +836,18 @@ export function AdminDashboard() {
                 <article className={item.matchedGuest ? "is-matched" : "is-pending"} key={item.id}>
                   <span className="admin-roster-check" aria-hidden="true">{item.matchedGuest ? "✓" : ""}</span>
                   <div>
-                    <strong>{item.firstName}</strong>
-                    <small>{item.matchedGuest ? `Confirmado como ${item.matchedGuest.name}` : "Aguardando confirmação"}</small>
+                    <button
+                      className="admin-roster-name-link"
+                      type="button"
+                      onClick={() => openGuestLinker(item)}
+                    >
+                      {item.firstName}
+                    </button>
+                    <small>
+                      {item.matchedGuest
+                        ? `Confirmado como ${item.matchedGuest.name}${item.matchSource === "manual" ? " • vínculo manual" : ""}`
+                        : "Aguardando confirmação • clique para vincular"}
+                    </small>
                   </div>
                   <button
                     type="button"
@@ -966,6 +1078,100 @@ export function AdminDashboard() {
         guestsCount={totals.all}
         onProviderCountChange={setProviderCount}
       />
+        </div>
+      )}
+
+      {linkingInvited && (
+        <div
+          className="admin-link-modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeGuestLinker();
+          }}
+        >
+          <section
+            className="admin-link-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-link-modal-title"
+          >
+            <header>
+              <div>
+                <span className="admin-eyebrow">Associação manual</span>
+                <h2 id="admin-link-modal-title">Vincular {linkingInvited.firstName}</h2>
+                <p>Selecione a pessoa correspondente na lista de confirmados.</p>
+              </div>
+              <button
+                className="admin-link-modal-close"
+                type="button"
+                aria-label="Fechar"
+                onClick={closeGuestLinker}
+              >
+                ×
+              </button>
+            </header>
+
+            <label className="admin-link-search">
+              <span>Pesquisar convidado confirmado</span>
+              <input
+                type="search"
+                autoFocus
+                placeholder="Digite o nome completo"
+                value={linkSearch}
+                onChange={(event) => setLinkSearch(event.target.value)}
+              />
+            </label>
+
+            {linkError && (
+              <p className="admin-inline-error" role="alert">{linkError}</p>
+            )}
+
+            <div className="admin-link-options">
+              {filteredLinkGuests.map((guest) => {
+                const manuallyLinkedElsewhere = invitedGuests.find(
+                  (item) =>
+                    item.matchedGuestId === guest.id && item.id !== linkingInvited.id,
+                );
+                const isSelected = linkingInvited.matchedGuestId === guest.id;
+                return (
+                  <button
+                    type="button"
+                    className={isSelected ? "is-selected" : ""}
+                    disabled={linkBusy || Boolean(manuallyLinkedElsewhere)}
+                    key={guest.id}
+                    onClick={() => void saveInvitedGuestLink(guest.id)}
+                  >
+                    <span>
+                      <strong>{guest.name}</strong>
+                      <small>
+                        Família d{guest.category === "noivo" ? "o noivo" : "a noiva"}
+                        {manuallyLinkedElsewhere
+                          ? ` • já vinculado a ${manuallyLinkedElsewhere.firstName}`
+                          : ""}
+                      </small>
+                    </span>
+                    <b aria-hidden="true">{isSelected ? "✓" : "Vincular"}</b>
+                  </button>
+                );
+              })}
+              {filteredLinkGuests.length === 0 && (
+                <div className="admin-link-empty">
+                  Nenhum convidado confirmado encontrado.
+                </div>
+              )}
+            </div>
+
+            {linkingInvited.matchedGuestId && (
+              <button
+                className="admin-link-unlink"
+                type="button"
+                disabled={linkBusy}
+                onClick={() => void saveInvitedGuestLink(null)}
+              >
+                Remover vínculo manual
+              </button>
+            )}
+          </section>
         </div>
       )}
     </main>

@@ -2,6 +2,7 @@ import {
   createInvitedGuests,
   deleteInvitedGuest,
   listInvitedGuests,
+  updateInvitedGuestMatch,
 } from "../../../../db/guests";
 import { hasValidAdminSession } from "../../../../lib/admin-auth";
 
@@ -69,4 +70,48 @@ export async function DELETE(request: Request) {
     return Response.json({ error: "Registro inválido." }, { status: 400 });
   }
   return Response.json({ ok: await deleteInvitedGuest(id) });
+}
+
+export async function PATCH(request: Request) {
+  if (!(await hasValidAdminSession(request))) {
+    return Response.json({ error: "Não autorizado." }, { status: 401 });
+  }
+
+  const body = (await request.json()) as Record<string, unknown>;
+  const id = typeof body.id === "string" ? body.id.trim() : "";
+  const guestId =
+    body.guestId === null
+      ? null
+      : typeof body.guestId === "string"
+        ? body.guestId.trim()
+        : "";
+  if (!id || guestId === "") {
+    return Response.json({ error: "Vínculo inválido." }, { status: 400 });
+  }
+
+  try {
+    const invitedGuest = await updateInvitedGuestMatch(id, guestId);
+    if (!invitedGuest) {
+      return Response.json(
+        { error: "Nome planejado não encontrado." },
+        { status: 404 },
+      );
+    }
+    return Response.json({ invitedGuest });
+  } catch (cause) {
+    const code = cause instanceof Error ? cause.message : "";
+    if (code === "guest_already_linked") {
+      return Response.json(
+        { error: "Este convidado já está ligado a outro nome planejado." },
+        { status: 409 },
+      );
+    }
+    if (code === "guest_not_found") {
+      return Response.json(
+        { error: "Convidado confirmado não encontrado." },
+        { status: 404 },
+      );
+    }
+    throw cause;
+  }
 }
