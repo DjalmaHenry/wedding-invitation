@@ -17,9 +17,9 @@ export const GIFT_ITEMS: GiftItem[] = [
     detail:
       "Sua contribuição ajuda a transformar o primeiro trecho da nossa aventura em uma lembrança inesquecível.",
     image: "/gift-flight-painted-v3.png",
-    minimum: 100,
+    minimum: 1,
     maximum: 800,
-    suggestions: [100, 250, 500],
+    suggestions: [1, 100, 250, 500],
   },
   {
     id: "hospedagem",
