@@ -193,7 +193,8 @@ img {
   right: clamp(10px, 2vw, 28px);
   z-index: 31;
   display: grid;
-  justify-items: end;
+  width: 62px;
+  justify-items: center;
   pointer-events: none;
   opacity: 0;
   transform: translateX(18px);
@@ -2673,6 +2674,7 @@ img {
   .music-controller {
     top: max(12px, env(safe-area-inset-top));
     right: 12px;
+    width: 46px;
     gap: 0;
     transform: translateY(-14px);
   }
