@@ -45,6 +45,7 @@ export async function POST(request: Request) {
     typeof payload.amount === "number" && Number.isFinite(payload.amount)
       ? payload.amount
       : 0;
+  const amountCents = Math.round(amount * 100);
   const gift = findGiftItem(giftId);
 
   if (
@@ -53,9 +54,9 @@ export async function POST(request: Request) {
     donorName.length > 120 ||
     donorEmail.length > 180 ||
     !EMAIL_PATTERN.test(donorEmail) ||
-    !Number.isInteger(amount) ||
-    amount < gift.minimum ||
-    amount > gift.maximum
+    !Number.isSafeInteger(amountCents) ||
+    Math.abs(amount * 100 - amountCents) > 0.001 ||
+    amountCents < gift.minimum * 100
   ) {
     return Response.json(
       { error: "Revise seu nome, e-mail e o valor escolhido." },
@@ -94,7 +95,7 @@ export async function POST(request: Request) {
       giftTitle: gift.title,
       donorName,
       donorEmail,
-      amountCents: amount * 100,
+      amountCents,
       status,
       statusDetail: order.status_detail ?? null,
       ticketUrl: paymentMethod.ticket_url ?? null,

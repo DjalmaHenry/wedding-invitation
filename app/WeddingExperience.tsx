@@ -153,7 +153,8 @@ function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
-    maximumFractionDigits: 0,
+    minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
+    maximumFractionDigits: 2,
   }).format(value);
 }
 
@@ -686,7 +687,14 @@ export function WeddingExperience() {
     event: React.FormEvent<HTMLFormElement>,
   ) => {
     event.preventDefault();
-    if (!selectedGift || !selectedGiftAmount) return;
+    if (
+      !selectedGift ||
+      selectedGiftAmount === null ||
+      selectedGiftAmount < selectedGift.minimum
+    ) {
+      setPixError("Escolha um valor igual ou maior que a contribuição mínima.");
+      return;
+    }
 
     setIsCreatingPix(true);
     setPixError("");
@@ -1522,7 +1530,7 @@ export function WeddingExperience() {
                       <div className="gift-detail-art">
                         <img
                           src={selectedGift.image}
-                          alt={`Caricatura de Djalma e Victoria para ${selectedGift.title.toLowerCase()}`}
+                          alt={`Ilustração pintada para ${selectedGift.title.toLowerCase()}`}
                           decoding="async"
                         />
                         <span>Uma parte da nossa aventura</span>
@@ -1536,11 +1544,9 @@ export function WeddingExperience() {
                         </p>
 
                         <div className="gift-range">
-                          <span>Faixa de contribuição</span>
+                          <span>Contribuição mínima</span>
                           <strong>
-                            {formatCurrency(selectedGift.minimum)}
-                            <i>até</i>
-                            {formatCurrency(selectedGift.maximum)}
+                            A partir de {formatCurrency(selectedGift.minimum)}
                           </strong>
                         </div>
 
@@ -1565,6 +1571,34 @@ export function WeddingExperience() {
                               </button>
                             ))}
                           </div>
+                          <label className="gift-custom-value">
+                            <span>Ou escolha outro valor</span>
+                            <span className="gift-custom-value-field">
+                              <b>R$</b>
+                              <input
+                                type="number"
+                                inputMode="decimal"
+                                min={selectedGift.minimum}
+                                step="0.01"
+                                value={selectedGiftAmount ?? ""}
+                                onChange={(event) => {
+                                  const nextAmount = event.currentTarget.valueAsNumber;
+                                  setSelectedGiftAmount(
+                                    Number.isFinite(nextAmount) ? nextAmount : null,
+                                  );
+                                  resetPixPayment();
+                                }}
+                                aria-invalid={
+                                  selectedGiftAmount !== null &&
+                                  selectedGiftAmount < selectedGift.minimum
+                                }
+                              />
+                            </span>
+                            <small>
+                              Mínimo de {formatCurrency(selectedGift.minimum)} e sem
+                              limite máximo.
+                            </small>
+                          </label>
                         </fieldset>
 
                         {!pixPayment && (

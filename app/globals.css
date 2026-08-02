@@ -2129,14 +2129,6 @@ img {
   font-size: 1.55rem;
 }
 
-.gift-range i {
-  color: #80634d;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 0.68rem;
-  font-style: italic;
-  font-weight: 400;
-}
-
 .gift-values {
   margin: 20px 0 0;
   padding: 0;
@@ -2171,6 +2163,66 @@ img {
   color: #fff9eb;
   outline: none;
   background: var(--olive);
+}
+
+.gift-custom-value {
+  display: grid;
+  gap: 7px;
+  margin-top: 13px;
+}
+
+.gift-custom-value > span:first-child {
+  color: #694c37;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.gift-custom-value-field {
+  display: grid;
+  min-height: 46px;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  overflow: hidden;
+  background: rgba(255, 250, 238, 0.72);
+  border: 1px solid rgba(95, 109, 63, 0.36);
+}
+
+.gift-custom-value-field b {
+  padding: 0 12px;
+  color: #fff9eb;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.75rem;
+  line-height: 46px;
+  background: var(--olive);
+}
+
+.gift-custom-value-field input {
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  padding: 0 13px;
+  color: var(--olive-dark);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  font-weight: 700;
+  background: transparent;
+  border: 0;
+  outline: none;
+}
+
+.gift-custom-value-field:focus-within {
+  border-color: var(--olive);
+  box-shadow: 0 0 0 3px rgba(95, 109, 63, 0.12);
+}
+
+.gift-custom-value small {
+  color: #80634d;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.72rem;
+  font-style: italic;
 }
 
 .gift-pix-form {
