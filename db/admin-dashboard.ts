@@ -11,6 +11,7 @@ export type ExpenseRecord = {
   category: string;
   paymentType: ExpensePaymentType;
   amountCents: number;
+  downPaymentCents: number;
   installmentsTotal: number;
   installmentsPaid: number;
   dueDate: string | null;
@@ -78,6 +79,7 @@ export async function listExpenses(): Promise<ExpenseRecord[]> {
       `SELECT id, description, category,
         payment_type AS paymentType,
         amount_cents AS amountCents,
+        down_payment_cents AS downPaymentCents,
         installments_total AS installmentsTotal,
         installments_paid AS installmentsPaid,
         due_date AS dueDate,
@@ -95,6 +97,7 @@ export async function createExpense(input: {
   category: string;
   paymentType: ExpensePaymentType;
   amountCents: number;
+  downPaymentCents: number;
   installmentsTotal: number;
   installmentsPaid: number;
   dueDate: string | null;
@@ -105,8 +108,9 @@ export async function createExpense(input: {
     .prepare(
       `INSERT INTO wedding_expenses (
         id, description, category, payment_type, amount_cents,
-        installments_total, installments_paid, due_date, created_at, updated_at
-      ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)`,
+        down_payment_cents, installments_total, installments_paid, due_date,
+        created_at, updated_at
+      ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)`,
     )
     .bind(
       id,
@@ -114,6 +118,7 @@ export async function createExpense(input: {
       input.category,
       input.paymentType,
       input.amountCents,
+      input.downPaymentCents,
       input.installmentsTotal,
       input.installmentsPaid,
       input.dueDate,

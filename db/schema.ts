@@ -83,6 +83,7 @@ export const weddingExpenses = sqliteTable(
       enum: ["pix_paid", "installments", "pix_pending"],
     }).notNull(),
     amountCents: integer("amount_cents").notNull(),
+    downPaymentCents: integer("down_payment_cents").notNull().default(0),
     installmentsTotal: integer("installments_total").notNull().default(0),
     installmentsPaid: integer("installments_paid").notNull().default(0),
     dueDate: text("due_date"),
@@ -94,6 +95,10 @@ export const weddingExpenses = sqliteTable(
     index("wedding_expenses_payment_type_idx").on(table.paymentType),
     index("wedding_expenses_created_at_idx").on(table.createdAt),
     check("wedding_expenses_amount_check", sql`${table.amountCents} > 0`),
+    check(
+      "wedding_expenses_down_payment_check",
+      sql`${table.downPaymentCents} >= 0 AND ${table.downPaymentCents} <= ${table.amountCents}`,
+    ),
     check(
       "wedding_expenses_payment_type_check",
       sql`${table.paymentType} IN ('pix_paid', 'installments', 'pix_pending')`,

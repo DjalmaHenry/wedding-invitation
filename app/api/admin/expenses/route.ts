@@ -37,6 +37,8 @@ export async function POST(request: Request) {
     paymentType === "installments" ? Number(body.installmentsTotal) : 0;
   const installmentsPaid =
     paymentType === "installments" ? Number(body.installmentsPaid ?? 0) : 0;
+  const downPaymentCents =
+    paymentType === "installments" ? Number(body.downPaymentCents ?? 0) : 0;
   const dueDateValue = String(body.dueDate ?? "").trim();
   const dueDate = dueDateValue || null;
 
@@ -55,7 +57,10 @@ export async function POST(request: Request) {
         installmentsTotal > 120 ||
         !Number.isInteger(installmentsPaid) ||
         installmentsPaid < 0 ||
-        installmentsPaid > installmentsTotal))
+        installmentsPaid > installmentsTotal ||
+        !Number.isInteger(downPaymentCents) ||
+        downPaymentCents < 0 ||
+        downPaymentCents > amountCents))
   ) {
     return Response.json({ error: "Dados da despesa inválidos." }, { status: 400 });
   }
@@ -67,6 +72,7 @@ export async function POST(request: Request) {
         category,
         paymentType,
         amountCents,
+        downPaymentCents,
         installmentsTotal,
         installmentsPaid,
         dueDate,

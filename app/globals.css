@@ -4080,6 +4080,8 @@ body:has(.admin-page) {
 .admin-small-action:disabled { cursor: wait; opacity: 0.58; }
 .admin-tool-list { max-width: none; }
 .admin-installment-control { display: inline-flex; align-items: center; gap: 7px; }
+.admin-installment-status { display: grid; justify-items: start; gap: 5px; }
+.admin-installment-status > small { color: #5f6d3f; font-size: 0.68rem; font-weight: 750; }
 .admin-installment-control button { display: grid; width: 25px; height: 25px; padding: 0; color: #fff8e9; place-items: center; background: #6f7b50; border: 0; border-radius: 50%; cursor: pointer; }
 .admin-installment-control span { min-width: 64px; font-size: 0.76rem; font-weight: 800; text-align: center; }
 

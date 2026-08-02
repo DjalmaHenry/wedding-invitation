@@ -20,6 +20,7 @@ const EMPTY_EXPENSE = {
   category: "Local",
   paymentType: "pix_paid" as ExpensePaymentType,
   amount: "",
+  downPayment: "",
   installmentsTotal: "2",
   installmentsPaid: "0",
   dueDate: "",
@@ -239,8 +240,9 @@ export function AdminPlanningTools({
       .reduce(
         (sum, expense) =>
           sum +
+          expense.downPaymentCents +
           Math.round(
-            expense.amountCents *
+            (expense.amountCents - expense.downPaymentCents) *
               (expense.installmentsTotal > 0
                 ? expense.installmentsPaid / expense.installmentsTotal
                 : 0),
@@ -285,8 +287,13 @@ export function AdminPlanningTools({
   const addExpense = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const amountCents = parseMoneyToCents(expenseDraft.amount);
+    const downPaymentCents = parseMoneyToCents(expenseDraft.downPayment);
     if (amountCents <= 0) {
       setError("Informe um valor válido para a despesa.");
+      return;
+    }
+    if (expenseDraft.paymentType === "installments" && downPaymentCents > amountCents) {
+      setError("O valor da entrada não pode ser maior que o valor total.");
       return;
     }
     setBusy(true);
@@ -298,6 +305,8 @@ export function AdminPlanningTools({
         body: JSON.stringify({
           ...expenseDraft,
           amountCents,
+          downPaymentCents:
+            expenseDraft.paymentType === "installments" ? downPaymentCents : 0,
           installmentsTotal: Number(expenseDraft.installmentsTotal),
           installmentsPaid: Number(expenseDraft.installmentsPaid),
         }),
@@ -685,12 +694,12 @@ export function AdminPlanningTools({
             </div>
             <label><span>Valor total</span><input required inputMode="decimal" value={expenseDraft.amount} onChange={(event) => setExpenseDraft({ ...expenseDraft, amount: event.target.value })} placeholder="0,00" /></label>
             <label><span>Forma de pagamento</span><select value={expenseDraft.paymentType} onChange={(event) => setExpenseDraft({ ...expenseDraft, paymentType: event.target.value as ExpensePaymentType })}><option value="pix_paid">Já pago no Pix</option><option value="installments">Pagamento parcelado</option><option value="pix_pending">Pix a pagar futuramente</option></select></label>
-            {expenseDraft.paymentType === "installments" && <><label><span>Total de parcelas</span><input type="number" min="1" max="120" required value={expenseDraft.installmentsTotal} onChange={(event) => setExpenseDraft({ ...expenseDraft, installmentsTotal: event.target.value })} /></label><label><span>Parcelas já pagas</span><input type="number" min="0" max={expenseDraft.installmentsTotal} required value={expenseDraft.installmentsPaid} onChange={(event) => setExpenseDraft({ ...expenseDraft, installmentsPaid: event.target.value })} /></label></>}
+            {expenseDraft.paymentType === "installments" && <><label><span>Valor da entrada já paga</span><input inputMode="decimal" value={expenseDraft.downPayment} onChange={(event) => setExpenseDraft({ ...expenseDraft, downPayment: event.target.value })} placeholder="0,00" /></label><label><span>Total de parcelas</span><input type="number" min="1" max="120" required value={expenseDraft.installmentsTotal} onChange={(event) => setExpenseDraft({ ...expenseDraft, installmentsTotal: event.target.value })} /></label><label><span>Parcelas já pagas</span><input type="number" min="0" max={expenseDraft.installmentsTotal} required value={expenseDraft.installmentsPaid} onChange={(event) => setExpenseDraft({ ...expenseDraft, installmentsPaid: event.target.value })} /></label></>}
             {expenseDraft.paymentType === "pix_pending" && <label><span>Previsão de pagamento</span><input type="date" value={expenseDraft.dueDate} onChange={(event) => setExpenseDraft({ ...expenseDraft, dueDate: event.target.value })} /></label>}
             <button type="submit" disabled={busy}>Salvar despesa</button>
           </form>
 
-          <div className="admin-list-card admin-tool-list"><div className="admin-table-wrap"><table><thead><tr><th>Despesa</th><th>Categoria</th><th>Valor</th><th>Situação</th><th aria-label="Ações" /></tr></thead><tbody>{expenses.map((expense) => <tr key={expense.id}><td data-label="Despesa"><strong>{expense.description}</strong>{expense.dueDate && <small className="admin-payment-email">Previsto para {new Date(`${expense.dueDate}T12:00:00`).toLocaleDateString("pt-BR")}</small>}</td><td data-label="Categoria">{expense.category}</td><td data-label="Valor">{money(expense.amountCents)}</td><td data-label="Situação">{expense.paymentType === "pix_paid" && <span className="admin-payment-status approved">Pix pago</span>}{expense.paymentType === "pix_pending" && <span className="admin-payment-status pending">Pix futuro</span>}{expense.paymentType === "installments" && <div className="admin-installment-control"><button type="button" aria-label="Diminuir parcelas pagas" onClick={() => void setPaidInstallments(expense, expense.installmentsPaid - 1)}>−</button><span>{expense.installmentsPaid}/{expense.installmentsTotal} pagas</span><button type="button" aria-label="Aumentar parcelas pagas" onClick={() => void setPaidInstallments(expense, expense.installmentsPaid + 1)}>+</button></div>}</td><td><button className="admin-remove" type="button" onClick={() => void deleteExpenseItem(expense.id)}>Remover</button></td></tr>)}</tbody></table>{expenses.length === 0 && <div className="admin-empty"><p>Nenhuma despesa cadastrada.</p></div>}</div></div>
+          <div className="admin-list-card admin-tool-list"><div className="admin-table-wrap"><table><thead><tr><th>Despesa</th><th>Categoria</th><th>Valor</th><th>Situação</th><th aria-label="Ações" /></tr></thead><tbody>{expenses.map((expense) => <tr key={expense.id}><td data-label="Despesa"><strong>{expense.description}</strong>{expense.dueDate && <small className="admin-payment-email">Previsto para {new Date(`${expense.dueDate}T12:00:00`).toLocaleDateString("pt-BR")}</small>}</td><td data-label="Categoria">{expense.category}</td><td data-label="Valor">{money(expense.amountCents)}</td><td data-label="Situação">{expense.paymentType === "pix_paid" && <span className="admin-payment-status approved">Pix pago</span>}{expense.paymentType === "pix_pending" && <span className="admin-payment-status pending">Pix futuro</span>}{expense.paymentType === "installments" && <div className="admin-installment-status"><div className="admin-installment-control"><button type="button" aria-label="Diminuir parcelas pagas" onClick={() => void setPaidInstallments(expense, expense.installmentsPaid - 1)}>−</button><span>{expense.installmentsPaid}/{expense.installmentsTotal} pagas</span><button type="button" aria-label="Aumentar parcelas pagas" onClick={() => void setPaidInstallments(expense, expense.installmentsPaid + 1)}>+</button></div>{expense.downPaymentCents > 0 && <small>Entrada de {money(expense.downPaymentCents)} já paga</small>}</div>}</td><td><button className="admin-remove" type="button" onClick={() => void deleteExpenseItem(expense.id)}>Remover</button></td></tr>)}</tbody></table>{expenses.length === 0 && <div className="admin-empty"><p>Nenhuma despesa cadastrada.</p></div>}</div></div>
         </div>
       )}
 
