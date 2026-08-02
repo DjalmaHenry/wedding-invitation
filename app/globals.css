@@ -4425,6 +4425,7 @@ html:has(.admin-page) {
 }
 
 body:has(.admin-page) {
+  overflow-x: clip;
   background:
     linear-gradient(rgba(95, 109, 63, 0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(95, 109, 63, 0.025) 1px, transparent 1px),
@@ -5118,7 +5119,7 @@ body:has(.admin-page) {
   .admin-page {
     width: 100%;
     padding: 0 12px 32px;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   .admin-login-page { padding: 18px; }
