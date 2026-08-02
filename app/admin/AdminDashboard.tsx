@@ -47,6 +47,18 @@ function normalizeName(value: string, maximumParts = Number.POSITIVE_INFINITY) {
     .toLocaleLowerCase("pt-BR");
 }
 
+function fortalezaCalendarDay(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Fortaleza",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const value = (type: string) =>
+    Number(parts.find((part) => part.type === type)?.value ?? 0);
+  return Date.UTC(value("year"), value("month") - 1, value("day"));
+}
+
 async function readResponseError(response: Response, fallback: string) {
   try {
     const body = (await response.json()) as { error?: string };
@@ -164,15 +176,15 @@ export function AdminDashboard() {
       setDaysUntilWedding(
         Math.max(
           0,
-          Math.ceil(
-            (new Date("2026-10-31T16:30:00-03:00").getTime() - Date.now()) /
+          Math.round(
+            (Date.UTC(2026, 9, 31) - fortalezaCalendarDay(new Date())) /
               86_400_000,
           ),
         ),
       );
     };
     const initialTimer = window.setTimeout(updateCountdown, 0);
-    const interval = window.setInterval(updateCountdown, 3_600_000);
+    const interval = window.setInterval(updateCountdown, 60_000);
     return () => {
       window.clearTimeout(initialTimer);
       window.clearInterval(interval);
