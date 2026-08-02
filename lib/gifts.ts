@@ -36,8 +36,8 @@ export const GIFT_ITEMS: GiftItem[] = [
     detail:
       "Ajude-nos a celebrar com uma experiência à mesa, feita de sabores, boas conversas e momentos só nossos.",
     image: "/gift-dinner-painted-v3.png",
-    minimum: 80,
-    suggestions: [80, 150, 250],
+    minimum: 70,
+    suggestions: [70, 150, 250],
   },
   {
     id: "passeio",
@@ -46,8 +46,8 @@ export const GIFT_ITEMS: GiftItem[] = [
     detail:
       "Sua contribuição vira tempo para explorar, admirar paisagens e colecionar histórias sem revelar o roteiro.",
     image: "/gift-tour-painted-v3.png",
-    minimum: 80,
-    suggestions: [100, 200, 350],
+    minimum: 70,
+    suggestions: [70, 200, 350],
   },
   {
     id: "diversao",
@@ -56,8 +56,8 @@ export const GIFT_ITEMS: GiftItem[] = [
     detail:
       "Um presente para vivermos um dia leve, cheio de alegria e daquele friozinho bom na barriga.",
     image: "/gift-fun-painted-v3.png",
-    minimum: 80,
-    suggestions: [100, 250, 400],
+    minimum: 70,
+    suggestions: [70, 250, 400],
   },
   {
     id: "carro",
@@ -76,8 +76,8 @@ export const GIFT_ITEMS: GiftItem[] = [
     detail:
       "Sua contribuição ajuda a transformar um passeio ao lado dos nossos companheiros de quatro patas em uma lembrança cheia de afeto.",
     image: "/gift-pets-painted-v1.png",
-    minimum: 80,
-    suggestions: [80, 160, 300],
+    minimum: 70,
+    suggestions: [70, 160, 300],
   },
 ];
 
