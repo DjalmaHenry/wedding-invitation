@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AdminPlanningTools } from "./AdminPlanningTools";
 
 type GuestCategory = "noivo" | "noiva";
+type AdminPage = "convidados" | "organizacao" | "financeiro";
 
 type GuestRecord = {
   id: string;
@@ -71,6 +72,7 @@ export function AdminDashboard() {
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState("");
   const [providerCount, setProviderCount] = useState(0);
+  const [activePage, setActivePage] = useState<AdminPage>("convidados");
   const [daysUntilWedding, setDaysUntilWedding] = useState<number | null>(null);
   const [invitedNamesDraft, setInvitedNamesDraft] = useState("");
   const [invitedBusy, setInvitedBusy] = useState(false);
@@ -79,15 +81,17 @@ export function AdminDashboard() {
 
   const loadGuests = useCallback(async () => {
     try {
-      const [guestResponse, invitedResponse, giftResponse] = await Promise.all([
+      const [guestResponse, invitedResponse, giftResponse, providerResponse] = await Promise.all([
         fetch("/api/admin/guests", { cache: "no-store" }),
         fetch("/api/admin/invited-guests", { cache: "no-store" }),
         fetch("/api/admin/gift-payments", { cache: "no-store" }),
+        fetch("/api/admin/providers", { cache: "no-store" }),
       ]);
       if (
         guestResponse.status === 401 ||
         invitedResponse.status === 401 ||
-        giftResponse.status === 401
+        giftResponse.status === 401 ||
+        providerResponse.status === 401
       ) {
         setAuthenticated(false);
         setGuests([]);
@@ -95,7 +99,12 @@ export function AdminDashboard() {
         setGiftPayments([]);
         return;
       }
-      if (!guestResponse.ok || !invitedResponse.ok || !giftResponse.ok) throw new Error();
+      if (
+        !guestResponse.ok ||
+        !invitedResponse.ok ||
+        !giftResponse.ok ||
+        !providerResponse.ok
+      ) throw new Error();
       const guestData = (await guestResponse.json()) as {
         guests?: GuestRecord[];
       };
@@ -105,9 +114,13 @@ export function AdminDashboard() {
       const invitedData = (await invitedResponse.json()) as {
         invitedGuests?: InvitedGuestRecord[];
       };
+      const providerData = (await providerResponse.json()) as {
+        providers?: Array<{ id: string }>;
+      };
       setGuests(guestData.guests ?? []);
       setInvitedGuests(invitedData.invitedGuests ?? []);
       setGiftPayments(giftData.payments ?? []);
+      setProviderCount(providerData.providers?.length ?? 0);
       setAuthenticated(true);
     } catch {
       setLoginError("Não foi possível carregar as confirmações.");
@@ -121,6 +134,30 @@ export function AdminDashboard() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadGuests();
   }, [loadGuests]);
+
+  useEffect(() => {
+    const syncPageFromUrl = () => {
+      const page = new URL(window.location.href).searchParams.get("pagina");
+      if (page === "organizacao" || page === "financeiro" || page === "convidados") {
+        setActivePage(page);
+      } else {
+        setActivePage("convidados");
+      }
+    };
+
+    syncPageFromUrl();
+    window.addEventListener("popstate", syncPageFromUrl);
+    return () => window.removeEventListener("popstate", syncPageFromUrl);
+  }, []);
+
+  const navigateToPage = (page: AdminPage) => {
+    if (page === activePage) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("pagina", page);
+    window.history.pushState({}, "", url);
+    setActivePage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -567,24 +604,48 @@ export function AdminDashboard() {
           <span>dias para o nosso sim</span>
         </div>
         <div className="admin-header-actions">
-          <button
-            type="button"
-            onClick={exportPdf}
-            disabled={guests.length === 0 || isExporting}
-          >
-            {isExporting ? "Preparando PDF..." : "Exportar PDF"}
-          </button>
+          {activePage === "convidados" && (
+            <button
+              type="button"
+              onClick={exportPdf}
+              disabled={guests.length === 0 || isExporting}
+            >
+              {isExporting ? "Preparando PDF..." : "Exportar PDF"}
+            </button>
+          )}
           <button type="button" className="admin-logout" onClick={logout}>
             Sair
           </button>
         </div>
       </header>
+
+      <nav className="admin-primary-nav" aria-label="Páginas do dashboard">
+        {([
+          ["convidados", "Convidados", "Lista, confirmações e vagas"],
+          ["organizacao", "Organização", "Checklist, equipe e fornecedores"],
+          ["financeiro", "Financeiro", "Contribuições e despesas"],
+        ] as const).map(([page, label, description]) => (
+          <button
+            key={page}
+            type="button"
+            className={activePage === page ? "is-active" : ""}
+            aria-current={activePage === page ? "page" : undefined}
+            onClick={() => navigateToPage(page)}
+          >
+            <span>{label}</span>
+            <small>{description}</small>
+          </button>
+        ))}
+      </nav>
+
       {exportError && (
         <p className="admin-export-error" role="alert">
           {exportError}
         </p>
       )}
 
+      {activePage === "convidados" && (
+        <div className="admin-page-view" data-page="convidados">
       <section className="admin-stats" aria-label="Resumo das confirmações">
         <article>
           <span>Vagas ocupadas</span>
@@ -769,11 +830,20 @@ export function AdminDashboard() {
         </div>
       </section>
 
-      <AdminPlanningTools
-        guestsCount={totals.all}
-        onProviderCountChange={setProviderCount}
-      />
+        </div>
+      )}
 
+      {activePage === "organizacao" && (
+        <div className="admin-page-view" data-page="organizacao">
+          <AdminPlanningTools
+            guestsCount={totals.all}
+            onProviderCountChange={setProviderCount}
+          />
+        </div>
+      )}
+
+      {activePage === "financeiro" && (
+        <div className="admin-page-view" data-page="financeiro">
       <section className="admin-gifts-section">
         <div className="admin-section-heading">
           <div>
@@ -884,6 +954,8 @@ export function AdminDashboard() {
         guestsCount={totals.all}
         onProviderCountChange={setProviderCount}
       />
+        </div>
+      )}
     </main>
   );
 }
