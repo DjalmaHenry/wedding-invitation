@@ -3741,6 +3741,19 @@ body:has(.admin-page) {
   cursor: pointer;
 }
 
+.admin-guest-actions { display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
+.admin-edit {
+  padding: 6px 10px;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: #5f6d3f;
+  border: 1px solid #5f6d3f;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.admin-edit:hover { background: #4f5d32; border-color: #4f5d32; }
+
 .admin-remove:disabled {
   cursor: wait;
   opacity: 0.55;
@@ -4969,6 +4982,20 @@ body:has(.admin-page) {
   border: 0;
   cursor: pointer;
 }
+
+.admin-guest-edit-modal { width: min(520px, 100%); }
+.admin-guest-edit-form { display: grid; gap: 16px; }
+.admin-guest-edit-actions { display: flex; justify-content: flex-end; gap: 9px; }
+.admin-guest-edit-actions button {
+  min-height: 42px;
+  padding: 0 16px;
+  font: 750 0.78rem var(--admin-font);
+  border-radius: 9px;
+  cursor: pointer;
+}
+.admin-guest-edit-actions button:first-child { color: #59625b; background: #f2f4f1; border: 1px solid #dce2da; }
+.admin-guest-edit-actions button:last-child { color: #fff; background: #5f6d3f; border: 1px solid #5f6d3f; }
+.admin-guest-edit-actions button:disabled { cursor: wait; opacity: 0.6; }
 
 .admin-budget-card {
   display: grid;

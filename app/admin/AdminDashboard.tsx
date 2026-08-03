@@ -82,6 +82,10 @@ export function AdminDashboard() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<"todos" | GuestCategory>("todos");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingGuestId, setEditingGuestId] = useState<string | null>(null);
+  const [editingGuestName, setEditingGuestName] = useState("");
+  const [editingGuestBusy, setEditingGuestBusy] = useState(false);
+  const [editingGuestError, setEditingGuestError] = useState("");
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState("");
   const [providerCount, setProviderCount] = useState(0);
@@ -286,6 +290,7 @@ export function AdminDashboard() {
       )
       .sort((first, second) => first.name.localeCompare(second.name, "pt-BR"));
   }, [guests, linkSearch]);
+  const editingGuest = guests.find((guest) => guest.id === editingGuestId) ?? null;
 
   useEffect(() => {
     if (!linkingInvitedId) return;
@@ -304,6 +309,24 @@ export function AdminDashboard() {
       window.removeEventListener("keydown", closeOnEscape);
     };
   }, [linkBusy, linkingInvitedId]);
+
+  useEffect(() => {
+    if (!editingGuestId) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !editingGuestBusy) {
+        setEditingGuestId(null);
+        setEditingGuestName("");
+        setEditingGuestError("");
+      }
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [editingGuestBusy, editingGuestId]);
 
   const occupiedSpots = totals.all + providerCount;
 
@@ -488,6 +511,56 @@ export function AdminDashboard() {
       }
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const openGuestEditor = (guest: GuestRecord) => {
+    setEditingGuestId(guest.id);
+    setEditingGuestName(guest.name);
+    setEditingGuestError("");
+  };
+
+  const closeGuestEditor = () => {
+    if (editingGuestBusy) return;
+    setEditingGuestId(null);
+    setEditingGuestName("");
+    setEditingGuestError("");
+  };
+
+  const saveGuestName = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingGuest) return;
+    const name = editingGuestName.trim().replace(/\s+/g, " ");
+    if (name.length < 2) {
+      setEditingGuestError("Informe um nome válido.");
+      return;
+    }
+
+    setEditingGuestBusy(true);
+    setEditingGuestError("");
+    try {
+      const response = await fetch("/api/admin/guests", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: editingGuest.id, name }),
+      });
+      if (!response.ok) {
+        throw new Error(
+          await readResponseError(response, "Não foi possível alterar o nome."),
+        );
+      }
+      const data = (await response.json()) as { guest: GuestRecord };
+      setGuests((current) =>
+        current.map((guest) => (guest.id === data.guest.id ? data.guest : guest)),
+      );
+      setEditingGuestId(null);
+      setEditingGuestName("");
+    } catch (cause) {
+      setEditingGuestError(
+        cause instanceof Error ? cause.message : "Não foi possível alterar o nome.",
+      );
+    } finally {
+      setEditingGuestBusy(false);
     }
   };
 
@@ -931,7 +1004,15 @@ export function AdminDashboard() {
                       timeZone: "America/Fortaleza",
                     })}
                   </td>
-                  <td>
+                  <td data-label="Ações">
+                    <div className="admin-guest-actions">
+                    <button
+                      className="admin-edit"
+                      type="button"
+                      onClick={() => openGuestEditor(guest)}
+                    >
+                      Editar
+                    </button>
                     <button
                       className="admin-remove"
                       type="button"
@@ -940,6 +1021,7 @@ export function AdminDashboard() {
                     >
                       {deletingId === guest.id ? "Removendo..." : "Remover"}
                     </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -1078,6 +1160,66 @@ export function AdminDashboard() {
         guestsCount={totals.all}
         onProviderCountChange={setProviderCount}
       />
+        </div>
+      )}
+
+      {editingGuest && (
+        <div
+          className="admin-link-modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeGuestEditor();
+          }}
+        >
+          <section
+            className="admin-link-modal admin-guest-edit-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-guest-edit-title"
+          >
+            <header>
+              <div>
+                <span className="admin-eyebrow">Convidado confirmado</span>
+                <h2 id="admin-guest-edit-title">Editar nome</h2>
+                <p>A alteração será aplicada à lista de confirmados e aos vínculos planejados.</p>
+              </div>
+              <button
+                className="admin-link-modal-close"
+                type="button"
+                aria-label="Fechar"
+                onClick={closeGuestEditor}
+              >
+                ×
+              </button>
+            </header>
+
+            <form className="admin-guest-edit-form" onSubmit={saveGuestName}>
+              <label className="admin-link-search">
+                <span>Nome completo</span>
+                <input
+                  type="text"
+                  autoFocus
+                  maxLength={100}
+                  value={editingGuestName}
+                  onChange={(event) => setEditingGuestName(event.target.value)}
+                  required
+                />
+              </label>
+              {editingGuestError && (
+                <p className="admin-inline-error" role="alert">
+                  {editingGuestError}
+                </p>
+              )}
+              <div className="admin-guest-edit-actions">
+                <button type="button" onClick={closeGuestEditor} disabled={editingGuestBusy}>
+                  Cancelar
+                </button>
+                <button type="submit" disabled={editingGuestBusy}>
+                  {editingGuestBusy ? "Salvando…" : "Salvar alteração"}
+                </button>
+              </div>
+            </form>
+          </section>
         </div>
       )}
 

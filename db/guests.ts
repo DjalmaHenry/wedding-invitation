@@ -105,6 +105,36 @@ export async function deleteGuest(id: string): Promise<boolean> {
   return (result.meta.changes ?? 0) > 0;
 }
 
+export async function updateGuestName(
+  id: string,
+  name: string,
+): Promise<GuestRecord | null> {
+  const database = getD1();
+  const result = await database
+    .prepare("UPDATE guests SET name = ?1 WHERE id = ?2")
+    .bind(name, id)
+    .run();
+  if ((result.meta.changes ?? 0) === 0) return null;
+
+  const guest = await database
+    .prepare(
+      `SELECT id, submission_id AS submissionId, name, category,
+        is_primary AS isPrimary, created_at AS createdAt
+       FROM guests WHERE id = ?1`,
+    )
+    .bind(id)
+    .first<{
+      id: string;
+      submissionId: string;
+      name: string;
+      category: GuestCategory;
+      isPrimary: number;
+      createdAt: string;
+    }>();
+
+  return guest ? { ...guest, isPrimary: guest.isPrimary === 1 } : null;
+}
+
 export async function listInvitedGuests(): Promise<InvitedGuestRecord[]> {
   const result = await getD1()
     .prepare(
