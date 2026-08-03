@@ -16,7 +16,7 @@ export const GIFT_ITEMS: GiftItem[] = [
     detail:
       "Sua contribuição ajuda a transformar o primeiro trecho da nossa aventura em uma lembrança inesquecível.",
     image: "/gift-flight-painted-v3.png",
-    minimum: 80,
+    minimum: 150,
     suggestions: [150, 300, 500],
   },
   {
@@ -26,7 +26,7 @@ export const GIFT_ITEMS: GiftItem[] = [
     detail:
       "Um carinho para as noites de descanso entre um novo cenário e outro, sempre com uma surpresa nos esperando.",
     image: "/gift-stay-painted-v4.png",
-    minimum: 80,
+    minimum: 120,
     suggestions: [120, 250, 450],
   },
   {
@@ -66,7 +66,7 @@ export const GIFT_ITEMS: GiftItem[] = [
     detail:
       "Este presente ajuda na locação do carro que nos acompanhará pelos trajetos de ida e volta da viagem.",
     image: "/gift-car-painted-v3.png",
-    minimum: 80,
+    minimum: 150,
     suggestions: [150, 350, 600],
   },
   {
