@@ -647,7 +647,7 @@ export function AdminDashboard() {
       const muted = rgb(117 / 255, 89 / 255, 70 / 255);
       const divider = rgb(196 / 255, 175 / 255, 143 / 255);
       const maximumRowsPerPage = 21;
-      const maximumProvidersPerPage = 20;
+      const maximumProvidersPerPage = 21;
       const sortedGuests = [...guests].sort((left, right) =>
         left.name.localeCompare(right.name, "pt-BR", {
           sensitivity: "base",
@@ -745,12 +745,10 @@ export function AdminDashboard() {
         });
       }
 
-      const teamInk = rgb(45 / 255, 55 / 255, 51 / 255);
+      const teamInk = rgb(67 / 255, 42 / 255, 30 / 255);
       const teamAccent = rgb(133 / 255, 82 / 255, 60 / 255);
-      const teamAccentDark = rgb(91 / 255, 58 / 255, 45 / 255);
       const teamMuted = rgb(111 / 255, 104 / 255, 94 / 255);
-      const teamPaper = rgb(248 / 255, 244 / 255, 236 / 255);
-      const teamPanel = rgb(238 / 255, 226 / 255, 211 / 255);
+      const teamHeaderPaper = rgb(242 / 255, 228 / 255, 200 / 255);
       const teamLine = rgb(205 / 255, 181 / 255, 158 / 255);
 
       for (
@@ -765,88 +763,65 @@ export function AdminDashboard() {
         );
         const documentPageIndex = guestPageCount + providerPageIndex;
 
-        page.drawRectangle({
+        page.drawPage(firstTemplate, {
           x: 0,
           y: 0,
           width: pageWidth,
           height: pageHeight,
-          color: teamPaper,
         });
         page.drawRectangle({
-          x: 0,
-          y: 672,
-          width: pageWidth,
-          height: 170,
-          color: teamAccentDark,
-        });
-        page.drawRectangle({
-          x: 28,
-          y: 28,
-          width: pageWidth - 56,
-          height: pageHeight - 56,
-          borderColor: teamAccent,
-          borderWidth: 1.2,
-        });
-        page.drawRectangle({
-          x: 34,
-          y: 34,
-          width: pageWidth - 68,
-          height: pageHeight - 68,
-          borderColor: teamLine,
-          borderWidth: 0.45,
+          x: 104,
+          y: 654,
+          width: 387,
+          height: 142,
+          color: teamHeaderPaper,
         });
 
-        const eyebrow = "OPERAÇÃO DO GRANDE DIA";
-        const eyebrowWidth = bold.widthOfTextAtSize(eyebrow, 8);
+        const eyebrow = "EQUIPE DO CASAMENTO";
+        const eyebrowWidth = bold.widthOfTextAtSize(eyebrow, 12);
         page.drawText(eyebrow, {
           x: (pageWidth - eyebrowWidth) / 2,
-          y: 784,
-          size: 8,
+          y: 764,
+          size: 12,
           font: bold,
-          color: teamPanel,
+          color: teamAccent,
         });
         const teamTitle =
           providerPageIndex === 0
             ? "Prestadores confirmados"
             : "Prestadores - continuação";
-        const teamTitleWidth = bold.widthOfTextAtSize(teamTitle, 24);
+        const teamTitleWidth = italic.widthOfTextAtSize(teamTitle, 27);
         page.drawText(teamTitle, {
           x: (pageWidth - teamTitleWidth) / 2,
-          y: 741,
-          size: 24,
-          font: bold,
-          color: teamPaper,
+          y: 718,
+          size: 27,
+          font: italic,
+          color: teamInk,
         });
-        const teamSubtitle = `${sortedProviders.length} profissionais • organizados por função`;
-        const teamSubtitleWidth = italic.widthOfTextAtSize(teamSubtitle, 10);
+        const teamSubtitle = "31 de outubro de 2026  •  Villa Garden";
+        const teamSubtitleWidth = italic.widthOfTextAtSize(teamSubtitle, 9.5);
         page.drawText(teamSubtitle, {
           x: (pageWidth - teamSubtitleWidth) / 2,
-          y: 710,
-          size: 10,
+          y: 684,
+          size: 9.5,
           font: italic,
-          color: teamPanel,
+          color: teamMuted,
+        });
+        page.drawLine({
+          start: { x: 124, y: 665 },
+          end: { x: 471, y: 665 },
+          thickness: 0.55,
+          color: teamAccent,
         });
 
-        page.drawRectangle({
-          x: 65,
-          y: 620,
-          width: 465,
-          height: 30,
-          color: teamPanel,
-        });
-        page.drawText("NOME", {
-          x: 98,
-          y: 630,
-          size: 8,
-          font: bold,
-          color: teamAccentDark,
-        });
-        page.drawText("FUNÇÃO", {
-          x: 365,
-          y: 630,
-          size: 8,
-          font: bold,
-          color: teamAccentDark,
+        const teamSummary = `${sortedProviders.length} prestadores confirmados  •  organizados por função`;
+        const teamSummaryWidth = italic.widthOfTextAtSize(teamSummary, 9);
+        page.drawText(teamSummary, {
+          x: (pageWidth - teamSummaryWidth) / 2,
+          y: 636,
+          size: 9,
+          font: italic,
+          color: teamMuted,
         });
 
         if (pageProviders.length === 0) {
@@ -862,7 +837,7 @@ export function AdminDashboard() {
         }
 
         pageProviders.forEach((provider, rowIndex) => {
-          const y = 592 - rowIndex * 25;
+          const y = 603 - rowIndex * 23;
           const absoluteIndex =
             providerPageIndex * maximumProvidersPerPage + rowIndex + 1;
           const number = String(absoluteIndex).padStart(2, "0");
@@ -875,10 +850,10 @@ export function AdminDashboard() {
             color: teamAccent,
           });
 
-          let providerNameSize = 11.5;
+          let providerNameSize = 12.5;
           while (
-            providerNameSize > 8.5 &&
-            italic.widthOfTextAtSize(provider.name, providerNameSize) > 245
+            providerNameSize > 9 &&
+            italic.widthOfTextAtSize(provider.name, providerNameSize) > 275
           ) {
             providerNameSize -= 0.5;
           }
@@ -890,42 +865,35 @@ export function AdminDashboard() {
             color: teamInk,
           });
 
-          let roleSize = 9;
+          const roleLabel = provider.role.toLocaleUpperCase("pt-BR");
+          let roleSize = 8;
           while (
-            roleSize > 7 &&
-            bold.widthOfTextAtSize(provider.role.toLocaleUpperCase("pt-BR"), roleSize) >
-              155
+            roleSize > 6.5 &&
+            bold.widthOfTextAtSize(roleLabel, roleSize) > 135
           ) {
             roleSize -= 0.5;
           }
-          page.drawText(provider.role.toLocaleUpperCase("pt-BR"), {
-            x: 365,
+          const roleWidth = bold.widthOfTextAtSize(roleLabel, roleSize);
+          page.drawText(roleLabel, {
+            x: 510 - roleWidth,
             y,
             size: roleSize,
             font: bold,
             color: teamAccent,
           });
           page.drawLine({
-            start: { x: 66, y: y - 8 },
-            end: { x: 529, y: y - 8 },
+            start: { x: 72, y: y - 8 },
+            end: { x: 522, y: y - 8 },
             thickness: 0.35,
             color: teamLine,
           });
         });
 
-        const operationalNote = "Uso da organização • 31 de outubro de 2026";
-        page.drawText(operationalNote, {
-          x: 66,
-          y: 68,
-          size: 8,
-          font: italic,
-          color: teamMuted,
-        });
         const pageLabel = `Página ${documentPageIndex + 1} de ${totalPages}`;
         const pageLabelWidth = italic.widthOfTextAtSize(pageLabel, 8);
         page.drawText(pageLabel, {
-          x: 529 - pageLabelWidth,
-          y: 68,
+          x: (pageWidth - pageLabelWidth) / 2,
+          y: 78,
           size: 8,
           font: italic,
           color: teamMuted,
