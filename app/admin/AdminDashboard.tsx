@@ -612,15 +612,25 @@ export function AdminDashboard() {
     setExportError("");
     try {
       const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
-      const [templateResponse, providersResponse] = await Promise.all([
+      const [templateResponse, providerTemplateResponse, providersResponse] = await Promise.all([
         fetch("/guest-list-template.pdf?v=20260726-1", {
+          cache: "no-store",
+        }),
+        fetch("/provider-list-template.pdf?v=20260815-1", {
           cache: "no-store",
         }),
         fetch("/api/admin/providers", { cache: "no-store" }),
       ]);
-      if (!templateResponse.ok || !providersResponse.ok) throw new Error();
+      if (
+        !templateResponse.ok ||
+        !providerTemplateResponse.ok ||
+        !providersResponse.ok
+      ) {
+        throw new Error();
+      }
 
       const templateBytes = await templateResponse.arrayBuffer();
+      const providerTemplateBytes = await providerTemplateResponse.arrayBuffer();
       const providersData = (await providersResponse.json()) as {
         providers?: ServiceProviderRecord[];
       };
@@ -636,6 +646,10 @@ export function AdminDashboard() {
       const outputDocument = await PDFDocument.create();
       const [firstTemplate, continuationTemplate] =
         await outputDocument.embedPdf(templateBytes, [0, 1]);
+      const [providerTemplate] = await outputDocument.embedPdf(
+        providerTemplateBytes,
+        [0],
+      );
       const italic = await outputDocument.embedFont(
         StandardFonts.TimesRomanItalic,
       );
@@ -748,7 +762,6 @@ export function AdminDashboard() {
       const teamInk = rgb(67 / 255, 42 / 255, 30 / 255);
       const teamAccent = rgb(133 / 255, 82 / 255, 60 / 255);
       const teamMuted = rgb(111 / 255, 104 / 255, 94 / 255);
-      const teamHeaderPaper = rgb(242 / 255, 228 / 255, 200 / 255);
       const teamLine = rgb(205 / 255, 181 / 255, 158 / 255);
 
       for (
@@ -763,55 +776,11 @@ export function AdminDashboard() {
         );
         const documentPageIndex = guestPageCount + providerPageIndex;
 
-        page.drawPage(firstTemplate, {
+        page.drawPage(providerTemplate, {
           x: 0,
           y: 0,
           width: pageWidth,
           height: pageHeight,
-        });
-        page.drawRectangle({
-          x: 104,
-          y: 654,
-          width: 387,
-          height: 142,
-          color: teamHeaderPaper,
-        });
-
-        const eyebrow = "EQUIPE DO CASAMENTO";
-        const eyebrowWidth = bold.widthOfTextAtSize(eyebrow, 12);
-        page.drawText(eyebrow, {
-          x: (pageWidth - eyebrowWidth) / 2,
-          y: 764,
-          size: 12,
-          font: bold,
-          color: teamAccent,
-        });
-        const teamTitle =
-          providerPageIndex === 0
-            ? "Prestadores confirmados"
-            : "Prestadores - continuação";
-        const teamTitleWidth = italic.widthOfTextAtSize(teamTitle, 27);
-        page.drawText(teamTitle, {
-          x: (pageWidth - teamTitleWidth) / 2,
-          y: 718,
-          size: 27,
-          font: italic,
-          color: teamInk,
-        });
-        const teamSubtitle = "31 de outubro de 2026  •  Villa Garden";
-        const teamSubtitleWidth = italic.widthOfTextAtSize(teamSubtitle, 9.5);
-        page.drawText(teamSubtitle, {
-          x: (pageWidth - teamSubtitleWidth) / 2,
-          y: 684,
-          size: 9.5,
-          font: italic,
-          color: teamMuted,
-        });
-        page.drawLine({
-          start: { x: 124, y: 665 },
-          end: { x: 471, y: 665 },
-          thickness: 0.55,
-          color: teamAccent,
         });
 
         const teamSummary = `${sortedProviders.length} prestadores confirmados  •  organizados por função`;

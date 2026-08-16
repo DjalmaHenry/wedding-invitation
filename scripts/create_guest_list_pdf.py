@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PUBLIC = ROOT / "public"
 OUTPUT = ROOT / "output" / "pdf"
 TEMPLATE_PATH = PUBLIC / "guest-list-template.pdf"
+PROVIDER_TEMPLATE_PATH = PUBLIC / "provider-list-template.pdf"
 SAMPLE_PATH = OUTPUT / "lista-convidados-exemplo.pdf"
 
 PAGE_WIDTH, PAGE_HEIGHT = A4
@@ -22,6 +23,7 @@ INK = HexColor("#432A1E")
 OLIVE = HexColor("#5F6D3F")
 GOLD = HexColor("#B78A49")
 MUTED = HexColor("#755946")
+TERRACOTTA = HexColor("#85523C")
 FLORAL = ImageReader(PUBLIC / "menu-floral-corner-painted-olive-v1.png")
 
 SIGNATURE_FONT = "Times-Italic"
@@ -57,7 +59,7 @@ def draw_centered(pdf, text, y, font, size, color=INK):
     pdf.drawString((PAGE_WIDTH - width) / 2, y, text)
 
 
-def draw_template_page(pdf):
+def draw_template_page(pdf, provider_page=False):
     pdf.setFillColor(IVORY)
     pdf.rect(0, 0, PAGE_WIDTH, PAGE_HEIGHT, fill=1, stroke=0)
     pdf.setFillColor(Color(1, 1, 1, alpha=0.2))
@@ -83,18 +85,18 @@ def draw_template_page(pdf):
 
     draw_centered(
         pdf,
-        "LISTA DE CONVIDADOS",
+        "EQUIPE DO CASAMENTO" if provider_page else "LISTA DE CONVIDADOS",
         PAGE_HEIGHT - 88,
         "Times-Italic",
         14,
-        OLIVE,
+        TERRACOTTA if provider_page else OLIVE,
     )
     draw_centered(
         pdf,
-        "Djalma & Victoria",
+        "Prestadores confirmados" if provider_page else "Djalma & Victoria",
         PAGE_HEIGHT - 132,
-        SIGNATURE_FONT,
-        20 if SIGNATURE_FONT == "WeddingSignature" else 25,
+        "Times-Italic" if provider_page else SIGNATURE_FONT,
+        25 if provider_page else (20 if SIGNATURE_FONT == "WeddingSignature" else 25),
         INK,
     )
     draw_centered(
@@ -105,7 +107,7 @@ def draw_template_page(pdf):
         10,
         MUTED,
     )
-    pdf.setStrokeColor(GOLD)
+    pdf.setStrokeColor(TERRACOTTA if provider_page else GOLD)
     pdf.setLineWidth(0.6)
     pdf.line(125, PAGE_HEIGHT - 180, PAGE_WIDTH - 125, PAGE_HEIGHT - 180)
 
@@ -168,6 +170,15 @@ def build_template():
     draw_template_page(pdf)
     pdf.save()
 
+    provider_pdf = canvas.Canvas(
+        str(PROVIDER_TEMPLATE_PATH), pagesize=A4, pageCompression=1
+    )
+    provider_pdf.setTitle("Djalma & Victoria - Modelo da lista de prestadores")
+    draw_template_page(provider_pdf, provider_page=True)
+    provider_pdf.showPage()
+    draw_template_page(provider_pdf, provider_page=True)
+    provider_pdf.save()
+
 
 def build_sample():
     sample_guests = [
@@ -223,4 +234,5 @@ if __name__ == "__main__":
     build_template()
     build_sample()
     print(TEMPLATE_PATH)
+    print(PROVIDER_TEMPLATE_PATH)
     print(SAMPLE_PATH)
