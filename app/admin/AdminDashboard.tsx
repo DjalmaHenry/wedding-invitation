@@ -37,6 +37,13 @@ type GiftPaymentRecord = {
   paidAt: string | null;
 };
 
+type ServiceProviderRecord = {
+  id: string;
+  name: string;
+  role: string;
+  createdAt: string;
+};
+
 function normalizeName(value: string, maximumParts = Number.POSITIVE_INFINITY) {
   return value
     .trim()
@@ -605,13 +612,27 @@ export function AdminDashboard() {
     setExportError("");
     try {
       const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
-      const templateResponse = await fetch(
-        "/guest-list-template.pdf?v=20260726-1",
-        { cache: "no-store" },
-      );
-      if (!templateResponse.ok) throw new Error();
+      const [templateResponse, providersResponse] = await Promise.all([
+        fetch("/guest-list-template.pdf?v=20260726-1", {
+          cache: "no-store",
+        }),
+        fetch("/api/admin/providers", { cache: "no-store" }),
+      ]);
+      if (!templateResponse.ok || !providersResponse.ok) throw new Error();
 
       const templateBytes = await templateResponse.arrayBuffer();
+      const providersData = (await providersResponse.json()) as {
+        providers?: ServiceProviderRecord[];
+      };
+      const sortedProviders = [...(providersData.providers ?? [])].sort(
+        (left, right) =>
+          left.role.localeCompare(right.role, "pt-BR", {
+            sensitivity: "base",
+          }) ||
+          left.name.localeCompare(right.name, "pt-BR", {
+            sensitivity: "base",
+          }),
+      );
       const outputDocument = await PDFDocument.create();
       const [firstTemplate, continuationTemplate] =
         await outputDocument.embedPdf(templateBytes, [0, 1]);
@@ -626,16 +647,22 @@ export function AdminDashboard() {
       const muted = rgb(117 / 255, 89 / 255, 70 / 255);
       const divider = rgb(196 / 255, 175 / 255, 143 / 255);
       const maximumRowsPerPage = 21;
+      const maximumProvidersPerPage = 20;
       const sortedGuests = [...guests].sort((left, right) =>
         left.name.localeCompare(right.name, "pt-BR", {
           sensitivity: "base",
         }),
       );
-      const totalPages = Math.ceil(
+      const guestPageCount = Math.ceil(
         sortedGuests.length / maximumRowsPerPage,
       );
+      const providerPageCount = Math.max(
+        1,
+        Math.ceil(sortedProviders.length / maximumProvidersPerPage),
+      );
+      const totalPages = guestPageCount + providerPageCount;
 
-      for (let pageIndex = 0; pageIndex < totalPages; pageIndex += 1) {
+      for (let pageIndex = 0; pageIndex < guestPageCount; pageIndex += 1) {
         const page = outputDocument.addPage([pageWidth, pageHeight]);
         page.drawPage(pageIndex === 0 ? firstTemplate : continuationTemplate, {
           x: 0,
@@ -718,8 +745,195 @@ export function AdminDashboard() {
         });
       }
 
+      const teamInk = rgb(45 / 255, 55 / 255, 51 / 255);
+      const teamAccent = rgb(133 / 255, 82 / 255, 60 / 255);
+      const teamAccentDark = rgb(91 / 255, 58 / 255, 45 / 255);
+      const teamMuted = rgb(111 / 255, 104 / 255, 94 / 255);
+      const teamPaper = rgb(248 / 255, 244 / 255, 236 / 255);
+      const teamPanel = rgb(238 / 255, 226 / 255, 211 / 255);
+      const teamLine = rgb(205 / 255, 181 / 255, 158 / 255);
+
+      for (
+        let providerPageIndex = 0;
+        providerPageIndex < providerPageCount;
+        providerPageIndex += 1
+      ) {
+        const page = outputDocument.addPage([pageWidth, pageHeight]);
+        const pageProviders = sortedProviders.slice(
+          providerPageIndex * maximumProvidersPerPage,
+          (providerPageIndex + 1) * maximumProvidersPerPage,
+        );
+        const documentPageIndex = guestPageCount + providerPageIndex;
+
+        page.drawRectangle({
+          x: 0,
+          y: 0,
+          width: pageWidth,
+          height: pageHeight,
+          color: teamPaper,
+        });
+        page.drawRectangle({
+          x: 0,
+          y: 672,
+          width: pageWidth,
+          height: 170,
+          color: teamAccentDark,
+        });
+        page.drawRectangle({
+          x: 28,
+          y: 28,
+          width: pageWidth - 56,
+          height: pageHeight - 56,
+          borderColor: teamAccent,
+          borderWidth: 1.2,
+        });
+        page.drawRectangle({
+          x: 34,
+          y: 34,
+          width: pageWidth - 68,
+          height: pageHeight - 68,
+          borderColor: teamLine,
+          borderWidth: 0.45,
+        });
+
+        const eyebrow = "OPERAÇÃO DO GRANDE DIA";
+        const eyebrowWidth = bold.widthOfTextAtSize(eyebrow, 8);
+        page.drawText(eyebrow, {
+          x: (pageWidth - eyebrowWidth) / 2,
+          y: 784,
+          size: 8,
+          font: bold,
+          color: teamPanel,
+        });
+        const teamTitle =
+          providerPageIndex === 0
+            ? "Prestadores confirmados"
+            : "Prestadores - continuação";
+        const teamTitleWidth = bold.widthOfTextAtSize(teamTitle, 24);
+        page.drawText(teamTitle, {
+          x: (pageWidth - teamTitleWidth) / 2,
+          y: 741,
+          size: 24,
+          font: bold,
+          color: teamPaper,
+        });
+        const teamSubtitle = `${sortedProviders.length} profissionais • organizados por função`;
+        const teamSubtitleWidth = italic.widthOfTextAtSize(teamSubtitle, 10);
+        page.drawText(teamSubtitle, {
+          x: (pageWidth - teamSubtitleWidth) / 2,
+          y: 710,
+          size: 10,
+          font: italic,
+          color: teamPanel,
+        });
+
+        page.drawRectangle({
+          x: 65,
+          y: 620,
+          width: 465,
+          height: 30,
+          color: teamPanel,
+        });
+        page.drawText("NOME", {
+          x: 98,
+          y: 630,
+          size: 8,
+          font: bold,
+          color: teamAccentDark,
+        });
+        page.drawText("FUNÇÃO", {
+          x: 365,
+          y: 630,
+          size: 8,
+          font: bold,
+          color: teamAccentDark,
+        });
+
+        if (pageProviders.length === 0) {
+          const emptyMessage = "Nenhum prestador confirmado até o momento.";
+          const emptyWidth = italic.widthOfTextAtSize(emptyMessage, 12);
+          page.drawText(emptyMessage, {
+            x: (pageWidth - emptyWidth) / 2,
+            y: 570,
+            size: 12,
+            font: italic,
+            color: teamMuted,
+          });
+        }
+
+        pageProviders.forEach((provider, rowIndex) => {
+          const y = 592 - rowIndex * 25;
+          const absoluteIndex =
+            providerPageIndex * maximumProvidersPerPage + rowIndex + 1;
+          const number = String(absoluteIndex).padStart(2, "0");
+          const numberWidth = italic.widthOfTextAtSize(number, 8);
+          page.drawText(number, {
+            x: 84 - numberWidth,
+            y,
+            size: 8,
+            font: italic,
+            color: teamAccent,
+          });
+
+          let providerNameSize = 11.5;
+          while (
+            providerNameSize > 8.5 &&
+            italic.widthOfTextAtSize(provider.name, providerNameSize) > 245
+          ) {
+            providerNameSize -= 0.5;
+          }
+          page.drawText(provider.name, {
+            x: 98,
+            y,
+            size: providerNameSize,
+            font: italic,
+            color: teamInk,
+          });
+
+          let roleSize = 9;
+          while (
+            roleSize > 7 &&
+            bold.widthOfTextAtSize(provider.role.toLocaleUpperCase("pt-BR"), roleSize) >
+              155
+          ) {
+            roleSize -= 0.5;
+          }
+          page.drawText(provider.role.toLocaleUpperCase("pt-BR"), {
+            x: 365,
+            y,
+            size: roleSize,
+            font: bold,
+            color: teamAccent,
+          });
+          page.drawLine({
+            start: { x: 66, y: y - 8 },
+            end: { x: 529, y: y - 8 },
+            thickness: 0.35,
+            color: teamLine,
+          });
+        });
+
+        const operationalNote = "Uso da organização • 31 de outubro de 2026";
+        page.drawText(operationalNote, {
+          x: 66,
+          y: 68,
+          size: 8,
+          font: italic,
+          color: teamMuted,
+        });
+        const pageLabel = `Página ${documentPageIndex + 1} de ${totalPages}`;
+        const pageLabelWidth = italic.widthOfTextAtSize(pageLabel, 8);
+        page.drawText(pageLabel, {
+          x: 529 - pageLabelWidth,
+          y: 68,
+          size: 8,
+          font: italic,
+          color: teamMuted,
+        });
+      }
+
       outputDocument.setTitle(
-        "Djalma & Victoria - Lista de convidados confirmados",
+        "Djalma & Victoria - Convidados e prestadores confirmados",
       );
       outputDocument.setAuthor("Djalma & Victoria");
       outputDocument.setCreator("Dashboard de confirmações");
