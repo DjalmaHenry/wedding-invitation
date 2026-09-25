@@ -32,7 +32,7 @@ const MUSIC_TARGET_VOLUME = 0.26;
 const GUIDE_TOPICS: GuideTopic[] = [
   {
     title: "Confirme sua presença",
-    text: "Pedimos, com muito carinho, que confirme sua presença até o dia 22 de agosto de 2026. Assim, poderemos organizar cada detalhe da melhor maneira e garantir o conforto de todos durante a celebração.",
+    text: "Pedimos, com muito carinho, que confirme sua presença até o dia 10 de outubro de 2026. Assim, poderemos organizar cada detalhe da melhor maneira e garantir o conforto de todos durante a celebração.",
     image: "/guide-rsvp-painted-v4.png",
     alt: "Caricatura de Djalma e Victoria recebendo uma confirmação de presença",
   },
@@ -1235,7 +1235,7 @@ export function WeddingExperience() {
                   <span aria-hidden="true">✦</span>
                   <p className="rsvp-deadline">
                     Para prepararmos cada detalhe com carinho, pedimos que sua
-                    presença seja confirmada até o dia 22 de agosto de 2026.
+                    presença seja confirmada até o dia 10 de outubro de 2026.
                   </p>
                 </header>
 
